@@ -1185,7 +1185,7 @@ type KeyInfo struct {
 	Owner string `json:"owner"`
 
 	// Policy Key policy
-	// Policy []map[string]interface{} `json:"policy"`
+	Policy []map[string]interface{} `json:"policy"`
 
 	// PublicKey Hex-encoded, serialized public key. The format used depends on the key type:
 	// - Secp256k1 keys use 65-byte uncompressed SECG format;
