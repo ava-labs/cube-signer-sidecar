@@ -1,5 +1,8 @@
 package main
 
+//go:generate go run github.com/oapi-codegen/oapi-codegen/v2/cmd/oapi-codegen -generate client -package api  -o ../api/client.go ../spec/filtered-openapi.json
+//go:generate go run github.com/oapi-codegen/oapi-codegen/v2/cmd/oapi-codegen -generate types -package api  -o ../api/types.go ../spec/filtered-openapi.json
+
 import (
 	"context"
 	"encoding/base64"
@@ -11,9 +14,9 @@ import (
 	"net/http"
 	"os"
 
-	"github.com/ava-labs/avalanchego/cubist/api"
 	"github.com/ava-labs/avalanchego/proto/pb/signer"
 	"github.com/ava-labs/avalanchego/utils/crypto/bls"
+	"github.com/ava-labs/cubist-signer/api"
 	"google.golang.org/grpc"
 )
 
