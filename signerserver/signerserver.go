@@ -20,7 +20,7 @@ import (
 	"google.golang.org/grpc"
 )
 
-var popDst = base64.StdEncoding.EncodeToString(bls.CiphersuiteProofOfPossession)
+var popDst = base64.StdEncoding.EncodeToString(bls.CiphersuiteProofOfPossession.Bytes())
 
 type SignerServer struct {
 	signer.UnimplementedSignerServer
@@ -92,26 +92,26 @@ func sign(ctx context.Context, s *SignerServer, bytes []byte, blsDst *string) ([
 	return signature, nil
 }
 
-func (s *SignerServer) Sign(ctx context.Context, in *signer.SignatureRequest) (*signer.SignatureResponse, error) {
+func (s *SignerServer) Sign(ctx context.Context, in *signer.SignRequest) (*signer.SignResponse, error) {
 	signature, err := sign(ctx, s, in.Message, nil)
 	if err != nil {
 		return nil, err
 	}
 
-	signatureRes := &signer.SignatureResponse{
+	signatureRes := &signer.SignResponse{
 		Signature: signature,
 	}
 
 	return signatureRes, nil
 }
 
-func (s *SignerServer) ProofOfPossession(ctx context.Context, in *signer.ProofOfPossessionSignatureRequest) (*signer.ProofOfPossessionSignatureResponse, error) {
+func (s *SignerServer) ProofOfPossession(ctx context.Context, in *signer.SignProofOfPossessionRequest) (*signer.SignProofOfPossessionResponse, error) {
 	signature, err := sign(ctx, s, in.Message, &popDst)
 	if err != nil {
 		return nil, err
 	}
 
-	signatureRes := &signer.ProofOfPossessionSignatureResponse{
+	signatureRes := &signer.SignProofOfPossessionResponse{
 		Signature: signature,
 	}
 
@@ -197,5 +197,4 @@ func main() {
 	if err := grpcServer.Serve(lis); err != nil {
 		log.Fatalf("failed to serve: %v", err)
 	}
-
 }
