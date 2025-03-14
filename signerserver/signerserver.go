@@ -9,10 +9,13 @@ import (
 	"encoding/hex"
 	"encoding/json"
 	"fmt"
+	"io"
 	"log"
 	"net"
 	"net/http"
 	"os"
+	"strings"
+	"time"
 
 	"github.com/ava-labs/avalanchego/proto/pb/signer"
 	"github.com/ava-labs/avalanchego/utils/crypto/bls"
@@ -24,10 +27,11 @@ var popDst = base64.StdEncoding.EncodeToString(bls.CiphersuiteProofOfPossession.
 
 type SignerServer struct {
 	signer.UnimplementedSignerServer
-	orgId   string
-	keyId   string
-	client  *api.ClientWithResponses
-	session *api.NewSessionResponse
+	orgId     string
+	keyId     string
+	client    *api.ClientWithResponses
+	session   *api.NewSessionResponse
+	publicKey []byte
 }
 
 func (s *SignerServer) AddAuthHeader() api.RequestEditorFn {
@@ -37,17 +41,48 @@ func (s *SignerServer) AddAuthHeader() api.RequestEditorFn {
 	}
 }
 
-func (s *SignerServer) PublicKey(ctx context.Context, in *signer.PublicKeyRequest) (*signer.PublicKeyResponse, error) {
-	log.Println("PublicKey request received")
-	res, err := s.client.GetKeyInOrgWithResponse(ctx, s.orgId, s.keyId, s.AddAuthHeader())
+func (s *SignerServer) RefreshToken() error {
+	authData := &api.AuthData{
+		EpochNum:   s.session.SessionInfo.Epoch,
+		EpochToken: s.session.SessionInfo.EpochToken,
+		OtherToken: s.session.SessionInfo.RefreshToken,
+	}
 
+	res, err := s.client.SignerSessionRefreshWithResponse(context.Background(), s.orgId, *authData, s.AddAuthHeader())
+	if err != nil {
+		return err
+	}
+
+	if res.JSON200 == nil {
+		return fmt.Errorf("unexpected status code: %d", res.StatusCode())
+	}
+
+	s.session = res.JSON200
+	return nil
+}
+
+func (s *SignerServer) PublicKey(ctx context.Context, in *signer.PublicKeyRequest) (*signer.PublicKeyResponse, error) {
+	if s.publicKey != nil {
+		publicKeyRes := &signer.PublicKeyResponse{
+			PublicKey: s.publicKey,
+		}
+
+		return publicKeyRes, nil
+	}
+
+	rsp, err := s.client.GetKeyInOrg(ctx, s.orgId, s.keyId, s.AddAuthHeader())
 	if err != nil {
 		log.Println("Error getting key in org:", err)
 		return nil, err
 	}
 
+	res, err := parseGetKeyInOrgResponse(rsp)
+	if err != nil {
+		log.Println("Error parsing GetKeyInOrg response:", err)
+		return nil, err
+	}
+
 	if res.JSONDefault != nil {
-		// TODO: handle refresh
 		return nil, fmt.Errorf("unexpected status code: %d", res.StatusCode())
 	}
 
@@ -58,11 +93,60 @@ func (s *SignerServer) PublicKey(ctx context.Context, in *signer.PublicKeyReques
 		return nil, err
 	}
 
+	s.publicKey = publicKey
+
 	publicKeyRes := &signer.PublicKeyResponse{
 		PublicKey: publicKey,
 	}
 
 	return publicKeyRes, nil
+}
+
+type KeyInfo struct {
+	PublicKey string `json:"public_key"`
+}
+
+type GetKeyInOrgResponse struct {
+	api.GetKeyInOrgResponse
+	JSON200 *KeyInfo
+}
+
+// modified version of `api.ParseGetKeyInOrgResponse`
+// this code can be removed if cubist fixes with openapi-spec
+func parseGetKeyInOrgResponse(rsp *http.Response) (*GetKeyInOrgResponse, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	inner := api.GetKeyInOrgResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	response := &GetKeyInOrgResponse{
+		GetKeyInOrgResponse: inner,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest KeyInfo
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && true:
+		var dest api.ErrorResponse
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSONDefault = &dest
+
+	}
+
+	return response, nil
 }
 
 func sign(ctx context.Context, s *SignerServer, bytes []byte, blsDst *string) ([]byte, error) {
@@ -72,13 +156,10 @@ func sign(ctx context.Context, s *SignerServer, bytes []byte, blsDst *string) ([
 		BlsDst:        blsDst,
 	}
 
-	log.Println("about to make blob sign request with message: ", msg)
 	res, err := s.client.BlobSignWithResponse(ctx, s.orgId, s.keyId, *blobSignReq, s.AddAuthHeader())
 	if err != nil {
 		return nil, err
 	}
-
-	log.Printf("Response body: %s", res.Body)
 
 	if res.JSON200 == nil {
 		return nil, fmt.Errorf("unexpected status code: %d", res.StatusCode())
@@ -171,7 +252,6 @@ func main() {
 	if err != nil {
 		log.Fatal("failed to refresh session: %v", err)
 	}
-	log.Printf("response: %+v", res.JSONDefault)
 
 	if res.JSON200 == nil {
 		log.Fatalf("unexpected status code: %d", res.StatusCode())
@@ -183,6 +263,28 @@ func main() {
 		client:  client,
 		session: res.JSON200,
 	}
+
+	go func() {
+		for {
+			expiryTime := time.Unix(int64(signerServer.session.SessionInfo.AuthTokenExp), 0)
+			waitDuration := time.Until(expiryTime) - time.Second
+
+			if waitDuration < 0 {
+				refreshExpiryTime := time.Unix(int64(signerServer.session.SessionInfo.RefreshTokenExp), 0)
+				if time.Until(refreshExpiryTime) < 0 {
+					log.Fatalf("Refresh token expired at %v", refreshExpiryTime)
+				}
+				waitDuration = 0
+			}
+
+			time.Sleep(waitDuration)
+
+			if err := signerServer.RefreshToken(); err != nil {
+				log.Printf("Failed to refresh token: %v", err)
+				continue
+			}
+		}
+	}()
 
 	grpcServer := grpc.NewServer()
 	signer.RegisterSignerServer(grpcServer, signerServer)
