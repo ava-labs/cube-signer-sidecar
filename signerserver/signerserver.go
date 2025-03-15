@@ -149,7 +149,7 @@ func parseGetKeyInOrgResponse(rsp *http.Response) (*GetKeyInOrgResponse, error) 
 	return response, nil
 }
 
-func sign(ctx context.Context, s *SignerServer, bytes []byte, blsDst *string) ([]byte, error) {
+func (s *SignerServer) sign(ctx context.Context, bytes []byte, blsDst *string) ([]byte, error) {
 	msg := base64.StdEncoding.EncodeToString(bytes)
 	blobSignReq := &api.BlobSignRequest{
 		MessageBase64: msg,
@@ -174,7 +174,7 @@ func sign(ctx context.Context, s *SignerServer, bytes []byte, blsDst *string) ([
 }
 
 func (s *SignerServer) Sign(ctx context.Context, in *signer.SignRequest) (*signer.SignResponse, error) {
-	signature, err := sign(ctx, s, in.Message, nil)
+	signature, err := s.sign(ctx, in.Message, nil)
 	if err != nil {
 		return nil, err
 	}
@@ -187,7 +187,7 @@ func (s *SignerServer) Sign(ctx context.Context, in *signer.SignRequest) (*signe
 }
 
 func (s *SignerServer) ProofOfPossession(ctx context.Context, in *signer.SignProofOfPossessionRequest) (*signer.SignProofOfPossessionResponse, error) {
-	signature, err := sign(ctx, s, in.Message, &popDst)
+	signature, err := s.sign(ctx, in.Message, &popDst)
 	if err != nil {
 		return nil, err
 	}
