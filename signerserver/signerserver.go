@@ -213,13 +213,13 @@ func main() {
 
 	file, err := os.Open(tokenFilePath)
 	if err != nil {
-		log.Fatalf("failed to open token file: %v", err)
+		log.Fatalf("failed to open token file: %w", err)
 	}
 	defer file.Close()
 
 	var tokenData TokenData
 	if err := json.NewDecoder(file).Decode(&tokenData); err != nil {
-		log.Fatalf("failed to decode token file: %v", err)
+		log.Fatalf("failed to decode token file: %w", err)
 	}
 
 	orgId := tokenData.OrgID
@@ -235,7 +235,7 @@ func main() {
 
 	client, err := api.NewClientWithResponses(endpoint)
 	if err != nil {
-		log.Fatalf("failed to create API client: %v", err)
+		log.Fatalf("failed to create API client: %w", err)
 	}
 
 	authData := &api.AuthData{
@@ -250,7 +250,7 @@ func main() {
 	})
 
 	if err != nil {
-		log.Fatal("failed to refresh session: %v", err)
+		log.Fatalf("failed to refresh session: %w", err)
 	}
 
 	if res.JSON200 == nil {
@@ -280,7 +280,7 @@ func main() {
 			time.Sleep(waitDuration)
 
 			if err := signerServer.RefreshToken(); err != nil {
-				log.Printf("Failed to refresh token: %v", err)
+				log.Printf("Failed to refresh token: %w", err)
 				continue
 			}
 		}
@@ -292,11 +292,11 @@ func main() {
 	// TODO: make configurable
 	lis, err := net.Listen("tcp", ":50051")
 	if err != nil {
-		log.Fatalf("failed to listen: %v", err)
+		log.Fatalf("failed to listen: %w", err)
 	}
 
 	log.Println("Starting gRPC server on port 50051...")
 	if err := grpcServer.Serve(lis); err != nil {
-		log.Fatalf("failed to serve: %v", err)
+		log.Fatalf("failed to serve: %w", err)
 	}
 }
