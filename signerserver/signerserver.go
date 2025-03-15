@@ -1,4 +1,4 @@
-package main
+package signerserver
 
 //go:generate go run github.com/oapi-codegen/oapi-codegen/v2/cmd/oapi-codegen -generate client -package api  -o ../api/client.go ../spec/filtered-openapi.json
 //go:generate go run github.com/oapi-codegen/oapi-codegen/v2/cmd/oapi-codegen -generate types -package api  -o ../api/types.go ../spec/filtered-openapi.json
@@ -11,44 +11,46 @@ import (
 	"fmt"
 	"io"
 	"log"
-	"net"
 	"net/http"
-	"os"
 	"strings"
-	"time"
 
 	"github.com/ava-labs/avalanchego/proto/pb/signer"
 	"github.com/ava-labs/avalanchego/utils/crypto/bls"
 	"github.com/ava-labs/cubist-signer/api"
-	"google.golang.org/grpc"
 )
 
 var popDst = base64.StdEncoding.EncodeToString(bls.CiphersuiteProofOfPossession.Bytes())
 
+type TokenData struct {
+	api.NewSessionResponse
+	OrgID  string `json:"org_id"`
+	RoleID string `json:"role_id"`
+}
+
 type SignerServer struct {
 	signer.UnimplementedSignerServer
-	orgId     string
-	keyId     string
-	client    *api.ClientWithResponses
-	session   *api.NewSessionResponse
+	OrgId     string
+	KeyId     string
+	Client    *api.ClientWithResponses
+	Session   *api.NewSessionResponse
 	publicKey []byte
 }
 
 func (s *SignerServer) AddAuthHeaderFn() api.RequestEditorFn {
 	return func(ctx context.Context, req *http.Request) error {
-		req.Header.Set("Authorization", s.session.Token)
+		req.Header.Set("Authorization", s.Session.Token)
 		return nil
 	}
 }
 
 func (s *SignerServer) RefreshToken() error {
 	authData := &api.AuthData{
-		EpochNum:   s.session.SessionInfo.Epoch,
-		EpochToken: s.session.SessionInfo.EpochToken,
-		OtherToken: s.session.SessionInfo.RefreshToken,
+		EpochNum:   s.Session.SessionInfo.Epoch,
+		EpochToken: s.Session.SessionInfo.EpochToken,
+		OtherToken: s.Session.SessionInfo.RefreshToken,
 	}
 
-	res, err := s.client.SignerSessionRefreshWithResponse(context.Background(), s.orgId, *authData, s.AddAuthHeaderFn())
+	res, err := s.Client.SignerSessionRefreshWithResponse(context.Background(), s.OrgId, *authData, s.AddAuthHeaderFn())
 	if err != nil {
 		return err
 	}
@@ -57,7 +59,7 @@ func (s *SignerServer) RefreshToken() error {
 		return fmt.Errorf("unexpected status code: %d", res.StatusCode())
 	}
 
-	s.session = res.JSON200
+	s.Session = res.JSON200
 	return nil
 }
 
@@ -70,7 +72,7 @@ func (s *SignerServer) PublicKey(ctx context.Context, in *signer.PublicKeyReques
 		return publicKeyRes, nil
 	}
 
-	rsp, err := s.client.GetKeyInOrg(ctx, s.orgId, s.keyId, s.AddAuthHeaderFn())
+	rsp, err := s.Client.GetKeyInOrg(ctx, s.OrgId, s.KeyId, s.AddAuthHeaderFn())
 	if err != nil {
 		log.Println("Error getting key in org:", err)
 		return nil, err
@@ -156,7 +158,7 @@ func (s *SignerServer) sign(ctx context.Context, bytes []byte, blsDst *string) (
 		BlsDst:        blsDst,
 	}
 
-	res, err := s.client.BlobSignWithResponse(ctx, s.orgId, s.keyId, *blobSignReq, s.AddAuthHeaderFn())
+	res, err := s.Client.BlobSignWithResponse(ctx, s.OrgId, s.KeyId, *blobSignReq, s.AddAuthHeaderFn())
 	if err != nil {
 		return nil, err
 	}
@@ -197,106 +199,4 @@ func (s *SignerServer) ProofOfPossession(ctx context.Context, in *signer.SignPro
 	}
 
 	return signatureRes, nil
-}
-
-type TokenData struct {
-	api.NewSessionResponse
-	OrgID  string `json:"org_id"`
-	RoleID string `json:"role_id"`
-}
-
-func main() {
-	tokenFilePath := os.Getenv("TOKEN_FILE_PATH")
-	if tokenFilePath == "" {
-		log.Fatal("TOKEN_FILE_PATH environment variable is not set")
-	}
-
-	file, err := os.Open(tokenFilePath)
-	if err != nil {
-		log.Fatalf("failed to open token file: %w", err)
-	}
-	defer file.Close()
-
-	var tokenData TokenData
-	if err := json.NewDecoder(file).Decode(&tokenData); err != nil {
-		log.Fatalf("failed to decode token file: %w", err)
-	}
-
-	orgId := tokenData.OrgID
-	keyId := os.Getenv("KEY_ID")
-	if keyId == "" {
-		log.Fatal("KEY_ID environment variable is not set")
-	}
-
-	endpoint := os.Getenv("SIGNER_ENDPOINT")
-	if endpoint == "" {
-		log.Fatal("SIGNER_ENDPOINT environment variable is not set")
-	}
-
-	client, err := api.NewClientWithResponses(endpoint)
-	if err != nil {
-		log.Fatalf("failed to create API client: %w", err)
-	}
-
-	authData := &api.AuthData{
-		EpochNum:   tokenData.SessionInfo.Epoch,
-		EpochToken: tokenData.SessionInfo.EpochToken,
-		OtherToken: tokenData.SessionInfo.RefreshToken,
-	}
-
-	res, err := client.SignerSessionRefreshWithResponse(context.Background(), orgId, *authData, func(_ context.Context, req *http.Request) error {
-		req.Header.Set("Authorization", tokenData.Token)
-		return nil
-	})
-
-	if err != nil {
-		log.Fatalf("failed to refresh session: %w", err)
-	}
-
-	if res.JSON200 == nil {
-		log.Fatalf("unexpected status code: %d", res.StatusCode())
-	}
-
-	signerServer := &SignerServer{
-		orgId:   orgId,
-		keyId:   keyId,
-		client:  client,
-		session: res.JSON200,
-	}
-
-	go func() {
-		for {
-			expiryTime := time.Unix(int64(signerServer.session.SessionInfo.AuthTokenExp), 0)
-			waitDuration := time.Until(expiryTime) - time.Second
-
-			if waitDuration < 0 {
-				refreshExpiryTime := time.Unix(int64(signerServer.session.SessionInfo.RefreshTokenExp), 0)
-				if time.Until(refreshExpiryTime) < 0 {
-					log.Fatalf("Refresh token expired at %v", refreshExpiryTime)
-				}
-				waitDuration = 0
-			}
-
-			time.Sleep(waitDuration)
-
-			if err := signerServer.RefreshToken(); err != nil {
-				log.Printf("Failed to refresh token: %w", err)
-				continue
-			}
-		}
-	}()
-
-	grpcServer := grpc.NewServer()
-	signer.RegisterSignerServer(grpcServer, signerServer)
-
-	// TODO: make configurable
-	lis, err := net.Listen("tcp", ":50051")
-	if err != nil {
-		log.Fatalf("failed to listen: %w", err)
-	}
-
-	log.Println("Starting gRPC server on port 50051...")
-	if err := grpcServer.Serve(lis); err != nil {
-		log.Fatalf("failed to serve: %w", err)
-	}
 }
