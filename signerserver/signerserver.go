@@ -34,7 +34,7 @@ type SignerServer struct {
 	publicKey []byte
 }
 
-func (s *SignerServer) AddAuthHeader() api.RequestEditorFn {
+func (s *SignerServer) AddAuthHeaderFn() api.RequestEditorFn {
 	return func(ctx context.Context, req *http.Request) error {
 		req.Header.Set("Authorization", s.session.Token)
 		return nil
@@ -48,7 +48,7 @@ func (s *SignerServer) RefreshToken() error {
 		OtherToken: s.session.SessionInfo.RefreshToken,
 	}
 
-	res, err := s.client.SignerSessionRefreshWithResponse(context.Background(), s.orgId, *authData, s.AddAuthHeader())
+	res, err := s.client.SignerSessionRefreshWithResponse(context.Background(), s.orgId, *authData, s.AddAuthHeaderFn())
 	if err != nil {
 		return err
 	}
@@ -70,7 +70,7 @@ func (s *SignerServer) PublicKey(ctx context.Context, in *signer.PublicKeyReques
 		return publicKeyRes, nil
 	}
 
-	rsp, err := s.client.GetKeyInOrg(ctx, s.orgId, s.keyId, s.AddAuthHeader())
+	rsp, err := s.client.GetKeyInOrg(ctx, s.orgId, s.keyId, s.AddAuthHeaderFn())
 	if err != nil {
 		log.Println("Error getting key in org:", err)
 		return nil, err
@@ -156,7 +156,7 @@ func sign(ctx context.Context, s *SignerServer, bytes []byte, blsDst *string) ([
 		BlsDst:        blsDst,
 	}
 
-	res, err := s.client.BlobSignWithResponse(ctx, s.orgId, s.keyId, *blobSignReq, s.AddAuthHeader())
+	res, err := s.client.BlobSignWithResponse(ctx, s.orgId, s.keyId, *blobSignReq, s.AddAuthHeaderFn())
 	if err != nil {
 		return nil, err
 	}
