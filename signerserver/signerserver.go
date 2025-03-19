@@ -97,8 +97,6 @@ func (s *SignerServer) PublicKey(ctx context.Context, in *signer.PublicKeyReques
 		return nil, fmt.Errorf("unexpected status code: %d", res.StatusCode())
 	}
 
-	log.Printf("PublicKey: %+v", res.JSON200.PublicKey)
-
 	publicKey, err := hex.DecodeString(res.JSON200.PublicKey[2:])
 	if err != nil {
 		return nil, err
