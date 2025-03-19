@@ -36,6 +36,15 @@ type SignerServer struct {
 	publicKey []byte
 }
 
+func New(keyId string, tokenData *TokenData, client *api.ClientWithResponses) *SignerServer {
+	return &SignerServer{
+		OrgId:   tokenData.OrgID,
+		KeyId:   keyId,
+		Client:  client,
+		Session: &tokenData.NewSessionResponse,
+	}
+}
+
 func (s *SignerServer) AddAuthHeaderFn() api.RequestEditorFn {
 	return func(ctx context.Context, req *http.Request) error {
 		req.Header.Set("Authorization", s.Session.Token)

@@ -1,11 +1,9 @@
 package main
 
 import (
-	"context"
 	"encoding/json"
 	"log"
 	"net"
-	"net/http"
 	"os"
 	"time"
 
@@ -32,7 +30,6 @@ func main() {
 		log.Fatalf("failed to decode token file: %w", err)
 	}
 
-	orgId := tokenData.OrgID
 	keyId := os.Getenv("KEY_ID")
 	if keyId == "" {
 		log.Fatal("KEY_ID environment variable is not set")
@@ -48,30 +45,12 @@ func main() {
 		log.Fatalf("failed to create API client: %w", err)
 	}
 
-	authData := &api.AuthData{
-		EpochNum:   tokenData.SessionInfo.Epoch,
-		EpochToken: tokenData.SessionInfo.EpochToken,
-		OtherToken: tokenData.SessionInfo.RefreshToken,
-	}
+	signerServer := signerserver.New(keyId, &tokenData, client)
 
-	res, err := client.SignerSessionRefreshWithResponse(context.Background(), orgId, *authData, func(_ context.Context, req *http.Request) error {
-		req.Header.Set("Authorization", tokenData.Token)
-		return nil
-	})
+	err = signerServer.RefreshToken()
 
 	if err != nil {
 		log.Fatalf("failed to refresh session: %w", err)
-	}
-
-	if res.JSON200 == nil {
-		log.Fatalf("unexpected status code: %d", res.StatusCode())
-	}
-
-	signerServer := &signerserver.SignerServer{
-		OrgId:   orgId,
-		KeyId:   keyId,
-		Client:  client,
-		Session: res.JSON200,
 	}
 
 	go func() {
