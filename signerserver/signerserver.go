@@ -106,11 +106,9 @@ func (s *SignerServer) PublicKey(ctx context.Context, in *signer.PublicKeyReques
 
 	s.publicKey = publicKey
 
-	publicKeyRes := &signer.PublicKeyResponse{
+	return &signer.PublicKeyResponse{
 		PublicKey: publicKey,
-	}
-
-	return publicKeyRes, nil
+	}, nil
 }
 
 type KeyInfo struct {
@@ -176,12 +174,7 @@ func (s *SignerServer) sign(ctx context.Context, bytes []byte, blsDst *string) (
 		return nil, fmt.Errorf("unexpected status code: %d", res.StatusCode())
 	}
 
-	signature, err := hex.DecodeString(res.JSON200.Signature[2:])
-	if err != nil {
-		return nil, err
-	}
-
-	return signature, nil
+	return hex.DecodeString(res.JSON200.Signature[2:])
 }
 
 func (s *SignerServer) Sign(ctx context.Context, in *signer.SignRequest) (*signer.SignResponse, error) {
@@ -190,11 +183,9 @@ func (s *SignerServer) Sign(ctx context.Context, in *signer.SignRequest) (*signe
 		return nil, err
 	}
 
-	signatureRes := &signer.SignResponse{
+	return &signer.SignResponse{
 		Signature: signature,
-	}
-
-	return signatureRes, nil
+	}, nil
 }
 
 func (s *SignerServer) SignProofOfPossession(ctx context.Context, in *signer.SignProofOfPossessionRequest) (*signer.SignProofOfPossessionResponse, error) {
@@ -203,9 +194,7 @@ func (s *SignerServer) SignProofOfPossession(ctx context.Context, in *signer.Sig
 		return nil, err
 	}
 
-	signatureRes := &signer.SignProofOfPossessionResponse{
+	return &signer.SignProofOfPossessionResponse{
 		Signature: signature,
-	}
-
-	return signatureRes, nil
+	}, nil
 }
