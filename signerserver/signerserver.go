@@ -197,7 +197,7 @@ func (s *SignerServer) Sign(ctx context.Context, in *signer.SignRequest) (*signe
 	return signatureRes, nil
 }
 
-func (s *SignerServer) ProofOfPossession(ctx context.Context, in *signer.SignProofOfPossessionRequest) (*signer.SignProofOfPossessionResponse, error) {
+func (s *SignerServer) SignProofOfPossession(ctx context.Context, in *signer.SignProofOfPossessionRequest) (*signer.SignProofOfPossessionResponse, error) {
 	signature, err := s.sign(ctx, in.Message, &popDst)
 	if err != nil {
 		return nil, err
