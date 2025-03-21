@@ -29,8 +29,8 @@ func getEnvArgs() (string, string, string) {
 		log.Fatalf("failed to open token file: %w", err)
 	}
 
-	keyId := os.Getenv("KEY_ID")
-	if keyId == "" {
+	keyID := os.Getenv("KEY_ID")
+	if keyID == "" {
 		log.Fatal("KEY_ID environment variable is not set")
 	}
 
@@ -39,7 +39,7 @@ func getEnvArgs() (string, string, string) {
 		log.Fatal("SIGNER_ENDPOINT environment variable is not set")
 	}
 
-	return tokenFilePath, keyId, endpoint
+	return tokenFilePath, keyID, endpoint
 }
 
 func runServer(tokenFilePath string, keyID string, endpoint string) error {

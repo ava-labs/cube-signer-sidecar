@@ -25,15 +25,15 @@ var popDst = base64.StdEncoding.EncodeToString(bls.CiphersuiteProofOfPossession.
 
 type SignerServer struct {
 	signer.UnimplementedSignerServer
-	OrgId         string
-	KeyId         string
+	OrgID         string
+	KeyID         string
 	client        *api.ClientWithResponses
 	tokenData     *tokenData
 	tokenFilePath string
 	publicKey     []byte
 }
 
-func New(keyId string, tokenFilePath string, client *api.ClientWithResponses) (*SignerServer, error) {
+func New(keyID string, tokenFilePath string, client *api.ClientWithResponses) (*SignerServer, error) {
 	tokenFile, err := os.Open(tokenFilePath)
 	if err != nil {
 		return nil, err
@@ -49,8 +49,8 @@ func New(keyId string, tokenFilePath string, client *api.ClientWithResponses) (*
 	}
 
 	return &SignerServer{
-		OrgId:         tokenData.OrgID,
-		KeyId:         keyId,
+		OrgID:         tokenData.OrgID,
+		KeyID:         keyID,
 		client:        client,
 		tokenData:     &tokenData,
 		tokenFilePath: tokenFilePath,
@@ -67,7 +67,7 @@ func (s *SignerServer) addAuthHeaderFn() api.RequestEditorFn {
 func (s *SignerServer) RefreshToken() error {
 	authData := s.tokenData.toAuthData()
 
-	res, err := s.client.SignerSessionRefreshWithResponse(context.Background(), s.OrgId, *authData, s.addAuthHeaderFn())
+	res, err := s.client.SignerSessionRefreshWithResponse(context.Background(), s.OrgID, *authData, s.addAuthHeaderFn())
 	if err != nil {
 		return err
 	}
@@ -133,7 +133,7 @@ func (s *SignerServer) PublicKey(ctx context.Context, in *signer.PublicKeyReques
 		return publicKeyRes, nil
 	}
 
-	rsp, err := s.client.GetKeyInOrg(ctx, s.OrgId, s.KeyId, s.addAuthHeaderFn())
+	rsp, err := s.client.GetKeyInOrg(ctx, s.OrgID, s.KeyID, s.addAuthHeaderFn())
 	if err != nil {
 		log.Println("Error getting key in org:", err)
 		return nil, err
@@ -215,7 +215,7 @@ func (s *SignerServer) sign(ctx context.Context, bytes []byte, blsDst *string) (
 		BlsDst:        blsDst,
 	}
 
-	res, err := s.client.BlobSignWithResponse(ctx, s.OrgId, s.KeyId, *blobSignReq, s.addAuthHeaderFn())
+	res, err := s.client.BlobSignWithResponse(ctx, s.OrgID, s.KeyID, *blobSignReq, s.addAuthHeaderFn())
 	if err != nil {
 		return nil, err
 	}
