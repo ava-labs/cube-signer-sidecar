@@ -12,7 +12,9 @@ import (
 	"io"
 	"log"
 	"net/http"
+	"os"
 	"strings"
+	"time"
 
 	"github.com/ava-labs/avalanchego/proto/pb/signer"
 	"github.com/ava-labs/avalanchego/utils/crypto/bls"
@@ -21,45 +23,51 @@ import (
 
 var popDst = base64.StdEncoding.EncodeToString(bls.CiphersuiteProofOfPossession.Bytes())
 
-type TokenData struct {
-	api.NewSessionResponse
-	OrgID  string `json:"org_id"`
-	RoleID string `json:"role_id"`
-}
-
 type SignerServer struct {
 	signer.UnimplementedSignerServer
-	OrgId     string
-	KeyId     string
-	Client    *api.ClientWithResponses
-	Session   *api.NewSessionResponse
-	publicKey []byte
+	OrgId         string
+	KeyId         string
+	client        *api.ClientWithResponses
+	tokenData     *tokenData
+	tokenFilePath string
+	publicKey     []byte
 }
 
-func New(keyId string, tokenData *TokenData, client *api.ClientWithResponses) *SignerServer {
-	return &SignerServer{
-		OrgId:   tokenData.OrgID,
-		KeyId:   keyId,
-		Client:  client,
-		Session: &tokenData.NewSessionResponse,
+func New(keyId string, tokenFilePath string, client *api.ClientWithResponses) (*SignerServer, error) {
+	tokenFile, err := os.Open(tokenFilePath)
+	if err != nil {
+		return nil, err
 	}
+
+	var tokenData tokenData
+	if err := json.NewDecoder(tokenFile).Decode(&tokenData); err != nil {
+		return nil, err
+	}
+
+	if len(tokenData.RawData) == 0 {
+		return nil, fmt.Errorf("no extra keys were deserialized")
+	}
+
+	return &SignerServer{
+		OrgId:         tokenData.OrgID,
+		KeyId:         keyId,
+		client:        client,
+		tokenData:     &tokenData,
+		tokenFilePath: tokenFilePath,
+	}, nil
 }
 
-func (s *SignerServer) AddAuthHeaderFn() api.RequestEditorFn {
+func (s *SignerServer) addAuthHeaderFn() api.RequestEditorFn {
 	return func(ctx context.Context, req *http.Request) error {
-		req.Header.Set("Authorization", s.Session.Token)
+		req.Header.Set("Authorization", s.tokenData.Token)
 		return nil
 	}
 }
 
 func (s *SignerServer) RefreshToken() error {
-	authData := &api.AuthData{
-		EpochNum:   s.Session.SessionInfo.Epoch,
-		EpochToken: s.Session.SessionInfo.EpochToken,
-		OtherToken: s.Session.SessionInfo.RefreshToken,
-	}
+	authData := s.tokenData.toAuthData()
 
-	res, err := s.Client.SignerSessionRefreshWithResponse(context.Background(), s.OrgId, *authData, s.AddAuthHeaderFn())
+	res, err := s.client.SignerSessionRefreshWithResponse(context.Background(), s.OrgId, *authData, s.addAuthHeaderFn())
 	if err != nil {
 		return err
 	}
@@ -68,8 +76,52 @@ func (s *SignerServer) RefreshToken() error {
 		return fmt.Errorf("unexpected status code: %d", res.StatusCode())
 	}
 
-	s.Session = res.JSON200
-	return nil
+	s.tokenData.NewSessionResponse = *res.JSON200
+	return s.saveTokenData()
+}
+
+func (s *SignerServer) saveTokenData() error {
+	file, err := os.OpenFile(s.tokenFilePath, os.O_WRONLY, 0644)
+	if err != nil {
+		return err
+	}
+	defer file.Close()
+
+	return json.NewEncoder(file).Encode(s.tokenData)
+}
+
+func (s *SignerServer) StartBackgroundTokenRefresh(ctx context.Context) {
+	go func() {
+		for {
+			select {
+			case <-ctx.Done():
+				return
+			default:
+				expiryTime := time.Unix(int64(s.tokenData.SessionInfo.AuthTokenExp), 0)
+				waitDuration := time.Until(expiryTime) - time.Second
+
+				if waitDuration < 0 {
+					refreshExpiryTime := time.Unix(int64(s.tokenData.SessionInfo.RefreshTokenExp), 0)
+					if time.Until(refreshExpiryTime) < 0 {
+						log.Fatalf("Refresh token expired at %v", refreshExpiryTime)
+					}
+					waitDuration = 0
+				}
+
+				timer := time.NewTimer(waitDuration)
+				select {
+				case <-ctx.Done():
+					timer.Stop()
+					return
+				case <-timer.C:
+					if err := s.RefreshToken(); err != nil {
+						log.Printf("Failed to refresh token: %v", err)
+						continue
+					}
+				}
+			}
+		}
+	}()
 }
 
 func (s *SignerServer) PublicKey(ctx context.Context, in *signer.PublicKeyRequest) (*signer.PublicKeyResponse, error) {
@@ -81,7 +133,7 @@ func (s *SignerServer) PublicKey(ctx context.Context, in *signer.PublicKeyReques
 		return publicKeyRes, nil
 	}
 
-	rsp, err := s.Client.GetKeyInOrg(ctx, s.OrgId, s.KeyId, s.AddAuthHeaderFn())
+	rsp, err := s.client.GetKeyInOrg(ctx, s.OrgId, s.KeyId, s.addAuthHeaderFn())
 	if err != nil {
 		log.Println("Error getting key in org:", err)
 		return nil, err
@@ -119,7 +171,7 @@ type GetKeyInOrgResponse struct {
 }
 
 // modified version of `api.ParseGetKeyInOrgResponse`
-// this code can be removed if cubist fixes with openapi-spec
+// this code can be removed if cubist fixes the openapi-spec
 func parseGetKeyInOrgResponse(rsp *http.Response) (*GetKeyInOrgResponse, error) {
 	bodyBytes, err := io.ReadAll(rsp.Body)
 	defer func() { _ = rsp.Body.Close() }()
@@ -163,7 +215,7 @@ func (s *SignerServer) sign(ctx context.Context, bytes []byte, blsDst *string) (
 		BlsDst:        blsDst,
 	}
 
-	res, err := s.Client.BlobSignWithResponse(ctx, s.OrgId, s.KeyId, *blobSignReq, s.AddAuthHeaderFn())
+	res, err := s.client.BlobSignWithResponse(ctx, s.OrgId, s.KeyId, *blobSignReq, s.addAuthHeaderFn())
 	if err != nil {
 		return nil, err
 	}
