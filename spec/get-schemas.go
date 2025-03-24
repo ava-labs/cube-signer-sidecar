@@ -3,6 +3,8 @@ package main
 import (
 	"encoding/json"
 	"fmt"
+	"io"
+	"net/http"
 	"os"
 	"strings"
 )
@@ -45,10 +47,17 @@ func getRefs(obj any, refs *[]string) {
 }
 
 func main() {
-	// Read the OpenAPI JSON file
-	data, err := os.ReadFile("./spec/openapi.json")
+	// Get the OpenAPI JSON from GitHub
+	resp, err := http.Get("https://raw.githubusercontent.com/cubist-labs/CubeSigner-TypeScript-SDK/main/packages/sdk/spec/openapi.json")
 	if err != nil {
-		fmt.Println("Error reading file:", err)
+		fmt.Println("Error fetching spec:", err)
+		return
+	}
+	defer resp.Body.Close()
+
+	data, err := io.ReadAll(resp.Body)
+	if err != nil {
+		fmt.Println("Error reading response:", err)
 		return
 	}
 
