@@ -4,9 +4,6 @@ on:
   schedule:
     - cron: '0 0 * * *' # Runs at 00:00 UTC every day
   workflow_dispatch:
-  push: # TODO: delete me once verified that this part works
-    branches:
-      - '**'
 
 jobs:
   update-schemas:
