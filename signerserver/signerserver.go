@@ -44,10 +44,6 @@ func New(keyID string, tokenFilePath string, client *api.ClientWithResponses) (*
 		return nil, err
 	}
 
-	if len(tokenData.RawData) == 0 {
-		return nil, fmt.Errorf("no extra keys were deserialized")
-	}
-
 	return &SignerServer{
 		OrgID:         tokenData.OrgID,
 		KeyID:         keyID,
