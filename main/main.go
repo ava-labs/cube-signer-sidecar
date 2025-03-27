@@ -4,45 +4,22 @@ import (
 	"context"
 	"log"
 	"net"
-	"os"
+	"strconv"
 
 	"github.com/ava-labs/avalanchego/proto/pb/signer"
 	"github.com/ava-labs/cubist-signer/api"
+	"github.com/ava-labs/cubist-signer/config"
 	"github.com/ava-labs/cubist-signer/signerserver"
 	"google.golang.org/grpc"
 )
 
 func main() {
-	if err := runServer(getEnvArgs()); err != nil {
+	if err := runServer(config.GetEnvArgs()); err != nil {
 		log.Fatalf("failed to run server: %v", err)
 	}
 }
 
-func getEnvArgs() (string, string, string) {
-	tokenFilePath := os.Getenv("TOKEN_FILE_PATH")
-	if tokenFilePath == "" {
-		log.Fatal("TOKEN_FILE_PATH environment variable is not set")
-	}
-
-	_, err := os.Stat(tokenFilePath)
-	if err != nil {
-		log.Fatalf("failed to open token file: %w", err)
-	}
-
-	keyID := os.Getenv("KEY_ID")
-	if keyID == "" {
-		log.Fatal("KEY_ID environment variable is not set")
-	}
-
-	endpoint := os.Getenv("SIGNER_ENDPOINT")
-	if endpoint == "" {
-		log.Fatal("SIGNER_ENDPOINT environment variable is not set")
-	}
-
-	return tokenFilePath, keyID, endpoint
-}
-
-func runServer(tokenFilePath string, keyID string, endpoint string) error {
+func runServer(tokenFilePath string, keyID string, endpoint string, listenerPort uint16) error {
 	client, err := api.NewClientWithResponses(endpoint)
 	if err != nil {
 		log.Println("failed to create API client")
@@ -70,8 +47,10 @@ func runServer(tokenFilePath string, keyID string, endpoint string) error {
 	grpcServer := grpc.NewServer()
 	signer.RegisterSignerServer(grpcServer, signerServer)
 
-	// TODO: make configurable
-	lis, err := net.Listen("tcp", ":50051")
+	port := strconv.Itoa(int(listenerPort))
+
+	lc := net.ListenConfig{}
+	lis, err := lc.Listen(ctx, "tcp", ":"+port)
 	if err != nil {
 		log.Println("failed to start gRPC server")
 		return err
