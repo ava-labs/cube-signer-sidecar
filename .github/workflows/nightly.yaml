@@ -1,0 +1,42 @@
+name: Nightly
+
+on:
+  schedule:
+    - cron: '0 0 * * *' # Runs at 00:00 UTC every day
+  workflow_dispatch:
+
+jobs:
+  update-schemas:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+      - name: Set up Go
+        uses: actions/setup-go@v5
+        with:
+          go-version-file: go.mod
+          cache: true
+
+      - name: Run schema update
+        run: go run ./spec/get-schemas.go
+      - name: re-generate openapi client and types
+        run: go generate ./signerserver/signerserver.go
+      - name: Check changes
+        id: check_changes
+        shell: bash
+        run: |
+          diff=$(git diff --name-only HEAD)
+          printf "diff:\n%s\n" "$diff"
+          output=$(echo "$diff" | grep '^api/' || true)
+          if [ -n "$diff" ] && [ -n "$output" ]; then
+            echo "There are changes to the subset of Cubist's openapi specification that we care about."
+            echo "Check the following diff to see what changes need to be applied:"
+            git diff -- spec/filtered-openapi.json
+            echo ""
+            echo "Note:"
+            echo "Sometimes the changes can simply be related to error messages as the whole API uses a single error schema."
+            exit 1
+          else
+            echo "no changes"
+            exit 0
+          fi
