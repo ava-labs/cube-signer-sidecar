@@ -202,7 +202,7 @@ func parseGetKeyInOrgResponse(rsp *http.Response) (*GetKeyInOrgResponse, error) 
 	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && true:
 		var dest api.ErrorResponse
 		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
-			return nil, fmt.Errorf("failed to unmarhsal body: %w", err)
+			return nil, fmt.Errorf("failed to unmarshal body: %w", err)
 		}
 		response.JSONDefault = &dest
 
