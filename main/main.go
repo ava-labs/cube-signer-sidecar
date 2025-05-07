@@ -2,6 +2,7 @@ package main
 
 import (
 	"context"
+	"fmt"
 	"log"
 	"net"
 	"strconv"
@@ -22,21 +23,17 @@ func main() {
 func runServer(tokenFilePath string, keyID string, endpoint string, listenerPort uint16) error {
 	client, err := api.NewClientWithResponses(endpoint)
 	if err != nil {
-		log.Println("failed to create API client")
-		return err
+		return fmt.Errorf("failed to create API client: %w", err)
 	}
 
 	signerServer, err := signerserver.New(keyID, tokenFilePath, client)
 	if err != nil {
-		log.Println("failed to create signer server")
-		return err
+		return fmt.Errorf("failed to create signer server: %w", err)
 	}
 
 	err = signerServer.RefreshToken()
-
 	if err != nil {
-		log.Println("failed to refresh token")
-		return err
+		return fmt.Errorf("failed to refresh token: %w", err)
 	}
 
 	ctx, cancel := context.WithCancel(context.Background())
@@ -52,14 +49,12 @@ func runServer(tokenFilePath string, keyID string, endpoint string, listenerPort
 	lc := net.ListenConfig{}
 	lis, err := lc.Listen(ctx, "tcp", ":"+port)
 	if err != nil {
-		log.Println("failed to start gRPC server")
-		return err
+		return fmt.Errorf("failed to start gRPC server: %w", err)
 	}
 
-	log.Println("Starting gRPC server on port 50051...")
+	log.Printf("Starting gRPC server on port %s...", port)
 	if err := grpcServer.Serve(lis); err != nil {
-		log.Println("failed to serve")
-		return err
+		return fmt.Errorf("failed to serve: %w", err)
 	}
 
 	return nil

@@ -36,12 +36,12 @@ type SignerServer struct {
 func New(keyID string, tokenFilePath string, client *api.ClientWithResponses) (*SignerServer, error) {
 	tokenFile, err := os.Open(tokenFilePath)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("failed to open token file: %w", err)
 	}
 
 	var tokenData tokenData
 	if err := json.NewDecoder(tokenFile).Decode(&tokenData); err != nil {
-		return nil, err
+		return nil, fmt.Errorf("failed to decode token data: %w", err)
 	}
 
 	return &SignerServer{
@@ -65,7 +65,7 @@ func (s *SignerServer) RefreshToken() error {
 
 	res, err := s.client.SignerSessionRefreshWithResponse(context.Background(), s.OrgID, *authData, s.addAuthHeaderFn())
 	if err != nil {
-		return err
+		return fmt.Errorf("failed to refresh session: %w", err)
 	}
 
 	if res.JSON200 == nil {
@@ -79,9 +79,11 @@ func (s *SignerServer) RefreshToken() error {
 func (s *SignerServer) saveTokenData() error {
 	file, err := os.OpenFile(s.tokenFilePath, os.O_WRONLY, 0644)
 	if err != nil {
-		return err
+		return fmt.Errorf("failed to open token file: %w", err)
 	}
 	defer file.Close()
+
+	log.Println("Saving token data")
 
 	return json.NewEncoder(file).Encode(s.tokenData)
 }
@@ -95,6 +97,8 @@ func (s *SignerServer) StartBackgroundTokenRefresh(ctx context.Context) {
 			default:
 				expiryTime := time.Unix(int64(s.tokenData.SessionInfo.AuthTokenExp), 0)
 				waitDuration := time.Until(expiryTime) - time.Second
+
+				log.Printf("Waiting %s until refreshing token", waitDuration)
 
 				if waitDuration < 0 {
 					refreshExpiryTime := time.Unix(int64(s.tokenData.SessionInfo.RefreshTokenExp), 0)
@@ -121,7 +125,10 @@ func (s *SignerServer) StartBackgroundTokenRefresh(ctx context.Context) {
 }
 
 func (s *SignerServer) PublicKey(ctx context.Context, in *signer.PublicKeyRequest) (*signer.PublicKeyResponse, error) {
+	log.Println("Serving pubkey request")
+
 	if s.publicKey != nil {
+		log.Println("Returning cached pubkey")
 		publicKeyRes := &signer.PublicKeyResponse{
 			PublicKey: s.publicKey,
 		}
@@ -131,14 +138,12 @@ func (s *SignerServer) PublicKey(ctx context.Context, in *signer.PublicKeyReques
 
 	rsp, err := s.client.GetKeyInOrg(ctx, s.OrgID, s.KeyID, s.addAuthHeaderFn())
 	if err != nil {
-		log.Println("Error getting key in org:", err)
-		return nil, err
+		return nil, fmt.Errorf("failed to get key in org: %w", err)
 	}
 
 	res, err := parseGetKeyInOrgResponse(rsp)
 	if err != nil {
-		log.Println("Error parsing GetKeyInOrg response:", err)
-		return nil, err
+		return nil, fmt.Errorf("failed to parse GetKeyInOrg response: %w", err)
 	}
 
 	if res.JSONDefault != nil {
@@ -147,8 +152,10 @@ func (s *SignerServer) PublicKey(ctx context.Context, in *signer.PublicKeyReques
 
 	publicKey, err := hex.DecodeString(res.JSON200.PublicKey[2:])
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("failed to decode public key: %w", err)
 	}
+
+	log.Println("Public key: ", hex.EncodeToString(publicKey))
 
 	s.publicKey = publicKey
 
@@ -172,7 +179,7 @@ func parseGetKeyInOrgResponse(rsp *http.Response) (*GetKeyInOrgResponse, error) 
 	bodyBytes, err := io.ReadAll(rsp.Body)
 	defer func() { _ = rsp.Body.Close() }()
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("failed to read response body: %w", err)
 	}
 
 	inner := api.GetKeyInOrgResponse{
@@ -188,14 +195,14 @@ func parseGetKeyInOrgResponse(rsp *http.Response) (*GetKeyInOrgResponse, error) 
 	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
 		var dest KeyInfo
 		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
-			return nil, err
+			return nil, fmt.Errorf("failed to unmarshal body: %w", err)
 		}
 		response.JSON200 = &dest
 
 	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && true:
 		var dest api.ErrorResponse
 		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
-			return nil, err
+			return nil, fmt.Errorf("failed to unmarshal body: %w", err)
 		}
 		response.JSONDefault = &dest
 
@@ -205,6 +212,8 @@ func parseGetKeyInOrgResponse(rsp *http.Response) (*GetKeyInOrgResponse, error) 
 }
 
 func (s *SignerServer) sign(ctx context.Context, bytes []byte, blsDst *string) ([]byte, error) {
+	log.Println("Signing: ", hex.EncodeToString(bytes))
+
 	msg := base64.StdEncoding.EncodeToString(bytes)
 	blobSignReq := &api.BlobSignRequest{
 		MessageBase64: msg,
@@ -213,7 +222,7 @@ func (s *SignerServer) sign(ctx context.Context, bytes []byte, blsDst *string) (
 
 	res, err := s.client.BlobSignWithResponse(ctx, s.OrgID, s.KeyID, *blobSignReq, s.addAuthHeaderFn())
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("failed to sign blob: %w", err)
 	}
 
 	if res.JSON200 == nil {
@@ -226,7 +235,7 @@ func (s *SignerServer) sign(ctx context.Context, bytes []byte, blsDst *string) (
 func (s *SignerServer) Sign(ctx context.Context, in *signer.SignRequest) (*signer.SignResponse, error) {
 	signature, err := s.sign(ctx, in.Message, nil)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("failed to sign: %w", err)
 	}
 
 	return &signer.SignResponse{
@@ -237,7 +246,7 @@ func (s *SignerServer) Sign(ctx context.Context, in *signer.SignRequest) (*signe
 func (s *SignerServer) SignProofOfPossession(ctx context.Context, in *signer.SignProofOfPossessionRequest) (*signer.SignProofOfPossessionResponse, error) {
 	signature, err := s.sign(ctx, in.Message, &popDst)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("failed to sign: %w", err)
 	}
 
 	return &signer.SignProofOfPossessionResponse{
