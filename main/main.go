@@ -18,13 +18,13 @@ import (
 func main() {
 	fs := config.BuildFlagSet()
 	if err := fs.Parse(os.Args[1:]); err != nil {
-		panic(fmt.Errorf("couldn't parse flags: %w", err))
+		log.Fatalf("couldn't parse flags: %s", err)
 	}
 
 	// If the help flag is set, output the usage text then exit
 	help, err := fs.GetBool(config.HelpKey)
 	if err != nil {
-		panic(fmt.Errorf("error reading %s flag value: %w", config.HelpKey, err))
+		log.Fatalf("error reading %s flag value: %s", config.HelpKey, err)
 	}
 
 	if help {
@@ -34,12 +34,12 @@ func main() {
 
 	v, err := config.BuildViper(fs)
 	if err != nil {
-		panic(fmt.Errorf("couldn't configure flags: %w", err))
+		log.Fatalf("couldn't configure flags: %s", err)
 	}
 
 	cfg, err := config.NewConfig(v)
 	if err != nil {
-		panic(fmt.Errorf("couldn't build config: %w", err))
+		log.Fatalf("couldn't build config: %s", err)
 	}
 
 	if err := runServer(cfg); err != nil {
