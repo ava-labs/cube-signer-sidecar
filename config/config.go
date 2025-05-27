@@ -25,10 +25,11 @@ func (cfg *Config) Validate() error {
 		return fmt.Errorf("token-file-path is required")
 	}
 
-	// Just check for existence of the file here
+	// Just check for existence and permissions of the file here
 	// Any other potential errors will be caught at time of usage
-	if _, err := os.Stat(cfg.TokenFilePath); os.IsNotExist(err) {
-		return fmt.Errorf("token-file-path does not exist: %s", cfg.TokenFilePath)
+	_, err := os.Stat(cfg.TokenFilePath)
+	if os.IsNotExist(err) || os.IsPermission(err) {
+		return fmt.Errorf("token-file-path cannot be accessed: %s", cfg.TokenFilePath)
 	}
 
 	if cfg.KeyID == "" {
