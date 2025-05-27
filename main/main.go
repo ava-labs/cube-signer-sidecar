@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"log"
 	"net"
+	"os"
 	"strconv"
 
 	"github.com/ava-labs/avalanchego/proto/pb/signer"
@@ -15,18 +16,44 @@ import (
 )
 
 func main() {
-	if err := runServer(config.GetEnvArgs()); err != nil {
+	fs := config.BuildFlagSet()
+	if err := fs.Parse(os.Args[1:]); err != nil {
+		log.Fatalf("couldn't parse flags: %s", err)
+	}
+
+	// If the help flag is set, output the usage text then exit
+	help, err := fs.GetBool(config.HelpKey)
+	if err != nil {
+		log.Fatalf("error reading %s flag value: %s", config.HelpKey, err)
+	}
+
+	if help {
+		fs.Usage()
+		os.Exit(0)
+	}
+
+	v, err := config.BuildViper(fs)
+	if err != nil {
+		log.Fatalf("couldn't configure flags: %s", err)
+	}
+
+	cfg, err := config.NewConfig(v)
+	if err != nil {
+		log.Fatalf("couldn't build config: %s", err)
+	}
+
+	if err := runServer(cfg); err != nil {
 		log.Fatalf("failed to run server: %v", err)
 	}
 }
 
-func runServer(tokenFilePath string, keyID string, endpoint string, listenerPort uint16) error {
-	client, err := api.NewClientWithResponses(endpoint)
+func runServer(cfg config.Config) error {
+	client, err := api.NewClientWithResponses(cfg.SignerEndpoint)
 	if err != nil {
 		return fmt.Errorf("failed to create API client: %w", err)
 	}
 
-	signerServer, err := signerserver.New(keyID, tokenFilePath, client)
+	signerServer, err := signerserver.New(cfg.KeyID, cfg.TokenFilePath, client)
 	if err != nil {
 		return fmt.Errorf("failed to create signer server: %w", err)
 	}
@@ -44,7 +71,7 @@ func runServer(tokenFilePath string, keyID string, endpoint string, listenerPort
 	grpcServer := grpc.NewServer()
 	signer.RegisterSignerServer(grpcServer, signerServer)
 
-	port := strconv.Itoa(int(listenerPort))
+	port := strconv.Itoa(int(cfg.Port))
 
 	lc := net.ListenConfig{}
 	lis, err := lc.Listen(ctx, "tcp", ":"+port)

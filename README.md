@@ -73,10 +73,12 @@ cs token create --role-id <role_id> > <path_to_token_file>.json
 
 ### Configuration
 
-Currently, there are three necessary environment variables used for
-configuration:
+Below is a list of configuration options that can be set via a JSON config file passed in via `--config-file` flag or set through environment variables or flags. To get the environment variable corresponding to the key uppercase the key and change the delimiter from "-" to "_". The following precedence order is used, with each item taking precedence over items below it:
+1. Flags
+2. Environment variables
+3. Config file
 
-- `TOKEN_FILE_PATH`:
+- `"token-file-path": string` (required)
 
   This is the relative path (absolute paths also work) to the token file, we
   created from the last step above.
@@ -87,17 +89,21 @@ configuration:
   refreshed as needed. To change any of the default token parameters, see
   `cs token create --help`.
 
-- `SIGNER_ENDPOINT`:
+- `"signer-endpoint": string` (required)
 
   This is the Cubist-API endpoint.
 
-- `KEY_ID`:
+- `"key-id": string` (required)
 
   The `cubist-signer` (this repo) can only use one key at a time as an
   `avalanchego` validator is only meant to have a single BLS signing key.
   Specifying the `KEY_ID` is how the Cubist-API knows what key to use for
   signing. The `role` associated with the `role_id` filed in the token JSON will
   need access to this key (see [Configuration](#configuration))
+
+- `"port": int` (defaults to 50051)
+
+  Port at which to start the local signer server.
 
 ### Usage
 
