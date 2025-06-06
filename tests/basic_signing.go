@@ -25,7 +25,7 @@ func BasicSigning(log logging.Logger) {
 	cancelFn := utils.RunSigner(context.Background(), configPath)
 	defer cancelFn()
 
-	clientConn, err := grpc.NewClient("localhost:50051", grpc.WithTransportCredentials(insecure.NewCredentials()))
+	clientConn, err := grpc.NewClient("127.0.0.1:50051", grpc.WithTransportCredentials(insecure.NewCredentials()))
 	Expect(err).Should(BeNil())
 
 	// wait for the signer to start
