@@ -116,3 +116,15 @@ export KEY_ID=Key#BlsAvaIcm_0x...
 
 TOKEN_FILE_PATH="./token.json" go run main/main.go
 ```
+
+### E2E tests
+
+#### Running Locally
+To run E2E locally follow the steps in [Key Creation](#key-creation) above to generate a new key associated with the `e2e_signer` role and generate a session token file saved as `e2e_session.json`. After that the tests can be run via 
+
+```bash
+./scripts/e2e_test.sh
+```
+
+#### CI
+The session token is stored in Github secrets. It currently expires on 6/05/2026. When it does a new token can be generated and stored there. 

@@ -1,12 +1,17 @@
 package signerserver
 
 import (
+	"context"
+	"crypto/rand"
 	"encoding/json"
 	"fmt"
 	"testing"
 
+	"github.com/ava-labs/avalanchego/utils/crypto/bls/signer/rpcsigner"
 	"github.com/ava-labs/cubist-signer/api"
 	"github.com/stretchr/testify/require"
+	"google.golang.org/grpc"
+	"google.golang.org/grpc/credentials/insecure"
 )
 
 const (
@@ -87,4 +92,21 @@ func TestTokenDataMarshalJSON(t *testing.T) {
 	require.NoError(err)
 
 	require.EqualValues(originalMap, marshaledMap)
+}
+
+func TestConn(t *testing.T) {
+	clientConn, err := grpc.NewClient("localhost:50051", grpc.WithTransportCredentials(insecure.NewCredentials()))
+	require.NoError(t, err)
+
+	signerClient, err := rpcsigner.NewClient(context.Background(), clientConn)
+	require.NoError(t, err)
+
+	// generate random bytes
+	msg := make([]byte, 32)
+	_, err = rand.Read(msg)
+	require.NoError(t, err)
+
+	sig, err := signerClient.Sign(msg)
+	require.NoError(t, err)
+	require.NotNil(t, sig)
 }
