@@ -1,6 +1,6 @@
 module github.com/ava-labs/cubist-signer
 
-go 1.23.6
+go 1.23.10
 
 require (
 	github.com/ava-labs/avalanchego v1.13.0
