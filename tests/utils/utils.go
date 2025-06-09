@@ -1,6 +1,7 @@
 package utils
 
 import (
+	"bufio"
 	"context"
 	"encoding/json"
 	"fmt"
@@ -58,8 +59,30 @@ func CreateDefaultConfig() *config.Config {
 func RunSigner(ctx context.Context, cfgPath string) context.CancelFunc {
 	cmdCtx, cancelFn := context.WithCancel(ctx)
 	cmd := exec.CommandContext(cmdCtx, "./build/cubist-signer", "--config-file", cfgPath)
+
+	// Set up a pipe to capture the command's output
+	cmdStdOutReader, err := cmd.StdoutPipe()
+	Expect(err).Should(BeNil())
+	cmdStdErrReader, err := cmd.StderrPipe()
+	Expect(err).Should(BeNil())
+
 	fmt.Println("Running cubist signer, cmd:", cmd.String())
-	err := cmd.Start()
+	err = cmd.Start()
+
+	go func() {
+		scanner := bufio.NewScanner(cmdStdOutReader)
+		for scanner.Scan() {
+			fmt.Println(scanner.Text())
+		}
+	}()
+
+	go func() {
+		scanner := bufio.NewScanner(cmdStdErrReader)
+		for scanner.Scan() {
+			fmt.Println(scanner.Text())
+		}
+	}()
+
 	Expect(err).Should(BeNil())
 
 	return func() {
