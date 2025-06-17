@@ -3,7 +3,7 @@ module github.com/ava-labs/cubist-signer
 go 1.23.10
 
 require (
-	github.com/ava-labs/avalanchego v1.13.0
+	github.com/ava-labs/avalanchego v1.13.1
 	github.com/oapi-codegen/oapi-codegen/v2 v2.4.1
 	github.com/oapi-codegen/runtime v1.1.1
 	github.com/spf13/pflag v1.0.6
@@ -37,7 +37,7 @@ require (
 	github.com/spf13/afero v1.12.0 // indirect
 	github.com/spf13/cast v1.7.1 // indirect
 	github.com/subosito/gotenv v1.6.0 // indirect
-	github.com/supranational/blst v0.3.13 // indirect
+	github.com/supranational/blst v0.3.14 // indirect
 	github.com/vmware-labs/yaml-jsonpath v0.3.2 // indirect
 	go.uber.org/multierr v1.11.0 // indirect
 	golang.org/x/mod v0.22.0 // indirect
@@ -45,7 +45,7 @@ require (
 	golang.org/x/sync v0.12.0 // indirect
 	golang.org/x/sys v0.31.0 // indirect
 	golang.org/x/text v0.23.0 // indirect
-	golang.org/x/tools v0.28.0 // indirect
+	golang.org/x/tools v0.29.0 // indirect
 	google.golang.org/genproto/googleapis/rpc v0.0.0-20250324211829-b45e905df463 // indirect
 	google.golang.org/protobuf v1.36.6 // indirect
 	gopkg.in/yaml.v2 v2.4.0 // indirect
