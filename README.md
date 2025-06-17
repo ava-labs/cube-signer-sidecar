@@ -127,4 +127,4 @@ To run E2E locally follow the steps in [Key Creation](#key-creation) above to ge
 ```
 
 #### CI
-The base64 encoded session token is stored in Github secrets. It currently expires on 6/05/2026. When it does a new token can be generated and stored there.
+The base64 encoded session token is stored in Github secrets. It currently expires on 6/05/2026. When it expires, a new token can be generated and stored there.

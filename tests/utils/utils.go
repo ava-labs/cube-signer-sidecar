@@ -46,14 +46,12 @@ func WriteConfig(cfg *config.Config, fname string) string {
 }
 
 func CreateDefaultConfig() *config.Config {
-	cfg := config.Config{
+	return &config.Config{
 		TokenFilePath:  DefaultTokenPath,
 		KeyID:          DefaultKeyID,
 		SignerEndpoint: DefaultSignerEndpoint,
 		Port:           DefaultPort,
 	}
-
-	return &cfg
 }
 
 func RunSigner(ctx context.Context, cfgPath string) context.CancelFunc {
