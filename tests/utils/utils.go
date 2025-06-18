@@ -5,11 +5,11 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"log"
 	"os"
 	"os/exec"
 
 	"github.com/ava-labs/cubist-signer/config"
-	"github.com/ethereum/go-ethereum/log"
 	. "github.com/onsi/gomega"
 )
 
@@ -24,9 +24,9 @@ const (
 
 func BuildCubistSigner() {
 	cmd := exec.Command("./scripts/build.sh")
-	log.Info("Building cubist signer")
+	log.Println("Building cubist signer")
 	out, err := cmd.CombinedOutput()
-	log.Info(string(out))
+	log.Println(string(out))
 	Expect(err).Should(BeNil())
 }
 
@@ -64,7 +64,7 @@ func RunSigner(ctx context.Context, cfgPath string) context.CancelFunc {
 	cmdStdErrReader, err := cmd.StderrPipe()
 	Expect(err).Should(BeNil())
 
-	fmt.Println("Running cubist signer, cmd:", cmd.String())
+	log.Println("Running cubist signer, cmd:", cmd.String())
 	err = cmd.Start()
 	Expect(err).Should(BeNil())
 
