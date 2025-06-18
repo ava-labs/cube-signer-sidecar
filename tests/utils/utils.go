@@ -66,6 +66,7 @@ func RunSigner(ctx context.Context, cfgPath string) context.CancelFunc {
 
 	fmt.Println("Running cubist signer, cmd:", cmd.String())
 	err = cmd.Start()
+	Expect(err).Should(BeNil())
 
 	go func() {
 		scanner := bufio.NewScanner(cmdStdOutReader)
@@ -81,11 +82,8 @@ func RunSigner(ctx context.Context, cfgPath string) context.CancelFunc {
 		}
 	}()
 
-	Expect(err).Should(BeNil())
-
 	return func() {
 		cancelFn()
-		<-cmdCtx.Done()
 		cmd.Wait()
 	}
 }

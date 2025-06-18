@@ -17,7 +17,6 @@ import (
 )
 
 func BasicSigning(log logging.Logger) {
-	log.Info("Basic signing")
 	cfg := utils.CreateDefaultConfig()
 	configPath := utils.WriteConfig(cfg, utils.DefaultSignerConfigFileName)
 	log.Info("Config written", zap.String("path", configPath))
