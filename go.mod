@@ -3,7 +3,7 @@ module github.com/ava-labs/cubist-signer
 go 1.23.10
 
 require (
-	github.com/ava-labs/avalanchego v1.13.1
+	github.com/ava-labs/avalanchego v1.13.2
 	github.com/oapi-codegen/oapi-codegen/v2 v2.4.1
 	github.com/oapi-codegen/runtime v1.1.1
 	github.com/spf13/pflag v1.0.6
