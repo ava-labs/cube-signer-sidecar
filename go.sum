@@ -1,8 +1,8 @@
 github.com/RaveNoX/go-jsoncommentstrip v1.0.0/go.mod h1:78ihd09MekBnJnxpICcwzCMzGrKSKYe4AqU6PDYYpjk=
 github.com/apapsch/go-jsonmerge/v2 v2.0.0 h1:axGnT1gRIfimI7gJifB699GoE/oq+F2MU7Dml6nw9rQ=
 github.com/apapsch/go-jsonmerge/v2 v2.0.0/go.mod h1:lvDnEdqiQrp0O42VQGgmlKpxL1AP2+08jFMw88y4klk=
-github.com/ava-labs/avalanchego v1.13.1 h1:sviA3MJbY00xYl77ru4vs9yiz7uTnAYfHpqYFucoXEE=
-github.com/ava-labs/avalanchego v1.13.1/go.mod h1:h8VRoqOhLRzqSlBpgFSOtCIu2Hey2FxgjD3pBkOXOY8=
+github.com/ava-labs/avalanchego v1.13.2 h1:Kx/T2a8vqLlgHde3DWT5zMF5yBIh1rqEd6nJQMMzV/Y=
+github.com/ava-labs/avalanchego v1.13.2/go.mod h1:s7W/kim5L6hiD2PB1v/Ozy1ZZyoLQ4H6mxVO0aMnxng=
 github.com/bmatcuk/doublestar v1.1.1/go.mod h1:UD6OnuiIn0yFxxA2le/rnRU1G4RaI4UvFv1sNto9p6w=
 github.com/chzyer/logex v1.1.10/go.mod h1:+Ywpsq7O8HXn0nuIou7OrIPyXbp3wmkHB+jjWRnGsAI=
 github.com/chzyer/readline v0.0.0-20180603132655-2972be24d48e/go.mod h1:nSuG5e5PlCu98SY8svDHJxuZscDgtXS6KTTbou5AhLI=
