@@ -24,8 +24,8 @@ directory.
 ## Testing
 
 Currently, the only way to test the code is using
-[this PR](https://github.com/ava-labs/avalanchego/pull/3725) where you have to
-set the `--staking-rpc-signer=127.0.0.1:50051` configuration flag. You must
+[this PR](https://github.com/ava-labs/avalanchego/pull/3965) where you have to
+set the `--staking-rpc-signer-endpoint=127.0.0.1:50051` configuration flag. You must
 first start this application before starting the `avalanchego` node.
 
 ## Running
@@ -74,6 +74,7 @@ cs token create --role-id <role_id> > <path_to_token_file>.json
 ### Configuration
 
 Below is a list of configuration options that can be set via a JSON config file passed in via `--config-file` flag or set through environment variables or flags. To get the environment variable corresponding to the key uppercase the key and change the delimiter from "-" to "_". The following precedence order is used, with each item taking precedence over items below it:
+
 1. Flags
 2. Environment variables
 3. Config file
