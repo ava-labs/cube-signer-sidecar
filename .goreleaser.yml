@@ -36,14 +36,14 @@ builds:
           - CC=o64-clang
 dockers:
   - image_templates:
-    - 'avaplatform/cubist-signer:{{ .Tag }}-amd64'
+    - 'avaplatform/cubist-signer-sidecar:{{ .Tag }}-amd64'
     use: buildx
     build_flag_templates:
     - "--pull"
     - "--platform=linux/amd64"
     dockerfile: "Dockerfile"
   - image_templates:
-    - 'avaplatform/cubist-signer:{{ .Tag }}-arm64'
+    - 'avaplatform/cubist-signer-sidecar:{{ .Tag }}-arm64'
     use: buildx
     build_flag_templates:
     - "--pull"
@@ -51,14 +51,14 @@ dockers:
     dockerfile: "Dockerfile"
     goarch: arm64
 docker_manifests:
-  - name_template: 'avaplatform/cubist-signer:{{ .Tag }}'
+  - name_template: 'avaplatform/cubist-signer-sidecar:{{ .Tag }}'
     image_templates:
-    - 'avaplatform/cubist-signer:{{ .Tag }}-amd64'
-    - 'avaplatform/cubist-signer:{{ .Tag }}-arm64'
-  - name_template: 'avaplatform/cubist-signer:latest'
+    - 'avaplatform/cubist-signer-sidecar:{{ .Tag }}-amd64'
+    - 'avaplatform/cubist-signer-sidecar:{{ .Tag }}-arm64'
+  - name_template: 'avaplatform/cubist-signer-sidecar:latest'
     image_templates:
-    - 'avaplatform/cubist-signer:{{ .Tag }}-amd64'
-    - 'avaplatform/cubist-signer:{{ .Tag }}-arm64'
+    - 'avaplatform/cubist-signer-sidecar:{{ .Tag }}-amd64'
+    - 'avaplatform/cubist-signer-sidecar:{{ .Tag }}-arm64'
     # If tag is an rc, do not push the latest tag
     skip_push: auto
 release:
