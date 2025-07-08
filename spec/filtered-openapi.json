@@ -51,9 +51,7 @@
                           }
                         }
                       ],
-                      "items": {
-                        "type": "object"
-                      },
+                      "items": {},
                       "type": "array"
                     },
                     "public_key": {
@@ -97,6 +95,14 @@
                   "format": "int64",
                   "minimum": 0,
                   "type": "integer"
+                },
+                "org_id": {
+                  "allOf": [
+                    {
+                      "$ref": "#/components/schemas/Id"
+                    }
+                  ],
+                  "nullable": true
                 },
                 "refresh_token": {
                   "description": "Token that can be used to refresh this session.",
@@ -247,6 +253,8 @@
         "enum": [
           "GenericBadRequest",
           "InvalidPaginationToken",
+          "InvalidEmail",
+          "InvalidEmailTemplate",
           "QueryMetricsError",
           "InvalidTelegramData",
           "QueryMetricsValidationError",
@@ -279,16 +287,24 @@
           "OrgIsNotOrgExport",
           "RoleNameTaken",
           "PolicyNameTaken",
+          "NameTaken",
+          "ContactNameInvalid",
+          "InvalidBtcAddressForChain",
           "PolicyNotFound",
           "PolicyVersionNotFound",
           "PolicyRuleDisallowedByType",
           "PolicyTypeDisallowed",
+          "PolicyDuplicateError",
+          "PolicyStillAttached",
+          "PolicyModified",
+          "PolicyNotAttached",
           "AddKeyToRoleCountTooHigh",
           "InvalidKeyId",
           "InvalidTimeLockAlreadyInThePast",
           "InvalidRestrictedScopes",
           "InvalidUpdate",
           "InvalidMetadataLength",
+          "InvalidLength",
           "InvalidKeyMaterialId",
           "KeyNotFound",
           "UserExportDerivedKey",
@@ -310,6 +326,9 @@
           "InvalidEthAddress",
           "InvalidStellarAddress",
           "InvalidOrgNameOrId",
+          "InvalidUpdateOrgRequestDisallowedMfaType",
+          "InvalidUpdateOrgRequestEmptyAllowedMfaTypes",
+          "EmailOtpDelayTooShortForRegisterMfa",
           "InvalidStakeDeposit",
           "InvalidBlobSignRequest",
           "InvalidSolanaSignRequest",
@@ -327,6 +346,7 @@
           "IdpUserAlreadyExists",
           "CognitoUserAlreadyOrgMember",
           "UserNotFound",
+          "UserWithEmailNotFound",
           "PolicyKeyMismatch",
           "PolicyRuleKeyMismatch",
           "EmptyScopes",
@@ -403,21 +423,27 @@
           "BabylonStaking",
           "BabylonStakingIncorrectKey",
           "BabylonStakingSegwitNonDeposit",
+          "BabylonStakingRegistrationRequiresTaproot",
           "PsbtSigning",
           "TooManyResets",
+          "TooManyRequests",
           "TooManyFailedLogins",
           "BadBtcMessageSignP2shFlag",
           "InvalidTendermintRequest",
           "PolicyVersionMaxReached",
           "PolicyVersionInvalid",
-          "PolicyAlienOwnerInvalid",
+          "AlienOwnerInvalid",
           "EmptyUpdateRequest",
           "InvalidPolicyReference",
           "PolicyEngineDisabled",
           "InvalidWasmPolicy",
           "RedundantDerivationPath",
           "ImportKeyMissing",
-          "InvalidAbiMethods"
+          "InvalidAbiMethods",
+          "BabylonCovSign",
+          "InvalidPolicyLogsRequest",
+          "UserProfileMigrationMultipleEntries",
+          "UserProfileMigrationTooManyItems"
         ],
         "type": "string"
       },
@@ -434,6 +460,12 @@
           },
           {
             "properties": {
+              "adaptor_pk": {
+                "description": "An optional base64 string comprising a SEC1-encoded secp256k1 public key.\nThis field can be used *only* with Schnorr keys.\n\nIf this field is present, the response will be a Schnorr adaptor signature\nin the format specified by Blockstream for use in libsecp256k1-zkp. See\n\u003chttps://github.com/ZhePang/Python_Specification_for_Schnorr_Adaptor/\u003e\nfor more information.",
+                "example": "Arny4WoHDNBVXYcynhNl9/y7JttJ2rk0CCRfLR7t3aDg",
+                "nullable": true,
+                "type": "string"
+              },
               "bls_dst": {
                 "description": "An optional domain separation tag for use *only* with BLS signing requests.\nThis field must not be supplied for requests involving non-BLS key types.\n\nIf this field is not present or null, the domain separation tag specified in\nthe IETF BLS Signatures draft versions 4 and 5, section 4.2.3 (minimal pubkey\nsize variant) is used.\n\nOtherwise, this field must contain a base-64 string encoding a non-empty byte\nvector. When using a custom tag, RFC9380 (Section 3.1) recommends a length of\nat least 16 bytes.",
                 "example": "EbbLvCxI7gan71iISDsfr46etOv606QkGGDP5PpVl5Q=",
@@ -543,6 +575,13 @@
         },
         "type": "object"
       },
+      "ConflictErrorCode": {
+        "enum": [
+          "ConcurrentRequestDisallowed",
+          "ConcurrentLockCreation"
+        ],
+        "type": "string"
+      },
       "EditPolicy": {
         "description": "A policy which governs when and who is allowed to update the entity this policy is\nattached to (e.g., a role or a key).\n\nWhen attached to a role, by default, this policy applies to role deletion and all\nrole updates (including adding/removing keys and users); in terms of scopes,\nit applies to `manage:role:update:*` and `manage:role:delete`.\n\nWhen attached to a key, by default, this policy applies to key deletion, all\nkey updates, and adding/removing that key to/from a role; in terms of scopes,\nit applies to `manage:key:update:*`, `manage:key:delete`, `manage:role:update:key:*`.\n\nThis default can be changed by setting the `applies_to_scopes` property.",
         "properties": {
@@ -649,9 +688,13 @@
         "enum": [
           "CannotAssumeIdentity",
           "SentryDisallowed",
+          "PasskeyLoginDisabled",
+          "PasskeyNotRegistered",
           "CannotCreateOrg",
           "WrongMfaEmailOtpJwt",
+          "OrgFlagNotSet",
           "FidoRequiredToRemoveTotp",
+          "OidcIdentityLimitReached",
           "OidcScopeCeilingMissing",
           "OidcIssuerNotAllowedForMemberRole",
           "OidcNoMemberRolesAllowed",
@@ -664,7 +707,6 @@
           "SelfDelete",
           "SelfDisable",
           "InvalidOrgMembershipRoleChange",
-          "UserMfaNotConfigured",
           "UserDisabled",
           "OrgDisabled",
           "OrgNotFound",
@@ -677,11 +719,11 @@
           "InvalidRole",
           "DisabledRole",
           "KeyDisabled",
-          "RoleNotInOrg",
           "KeyNotInRole",
-          "KeyNotInOrg",
+          "ContactNotInOrg",
           "UserExportRequestNotInOrg",
           "UserExportRequestInvalid",
+          "UserExportDisabled",
           "UserNotOriginalKeyOwner",
           "UserNotInRole",
           "MustBeFullMember",
@@ -707,6 +749,8 @@
           "MfaConfirmationCodeMismatch",
           "MfaHttpRequestMismatch",
           "MfaRemoveBelowMin",
+          "MfaOrgRequirementNotMet",
+          "MfaRegistrationDisallowed",
           "TotpAlreadyConfigured",
           "TotpConfigurationChanged",
           "MfaTotpBadConfiguration",
@@ -716,14 +760,17 @@
           "FullSessionRequired",
           "SessionWithoutAnyScopeUnder",
           "UserRoleUnprivileged",
+          "MemberRoleForbidden",
           "MfaNotConfigured",
           "RemoveLastOidcIdentity",
           "OperationNotAllowed",
           "OrgExportRetrievalDisabled",
           "AutoAddBlsKeyToProtectedRole",
           "UserNotPolicyOwner",
+          "UserNotContactOwner",
           "LegacySessionCannotHaveScopeCeiling",
-          "RoleInParentOrgNotAllowed"
+          "RoleInParentOrgNotAllowed",
+          "RemoveKeyFromRoleUserNotAllowed"
         ],
         "type": "string"
       },
@@ -761,9 +808,13 @@
           }
         ]
       },
+      "Id": {
+        "type": "string"
+      },
       "InternalErrorCode": {
         "enum": [
           "NoMaterialId",
+          "FidoKeyAssociatedWithMultipleUsers",
           "ClaimsParseError",
           "InvalidThrottleId",
           "InvalidEmailAddress",
@@ -784,7 +835,6 @@
           "DbUpdateError",
           "SerdeError",
           "TestAndSetError",
-          "ConcurrentLockCreation",
           "DbGetItemsError",
           "DbWriteError",
           "CubistSignerError",
@@ -801,6 +851,7 @@
           "CreateImportKeyError",
           "CreateEotsNoncesError",
           "EotsSignError",
+          "BabylonCovSignError",
           "CognitoDeleteUserError",
           "CognitoListUsersError",
           "CognitoGetUserError",
@@ -822,6 +873,9 @@
           "S3UploadError",
           "S3DownloadError",
           "S3CopyError",
+          "S3ListObjectsError",
+          "S3DeleteObjectsError",
+          "S3BuildError",
           "S3PresignedUrlError",
           "ManagedStateMissing",
           "InternalHeaderMissing",
@@ -855,7 +909,10 @@
           "PolicyEngineNotFound",
           "PolicyEngineError",
           "PolicySecretsEncryptionError",
-          "CreatePolicyImportKeyError"
+          "CreatePolicyImportKeyError",
+          "InvalidAlias",
+          "EmptyUpdateModifiedObject",
+          "EmptyUpdateModifiedActions"
         ],
         "type": "string"
       },
@@ -898,6 +955,7 @@
           "Mnemonic",
           "Stark",
           "BabylonEots",
+          "BabylonCov",
           "TaprootBtc",
           "TaprootBtcTest",
           "SecpCosmosAddr",
@@ -912,7 +970,11 @@
           "SecpKaspaAddr",
           "SecpKaspaTestAddr",
           "SchnorrKaspaAddr",
-          "SchnorrKaspaTestAddr"
+          "SchnorrKaspaTestAddr",
+          "SecpLtc",
+          "SecpLtcTest",
+          "SecpXrpAddr",
+          "Ed25519XrpAddr"
         ],
         "type": "string"
       },
@@ -974,58 +1036,10 @@
         "type": "object"
       },
       "MfaType": {
-        "oneOf": [
-          {
-            "description": "Log in with CubeSigner user credentials",
-            "enum": [
-              "CubeSigner"
-            ],
-            "type": "string"
-          },
-          {
-            "description": "Provide TOTP code",
-            "enum": [
-              "Totp"
-            ],
-            "type": "string"
-          },
-          {
-            "description": "Provide OTP code sent via email",
-            "enum": [
-              "EmailOtp"
-            ],
-            "type": "string"
-          },
-          {
-            "description": "Answer a FIDO challenge using any registered FIDO key",
-            "enum": [
-              "Fido"
-            ],
-            "type": "string"
-          },
-          {
-            "properties": {
-              "FidoKey": {
-                "description": "Answer a FIDO challenge with a specific FIDO key",
-                "properties": {
-                  "key_id": {
-                    "description": "The ID of the FIDO key that must be use to approve the request",
-                    "example": "FidoKey#EtDd...ZZc8=",
-                    "type": "string"
-                  }
-                },
-                "required": [
-                  "key_id"
-                ],
-                "type": "object"
-              }
-            },
-            "required": [
-              "FidoKey"
-            ],
-            "type": "object"
-          }
-        ]
+        "description": "Different types that can be used to approve an MFA request",
+        "format": "'CubeSigner' | 'Fido' | `FidoKey#${string}` | 'Totp' | 'EmailOtp' | `EmailOtp#${number}`",
+        "pattern": "^(CubeSigner|Totp|EmailOtp|EmailOtp#\\d+|Fido|FidoKey#[^#\\s]+)$",
+        "type": "string"
       },
       "NewSessionResponse": {
         "description": "Information about a new session, returned from multiple endpoints (e.g., login, refresh, etc.).",
@@ -1036,6 +1050,14 @@
             "format": "int64",
             "minimum": 0,
             "type": "integer"
+          },
+          "org_id": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/Id"
+              }
+            ],
+            "nullable": true
           },
           "refresh_token": {
             "description": "Token that can be used to refresh this session.",
@@ -1077,6 +1099,8 @@
         "enum": [
           "AvaSign",
           "AvaChainTxSign",
+          "BabylonCovSign",
+          "BabylonRegistration",
           "BabylonStaking",
           "BlobSign",
           "BtcMessageSign",
@@ -1169,6 +1193,7 @@
           "BabylonStakingChangeAddress",
           "BabylonStakingFee",
           "BabylonStakingWithdrawalAddress",
+          "BabylonStakingBbnAddress",
           "SolanaInstructionCountLow",
           "SolanaInstructionCountHigh",
           "SolanaNotInInstructionAllowlist",
@@ -1222,9 +1247,11 @@
               "sign:btc:segwit",
               "sign:btc:taproot",
               "sign:btc:psbt:*",
+              "sign:btc:psbt:doge",
               "sign:btc:psbt:legacy",
               "sign:btc:psbt:segwit",
               "sign:btc:psbt:taproot",
+              "sign:btc:psbt:ltcSegwit",
               "sign:btc:message:*",
               "sign:btc:message:segwit",
               "sign:btc:message:legacy",
@@ -1236,6 +1263,9 @@
               "sign:babylon:staking:deposit",
               "sign:babylon:staking:unbond",
               "sign:babylon:staking:withdraw",
+              "sign:babylon:staking:slash",
+              "sign:babylon:registration",
+              "sign:babylon:covenant",
               "sign:evm:*",
               "sign:evm:tx",
               "sign:evm:eip191",
@@ -1262,6 +1292,7 @@
               "manage:mfa:register:*",
               "manage:mfa:register:fido",
               "manage:mfa:register:totp",
+              "manage:mfa:register:email",
               "manage:mfa:unregister:*",
               "manage:mfa:unregister:fido",
               "manage:mfa:unregister:totp",
@@ -1286,6 +1317,7 @@
               "manage:policy:create",
               "manage:policy:get",
               "manage:policy:list",
+              "manage:policy:delete",
               "manage:policy:update:*",
               "manage:policy:update:owner",
               "manage:policy:update:name",
@@ -1300,6 +1332,17 @@
               "manage:policy:secrets:update:*",
               "manage:policy:secrets:update:values",
               "manage:policy:secrets:update:editPolicy",
+              "manage:contact:*",
+              "manage:contact:create",
+              "manage:contact:get",
+              "manage:contact:list",
+              "manage:contact:delete",
+              "manage:contact:update:*",
+              "manage:contact:update:name",
+              "manage:contact:update:addresses",
+              "manage:contact:update:owner",
+              "manage:contact:update:metadata",
+              "manage:contact:update:editPolicy",
               "manage:policy:createImportKey",
               "manage:role:*",
               "manage:role:readonly",
@@ -1352,6 +1395,9 @@
               "manage:export:user:*",
               "manage:export:user:delete",
               "manage:export:user:list",
+              "manage:authMigration:identity:add",
+              "manage:authMigration:identity:remove",
+              "manage:authMigration:user:update",
               "manage:mmi:*",
               "manage:mmi:readonly",
               "manage:mmi:get",
@@ -1452,6 +1498,12 @@
             "$ref": "#/components/schemas/PreconditionErrorCode"
           },
           {
+            "$ref": "#/components/schemas/TimeoutErrorCode"
+          },
+          {
+            "$ref": "#/components/schemas/ConflictErrorCode"
+          },
+          {
             "$ref": "#/components/schemas/InternalErrorCode"
           }
         ]
@@ -1475,6 +1527,13 @@
           }
         },
         "type": "object"
+      },
+      "TimeoutErrorCode": {
+        "enum": [
+          "PolicyEngineTimeout",
+          "WasmPolicyExecutionTimeout"
+        ],
+        "type": "string"
       },
       "UnauthorizedErrorCode": {
         "enum": [
@@ -1507,7 +1566,7 @@
     },
     "description": "The CubeSigner management and signing service.",
     "title": "CubeSigner API",
-    "version": "v0.106.0"
+    "version": "v0.121.2"
   },
   "openapi": "3.0.3",
   "paths": {
