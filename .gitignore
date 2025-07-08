@@ -1,0 +1,10 @@
+build/
+
+.vscode*
+
+# Ginkgo test outputs
+*.test
+
+# Token test files
+test*.json
+e2e*.json
