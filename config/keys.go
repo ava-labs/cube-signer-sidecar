@@ -14,7 +14,6 @@ const (
 	HelpKey       = "help"
 
 	TokenFilePathKey = "token-file-path"
-	KeyIDKey         = "key-id"
 	EndpointKey      = "signer-endpoint"
 	PortKey          = "port"
 )
@@ -25,7 +24,6 @@ func BuildFlagSet() *pflag.FlagSet {
 	fs.String(ConfigFileKey, "", "Path to the config file")
 
 	fs.String(TokenFilePathKey, "", "Path to the token file")
-	fs.String(KeyIDKey, "", "Key ID")
 	fs.String(EndpointKey, "", "Signer endpoint")
 	fs.Uint16(PortKey, defaultPort, "Port to listen on")
 

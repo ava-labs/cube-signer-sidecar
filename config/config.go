@@ -15,7 +15,6 @@ const (
 
 type Config struct {
 	TokenFilePath  string `mapstructure:"token-file-path" json:"token-file-path"`
-	KeyID          string `mapstructure:"key-id" json:"key-id"`
 	SignerEndpoint string `mapstructure:"signer-endpoint" json:"signer-endpoint"`
 	Port           uint16 `mapstructure:"port" json:"port"`
 }
@@ -30,10 +29,6 @@ func (cfg *Config) Validate() error {
 	_, err := os.Stat(cfg.TokenFilePath)
 	if os.IsNotExist(err) || os.IsPermission(err) {
 		return fmt.Errorf("token-file-path cannot be accessed: %s", cfg.TokenFilePath)
-	}
-
-	if cfg.KeyID == "" {
-		return fmt.Errorf("key-id is required")
 	}
 
 	if cfg.SignerEndpoint == "" {

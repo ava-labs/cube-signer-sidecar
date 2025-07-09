@@ -26,14 +26,13 @@ var popDst = base64.StdEncoding.EncodeToString(bls.CiphersuiteProofOfPossession.
 type SignerServer struct {
 	signer.UnimplementedSignerServer
 	OrgID         string
-	KeyID         string
 	client        *api.ClientWithResponses
 	tokenData     *tokenData
 	tokenFilePath string
 	publicKey     []byte
 }
 
-func New(keyID string, tokenFilePath string, client *api.ClientWithResponses) (*SignerServer, error) {
+func New(tokenFilePath string, client *api.ClientWithResponses) (*SignerServer, error) {
 	tokenFile, err := os.Open(tokenFilePath)
 	if err != nil {
 		return nil, fmt.Errorf("failed to open token file: %w", err)
@@ -44,9 +43,10 @@ func New(keyID string, tokenFilePath string, client *api.ClientWithResponses) (*
 		return nil, fmt.Errorf("failed to decode token data: %w", err)
 	}
 
+	fmt.Println(tokenData.KeyID)
+
 	return &SignerServer{
 		OrgID:         tokenData.OrgID,
-		KeyID:         keyID,
 		client:        client,
 		tokenData:     &tokenData,
 		tokenFilePath: tokenFilePath,
@@ -136,7 +136,7 @@ func (s *SignerServer) PublicKey(ctx context.Context, in *signer.PublicKeyReques
 		return publicKeyRes, nil
 	}
 
-	rsp, err := s.client.GetKeyInOrg(ctx, s.OrgID, s.KeyID, s.addAuthHeaderFn())
+	rsp, err := s.client.GetKeyInOrg(ctx, s.OrgID, s.tokenData.KeyID.KeyID, s.addAuthHeaderFn())
 	if err != nil {
 		return nil, fmt.Errorf("failed to get key in org: %w", err)
 	}
@@ -220,7 +220,7 @@ func (s *SignerServer) sign(ctx context.Context, bytes []byte, blsDst *string) (
 		BlsDst:        blsDst,
 	}
 
-	res, err := s.client.BlobSignWithResponse(ctx, s.OrgID, s.KeyID, *blobSignReq, s.addAuthHeaderFn())
+	res, err := s.client.BlobSignWithResponse(ctx, s.OrgID, s.tokenData.KeyID.KeyID, *blobSignReq, s.addAuthHeaderFn())
 	if err != nil {
 		return nil, fmt.Errorf("failed to sign blob: %w", err)
 	}

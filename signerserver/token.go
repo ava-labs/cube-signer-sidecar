@@ -8,9 +8,14 @@ import (
 
 type tokenData struct {
 	api.NewSessionResponse
+	KeyID
 	ID
 	// save the rest of the data so that we don't lose data when overwriting the file
 	RawData rawMessageMap `json:"-"`
+}
+
+type KeyID struct {
+	KeyID string `json:"key_id"`
 }
 
 type ID struct {
@@ -32,11 +37,20 @@ func (t *tokenData) MarshalJSON() ([]byte, error) {
 		return nil, err
 	}
 
+	KeyID, err := toRawData(t.KeyID)
+	if err != nil {
+		return nil, err
+	}
+
 	for k, v := range sessionResponse {
 		t.RawData[k] = v
 	}
 
 	for k, v := range id {
+		t.RawData[k] = v
+	}
+
+	for k, v := range KeyID {
 		t.RawData[k] = v
 	}
 
@@ -61,6 +75,7 @@ func (t *tokenData) UnmarshalJSON(data []byte) error {
 	var (
 		NewSessionResponse api.NewSessionResponse
 		id                 ID
+		keyID              KeyID
 	)
 
 	if err := json.Unmarshal(data, &NewSessionResponse); err != nil {
@@ -68,6 +83,10 @@ func (t *tokenData) UnmarshalJSON(data []byte) error {
 	}
 
 	if err := json.Unmarshal(data, &id); err != nil {
+		return err
+	}
+
+	if err := json.Unmarshal(data, &keyID); err != nil {
 		return err
 	}
 
@@ -80,6 +99,7 @@ func (t *tokenData) UnmarshalJSON(data []byte) error {
 	t.NewSessionResponse = NewSessionResponse
 	t.ID = id
 	t.RawData = rawData
+	t.KeyID = keyID
 
 	return nil
 }
