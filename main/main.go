@@ -58,11 +58,6 @@ func runServer(cfg config.Config) error {
 		return fmt.Errorf("failed to create signer server: %w", err)
 	}
 
-	err = signerServer.RefreshToken()
-	if err != nil {
-		return fmt.Errorf("failed to refresh token: %w", err)
-	}
-
 	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()
 

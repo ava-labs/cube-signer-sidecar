@@ -1,0 +1,33 @@
+name: E2E Tests
+
+on:
+    push:
+        branches:
+            - main
+    pull_request:
+        branches:
+            - "**"
+jobs:
+  e2e_tests:
+    name: e2e_tests
+    runs-on: ubuntu-22.04
+
+    steps:
+      - name: Checkout icm-relayer repository
+        uses: actions/checkout@v4
+        with:
+          submodules: recursive
+
+      - name: Setup Go
+        uses: actions/setup-go@v5
+        with:
+          go-version-file: 'go.mod'
+
+      - name: Write token to file
+        env:
+          CUBIST_SIGNER_TOKEN: ${{ secrets.CUBIST_SIGNER_TOKEN }}
+        run: |
+          echo $CUBIST_SIGNER_TOKEN | base64 --decode > e2e_session.json
+
+      - name: Run E2E Tests
+        run: ./scripts/e2e_test.sh

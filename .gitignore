@@ -4,3 +4,10 @@ build/
 
 # Release build outputs
 osxcross/
+
+# Ginkgo test outputs
+*.test
+
+# Token test files
+test*.json
+e2e*.json
