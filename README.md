@@ -1,4 +1,4 @@
-# Cubist Signer
+# Cubist Signer Sidecar
 
 A proxy to be run alongside an
 [`avalanchego`](https://github.com/ava-labs/avalanchego) validator, used for all
