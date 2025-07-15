@@ -18,7 +18,7 @@ import (
 
 	"github.com/ava-labs/avalanchego/proto/pb/signer"
 	"github.com/ava-labs/avalanchego/utils/crypto/bls"
-	"github.com/ava-labs/cubist-signer-sidecar/api"
+	"github.com/ava-labs/cube-signer-sidecar/api"
 )
 
 var popDst = base64.StdEncoding.EncodeToString(bls.CiphersuiteProofOfPossession.Bytes())
@@ -174,7 +174,7 @@ type GetKeyInOrgResponse struct {
 }
 
 // modified version of `api.ParseGetKeyInOrgResponse`
-// this code can be removed if cubist fixes the openapi-spec
+// this code can be removed if Cubist fixes the openapi-spec
 func parseGetKeyInOrgResponse(rsp *http.Response) (*GetKeyInOrgResponse, error) {
 	bodyBytes, err := io.ReadAll(rsp.Body)
 	defer func() { _ = rsp.Body.Close() }()

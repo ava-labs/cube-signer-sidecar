@@ -1,27 +1,27 @@
-# Cubist Signer Sidecar
+# Cube Signer Sidecar
 
-This repository contains a proxy that can be run alongside [AvalancheGo](https://github.com/ava-labs/avalanchego) nodes to integrate them with [CubeSigner](https://cubist.dev/products/cubesigner-self-custody) for secure BLS key management. AvalancheGo nodes currently use BLS keys for peer handshakes and to sign [ICM messages](https://build.avax.network/docs/cross-chain/avalanche-warp-messaging/overview). By integrating with CubeSigner, AvalancheGo nodes do not need to store their BLS keys in memory or on disk. Instead, the keys are generated and kept within a remote hardware security module (HSM), and the AvalancheGo node is configured to request signatures from that HSM as needed via this `cubist-signer-sidecar`.
+This repository contains a proxy that can be run alongside [AvalancheGo](https://github.com/ava-labs/avalanchego) nodes to integrate them with [CubeSigner](https://cubist.dev/products/cubesigner-self-custody) for secure BLS key management powered by [Cubist](https://cubist.dev/). AvalancheGo nodes currently use BLS keys for peer handshakes and to sign [ICM messages](https://build.avax.network/docs/cross-chain/avalanche-warp-messaging/overview). By integrating with CubeSigner, AvalancheGo nodes do not need to store their BLS keys in memory or on disk. Instead, the keys are generated and kept within a remote hardware security module (HSM), and the AvalancheGo node is configured to request signatures from that HSM as needed via this `cube-signer-sidecar`.
 
-This service runs a [gRPC](https://grpc.io/) server, implementing the [`signer.proto` service definition](https://github.com/ava-labs/avalanchego/blob/master/proto/signer/signer.proto). When the `gRPC` endpoints are hit, they make subsequent requests to the [Cubist API](https://signer-docs.cubist.dev/api) to get the requested signature.
+This service runs a [gRPC](https://grpc.io/) server, implementing the [`signer.proto` service definition](https://github.com/ava-labs/avalanchego/blob/master/proto/signer/signer.proto). When the `gRPC` endpoints are hit, they make subsequent requests to the [CubeSigner API](https://signer-docs.cubist.dev/api) to get the requested signature.
 
-A Cubist account is required to be able to properly use the `cubist-signer-sidecar`.
+A Cubist account is required to be able to properly use the `cube-signer-sidecar`.
 
 ## Building
 
-The `api/` directory contains generated code from the [Cubist OpenAPI specification](https://raw.githubusercontent.com/cubist-labs/CubeSigner-TypeScript-SDK/main/packages/sdk/spec/openapi.json). The [`spec/get-schemas.go`] script is used to filter the API-spec for the three relevant endpoints, as well as all the schemas that those endpoints
+The `api/` directory contains generated code from the [CubeSigner OpenAPI specification](https://raw.githubusercontent.com/cubist-labs/CubeSigner-TypeScript-SDK/main/packages/sdk/spec/openapi.json). The [`spec/get-schemas.go`] script is used to filter the API-spec for the three relevant endpoints, as well as all the schemas that those endpoints
 use. The filtered Open-API specification is output to `spec/filtered-openapi.json`.
 
 If there are changes in `spec/filtered-openapi.json`, the `go generate ./signerserver` _must_ be run to re-generate the client code in the `api/` directory.
 
 ## Testing
 
-The `cubist-signer-sidecar` depends on the AvalancheGo changes implemented in [this PR](https://github.com/ava-labs/avalanchego/pull/3965). In order to test it, set the `--staking-rpc-signer-endpoint=127.0.0.1:50051` configuration flag, and ensure that the `cubist-signer-sidecar` application is running before starting the `avalanchego` node.
+The `cube-signer-sidecar` depends on the AvalancheGo changes implemented in [this PR](https://github.com/ava-labs/avalanchego/pull/3965). In order to test it, set the `--staking-rpc-signer-endpoint=127.0.0.1:50051` configuration flag, and ensure that the `cube-signer-sidecar` application is running before starting the `avalanchego` node.
 
 ## Running
 
 ### Key Creation
 
-The [`CubeSigner`](https://github.com/cubist-partners/CubeSigner/) application is needed to set up the `cubist-signer-sidecar` to be run locally. Once installed, set up the `CubeSigner` and log in following the [Getting Started instructions](https://signer-docs.cubist.dev/getting-started). The following commands can then be used to set up a role, key, and signing policy. 
+The [`CubeSigner`](https://github.com/cubist-partners/CubeSigner/) application is needed to set up the `cube-signer-sidecar` to be run locally. Once installed, set up the `CubeSigner` and log in following the [Getting Started instructions](https://signer-docs.cubist.dev/getting-started). The following commands can then be used to set up a role, key, and signing policy. 
 
 ```shell
 # Create a role.
@@ -54,15 +54,15 @@ Below is a list of configuration options that can be set via a JSON config file 
 
   This is the path to the token file, created in the last step above.
 
-  The `refresh-token` (part of the JSON output of `cs token create`) has a short TTL by default, and the `cubist-signer-sidecar` must be started before it expires. Once started, the `<path_to_token>.json` file will be continuously refreshed as needed. To change any of the default token parameters, see `cs token create --help`.
+  The `refresh-token` (part of the JSON output of `cs token create`) has a short TTL by default, and the `cube-signer-sidecar` must be started before it expires. Once started, the `<path_to_token>.json` file will be continuously refreshed as needed. To change any of the default token parameters, see `cs token create --help`.
 
 - `"signer-endpoint": string` (required)
 
-  The Cubist API endpoint.
+  The CubeSigner API endpoint.
 
 - `"key-id": string` (required)
 
-  The `cubist-signer-sidecar` can only use one key at a time, as an `avalanchego` validator is only meant to have a single BLS signing key. Specifying the `KEY_ID` is how the Cubist API knows what key to use for signing. The `role` associated with the `role_id` filed in the token JSON will need access to this key (see [Configuration](#configuration)).
+  The `cube-signer-sidecar` can only use one key at a time, as an `avalanchego` validator is only meant to have a single BLS signing key. Specifying the `KEY_ID` is how the CubeSigner API knows what key to use for signing. The `role` associated with the `role_id` filed in the token JSON will need access to this key (see [Configuration](#configuration)).
 
 - `"port": int` (defaults to 50051)
 

@@ -17,8 +17,8 @@ import (
 	"github.com/ava-labs/avalanchego/proto/pb/signer"
 	"github.com/ava-labs/avalanchego/utils/crypto/bls"
 	"github.com/ava-labs/avalanchego/utils/crypto/bls/signer/localsigner"
-	"github.com/ava-labs/cubist-signer-sidecar/api"
-	"github.com/ava-labs/cubist-signer-sidecar/mockapi"
+	"github.com/ava-labs/cube-signer-sidecar/api"
+	"github.com/ava-labs/cube-signer-sidecar/mockapi"
 	"github.com/stretchr/testify/require"
 	"go.uber.org/mock/gomock"
 )

@@ -20,7 +20,7 @@ const (
 )
 
 func BuildFlagSet() *pflag.FlagSet {
-	fs := pflag.NewFlagSet("cubist-signer-sidecar", pflag.ExitOnError)
+	fs := pflag.NewFlagSet("cube-signer-sidecar", pflag.ExitOnError)
 	fs.Bool(HelpKey, false, "Display this help message and exit")
 	fs.String(ConfigFileKey, "", "Path to the config file")
 

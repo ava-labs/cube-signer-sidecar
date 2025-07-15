@@ -9,7 +9,7 @@ import (
 	"os"
 	"os/exec"
 
-	"github.com/ava-labs/cubist-signer-sidecar/config"
+	"github.com/ava-labs/cube-signer-sidecar/config"
 	. "github.com/onsi/gomega"
 )
 
@@ -24,7 +24,7 @@ const (
 
 func BuildCubistSigner() {
 	cmd := exec.Command("./scripts/build.sh")
-	log.Println("Building cubist-signer-sidecar")
+	log.Println("Building cube-signer-sidecar")
 	out, err := cmd.CombinedOutput()
 	log.Println(string(out))
 	Expect(err).Should(BeNil())
@@ -57,7 +57,7 @@ func CreateDefaultConfig() *config.Config {
 
 func RunSigner(ctx context.Context, cfgPath string) context.CancelFunc {
 	cmdCtx, cancelFn := context.WithCancel(ctx)
-	cmd := exec.CommandContext(cmdCtx, "./build/cubist-signer-sidecar", "--config-file", cfgPath)
+	cmd := exec.CommandContext(cmdCtx, "./build/cube-signer-sidecar", "--config-file", cfgPath)
 
 	// Set up a pipe to capture the command's output
 	cmdStdOutReader, err := cmd.StdoutPipe()
@@ -65,7 +65,7 @@ func RunSigner(ctx context.Context, cfgPath string) context.CancelFunc {
 	cmdStdErrReader, err := cmd.StderrPipe()
 	Expect(err).Should(BeNil())
 
-	log.Println("Running cubist-signer-sidecar, cmd:", cmd.String())
+	log.Println("Running cube-signer-sidecar, cmd:", cmd.String())
 	err = cmd.Start()
 	Expect(err).Should(BeNil())
 
