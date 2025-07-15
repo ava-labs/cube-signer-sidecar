@@ -74,7 +74,7 @@ Both the `SIGNER_ENDPOINT` and `KEY_ID` can be exported in the current shell ses
 
 ```bash
 export SIGNER_ENDPOINT=https://gamma.signer.cubist.dev
-export KEY_ID=Key #BlsAvaIcm_0x...
+export KEY_ID=Key#BlsAvaIcm_0x...
 
 TOKEN_FILE_PATH="./token.json" go run main/main.go
 ```
