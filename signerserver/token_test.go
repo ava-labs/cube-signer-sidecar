@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"testing"
 
-	"github.com/ava-labs/cubist-signer/api"
+	"github.com/ava-labs/cubist-signer-sidecar/api"
 	"github.com/stretchr/testify/require"
 )
 

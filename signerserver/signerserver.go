@@ -18,7 +18,7 @@ import (
 
 	"github.com/ava-labs/avalanchego/proto/pb/signer"
 	"github.com/ava-labs/avalanchego/utils/crypto/bls"
-	"github.com/ava-labs/cubist-signer/api"
+	"github.com/ava-labs/cubist-signer-sidecar/api"
 )
 
 var popDst = base64.StdEncoding.EncodeToString(bls.CiphersuiteProofOfPossession.Bytes())

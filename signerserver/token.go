@@ -3,7 +3,7 @@ package signerserver
 import (
 	"encoding/json"
 
-	"github.com/ava-labs/cubist-signer/api"
+	"github.com/ava-labs/cubist-signer-sidecar/api"
 )
 
 type tokenData struct {
