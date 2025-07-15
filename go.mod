@@ -1,4 +1,4 @@
-module github.com/ava-labs/cubist-signer
+module github.com/ava-labs/cube-signer-sidecar
 
 go 1.23.11
 

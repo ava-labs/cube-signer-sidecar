@@ -9,7 +9,7 @@ import (
 	"github.com/ava-labs/avalanchego/utils/crypto/bls"
 	"github.com/ava-labs/avalanchego/utils/crypto/bls/signer/rpcsigner"
 	"github.com/ava-labs/avalanchego/utils/logging"
-	"github.com/ava-labs/cubist-signer/tests/utils"
+	"github.com/ava-labs/cube-signer-sidecar/tests/utils"
 	. "github.com/onsi/gomega"
 	"go.uber.org/zap"
 	"google.golang.org/grpc"
