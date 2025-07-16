@@ -32,11 +32,14 @@ const (
 // Defines values for BadRequestErrorCode.
 const (
 	BadRequestErrorCodeAddKeyToRoleCountTooHigh                        BadRequestErrorCode = "AddKeyToRoleCountTooHigh"
+	BadRequestErrorCodeAlienOwnerInvalid                               BadRequestErrorCode = "AlienOwnerInvalid"
 	BadRequestErrorCodeAvaSignError                                    BadRequestErrorCode = "AvaSignError"
 	BadRequestErrorCodeAvaSignHashError                                BadRequestErrorCode = "AvaSignHashError"
+	BadRequestErrorCodeBabylonCovSign                                  BadRequestErrorCode = "BabylonCovSign"
 	BadRequestErrorCodeBabylonStaking                                  BadRequestErrorCode = "BabylonStaking"
 	BadRequestErrorCodeBabylonStakingFeePlusDustOverflow               BadRequestErrorCode = "BabylonStakingFeePlusDustOverflow"
 	BadRequestErrorCodeBabylonStakingIncorrectKey                      BadRequestErrorCode = "BabylonStakingIncorrectKey"
+	BadRequestErrorCodeBabylonStakingRegistrationRequiresTaproot       BadRequestErrorCode = "BabylonStakingRegistrationRequiresTaproot"
 	BadRequestErrorCodeBabylonStakingSegwitNonDeposit                  BadRequestErrorCode = "BabylonStakingSegwitNonDeposit"
 	BadRequestErrorCodeBadBtcMessageSignP2shFlag                       BadRequestErrorCode = "BadBtcMessageSignP2shFlag"
 	BadRequestErrorCodeBtcSegwitHashError                              BadRequestErrorCode = "BtcSegwitHashError"
@@ -45,11 +48,13 @@ const (
 	BadRequestErrorCodeCannotDeletePendingSubscription                 BadRequestErrorCode = "CannotDeletePendingSubscription"
 	BadRequestErrorCodeCannotResendUserInvitation                      BadRequestErrorCode = "CannotResendUserInvitation"
 	BadRequestErrorCodeCognitoUserAlreadyOrgMember                     BadRequestErrorCode = "CognitoUserAlreadyOrgMember"
+	BadRequestErrorCodeContactNameInvalid                              BadRequestErrorCode = "ContactNameInvalid"
 	BadRequestErrorCodeCustomStakingAmountNotAllowedForWrapperContract BadRequestErrorCode = "CustomStakingAmountNotAllowedForWrapperContract"
 	BadRequestErrorCodeDeleteOidcUserError                             BadRequestErrorCode = "DeleteOidcUserError"
 	BadRequestErrorCodeDeleteUserError                                 BadRequestErrorCode = "DeleteUserError"
 	BadRequestErrorCodeDuplicateFieldEntry                             BadRequestErrorCode = "DuplicateFieldEntry"
 	BadRequestErrorCodeEip712SignError                                 BadRequestErrorCode = "Eip712SignError"
+	BadRequestErrorCodeEmailOtpDelayTooShortForRegisterMfa             BadRequestErrorCode = "EmailOtpDelayTooShortForRegisterMfa"
 	BadRequestErrorCodeEmailPasswordNotFound                           BadRequestErrorCode = "EmailPasswordNotFound"
 	BadRequestErrorCodeEmptyAddress                                    BadRequestErrorCode = "EmptyAddress"
 	BadRequestErrorCodeEmptyAllExceptOrgEventFilter                    BadRequestErrorCode = "EmptyAllExceptOrgEventFilter"
@@ -76,12 +81,15 @@ const (
 	BadRequestErrorCodeInvalidBase58Value                              BadRequestErrorCode = "InvalidBase58Value"
 	BadRequestErrorCodeInvalidBlobSignRequest                          BadRequestErrorCode = "InvalidBlobSignRequest"
 	BadRequestErrorCodeInvalidBody                                     BadRequestErrorCode = "InvalidBody"
+	BadRequestErrorCodeInvalidBtcAddressForChain                       BadRequestErrorCode = "InvalidBtcAddressForChain"
 	BadRequestErrorCodeInvalidBtcTxReceiversEmptyAllowlist             BadRequestErrorCode = "InvalidBtcTxReceiversEmptyAllowlist"
 	BadRequestErrorCodeInvalidCreateKeyCount                           BadRequestErrorCode = "InvalidCreateKeyCount"
 	BadRequestErrorCodeInvalidCreateUserRequest                        BadRequestErrorCode = "InvalidCreateUserRequest"
 	BadRequestErrorCodeInvalidDeriveKeyRequest                         BadRequestErrorCode = "InvalidDeriveKeyRequest"
 	BadRequestErrorCodeInvalidEip191SignRequest                        BadRequestErrorCode = "InvalidEip191SignRequest"
 	BadRequestErrorCodeInvalidEip712SignRequest                        BadRequestErrorCode = "InvalidEip712SignRequest"
+	BadRequestErrorCodeInvalidEmail                                    BadRequestErrorCode = "InvalidEmail"
+	BadRequestErrorCodeInvalidEmailTemplate                            BadRequestErrorCode = "InvalidEmailTemplate"
 	BadRequestErrorCodeInvalidEth2SignRequest                          BadRequestErrorCode = "InvalidEth2SignRequest"
 	BadRequestErrorCodeInvalidEth2SigningPolicyEpochRange              BadRequestErrorCode = "InvalidEth2SigningPolicyEpochRange"
 	BadRequestErrorCodeInvalidEth2SigningPolicyOverlappingRule         BadRequestErrorCode = "InvalidEth2SigningPolicyOverlappingRule"
@@ -97,6 +105,7 @@ const (
 	BadRequestErrorCodeInvalidKeyMaterial                              BadRequestErrorCode = "InvalidKeyMaterial"
 	BadRequestErrorCodeInvalidKeyMaterialId                            BadRequestErrorCode = "InvalidKeyMaterialId"
 	BadRequestErrorCodeInvalidKeyType                                  BadRequestErrorCode = "InvalidKeyType"
+	BadRequestErrorCodeInvalidLength                                   BadRequestErrorCode = "InvalidLength"
 	BadRequestErrorCodeInvalidLifetime                                 BadRequestErrorCode = "InvalidLifetime"
 	BadRequestErrorCodeInvalidMemberRoleInRecipientAdd                 BadRequestErrorCode = "InvalidMemberRoleInRecipientAdd"
 	BadRequestErrorCodeInvalidMemberRoleInUserAdd                      BadRequestErrorCode = "InvalidMemberRoleInUserAdd"
@@ -119,6 +128,7 @@ const (
 	BadRequestErrorCodeInvalidOrgPolicyRule                            BadRequestErrorCode = "InvalidOrgPolicyRule"
 	BadRequestErrorCodeInvalidPaginationToken                          BadRequestErrorCode = "InvalidPaginationToken"
 	BadRequestErrorCodeInvalidPassword                                 BadRequestErrorCode = "InvalidPassword"
+	BadRequestErrorCodeInvalidPolicyLogsRequest                        BadRequestErrorCode = "InvalidPolicyLogsRequest"
 	BadRequestErrorCodeInvalidPolicyReference                          BadRequestErrorCode = "InvalidPolicyReference"
 	BadRequestErrorCodeInvalidRange                                    BadRequestErrorCode = "InvalidRange"
 	BadRequestErrorCodeInvalidRequireRoleSessionAllowlist              BadRequestErrorCode = "InvalidRequireRoleSessionAllowlist"
@@ -139,6 +149,8 @@ const (
 	BadRequestErrorCodeInvalidTotpFailureLimit                         BadRequestErrorCode = "InvalidTotpFailureLimit"
 	BadRequestErrorCodeInvalidUnstakeRequest                           BadRequestErrorCode = "InvalidUnstakeRequest"
 	BadRequestErrorCodeInvalidUpdate                                   BadRequestErrorCode = "InvalidUpdate"
+	BadRequestErrorCodeInvalidUpdateOrgRequestDisallowedMfaType        BadRequestErrorCode = "InvalidUpdateOrgRequestDisallowedMfaType"
+	BadRequestErrorCodeInvalidUpdateOrgRequestEmptyAllowedMfaTypes     BadRequestErrorCode = "InvalidUpdateOrgRequestEmptyAllowedMfaTypes"
 	BadRequestErrorCodeInvalidWasmPolicy                               BadRequestErrorCode = "InvalidWasmPolicy"
 	BadRequestErrorCodeInvitationNoLongerValid                         BadRequestErrorCode = "InvitationNoLongerValid"
 	BadRequestErrorCodeKeyNotFound                                     BadRequestErrorCode = "KeyNotFound"
@@ -150,6 +162,7 @@ const (
 	BadRequestErrorCodeMfaRequestNotFound                              BadRequestErrorCode = "MfaRequestNotFound"
 	BadRequestErrorCodeMmiChainIdMissing                               BadRequestErrorCode = "MmiChainIdMissing"
 	BadRequestErrorCodeMmiRpcUrlMissing                                BadRequestErrorCode = "MmiRpcUrlMissing"
+	BadRequestErrorCodeNameTaken                                       BadRequestErrorCode = "NameTaken"
 	BadRequestErrorCodeNoOidcDataInProof                               BadRequestErrorCode = "NoOidcDataInProof"
 	BadRequestErrorCodeNoSingleKeyForUser                              BadRequestErrorCode = "NoSingleKeyForUser"
 	BadRequestErrorCodeOidcIdentityAlreadyExists                       BadRequestErrorCode = "OidcIdentityAlreadyExists"
@@ -165,13 +178,16 @@ const (
 	BadRequestErrorCodeOrgUserAlreadyExists                            BadRequestErrorCode = "OrgUserAlreadyExists"
 	BadRequestErrorCodePaginationDataExpired                           BadRequestErrorCode = "PaginationDataExpired"
 	BadRequestErrorCodePasswordAuthNotAllowedByInvitation              BadRequestErrorCode = "PasswordAuthNotAllowedByInvitation"
-	BadRequestErrorCodePolicyAlienOwnerInvalid                         BadRequestErrorCode = "PolicyAlienOwnerInvalid"
+	BadRequestErrorCodePolicyDuplicateError                            BadRequestErrorCode = "PolicyDuplicateError"
 	BadRequestErrorCodePolicyEngineDisabled                            BadRequestErrorCode = "PolicyEngineDisabled"
 	BadRequestErrorCodePolicyKeyMismatch                               BadRequestErrorCode = "PolicyKeyMismatch"
+	BadRequestErrorCodePolicyModified                                  BadRequestErrorCode = "PolicyModified"
 	BadRequestErrorCodePolicyNameTaken                                 BadRequestErrorCode = "PolicyNameTaken"
+	BadRequestErrorCodePolicyNotAttached                               BadRequestErrorCode = "PolicyNotAttached"
 	BadRequestErrorCodePolicyNotFound                                  BadRequestErrorCode = "PolicyNotFound"
 	BadRequestErrorCodePolicyRuleDisallowedByType                      BadRequestErrorCode = "PolicyRuleDisallowedByType"
 	BadRequestErrorCodePolicyRuleKeyMismatch                           BadRequestErrorCode = "PolicyRuleKeyMismatch"
+	BadRequestErrorCodePolicyStillAttached                             BadRequestErrorCode = "PolicyStillAttached"
 	BadRequestErrorCodePolicyTypeDisallowed                            BadRequestErrorCode = "PolicyTypeDisallowed"
 	BadRequestErrorCodePolicyVersionInvalid                            BadRequestErrorCode = "PolicyVersionInvalid"
 	BadRequestErrorCodePolicyVersionMaxReached                         BadRequestErrorCode = "PolicyVersionMaxReached"
@@ -191,6 +207,7 @@ const (
 	BadRequestErrorCodeThirdPartyUserNotFound                          BadRequestErrorCode = "ThirdPartyUserNotFound"
 	BadRequestErrorCodeTokenRequestError                               BadRequestErrorCode = "TokenRequestError"
 	BadRequestErrorCodeTooManyFailedLogins                             BadRequestErrorCode = "TooManyFailedLogins"
+	BadRequestErrorCodeTooManyRequests                                 BadRequestErrorCode = "TooManyRequests"
 	BadRequestErrorCodeTooManyResets                                   BadRequestErrorCode = "TooManyResets"
 	BadRequestErrorCodeUnableToAccessSmtpRelay                         BadRequestErrorCode = "UnableToAccessSmtpRelay"
 	BadRequestErrorCodeUnsupportedLegacyCognitoSession                 BadRequestErrorCode = "UnsupportedLegacyCognitoSession"
@@ -200,10 +217,19 @@ const (
 	BadRequestErrorCodeUserExportInProgress                            BadRequestErrorCode = "UserExportInProgress"
 	BadRequestErrorCodeUserExportPublicKeyInvalid                      BadRequestErrorCode = "UserExportPublicKeyInvalid"
 	BadRequestErrorCodeUserNotFound                                    BadRequestErrorCode = "UserNotFound"
+	BadRequestErrorCodeUserProfileMigrationMultipleEntries             BadRequestErrorCode = "UserProfileMigrationMultipleEntries"
+	BadRequestErrorCodeUserProfileMigrationTooManyItems                BadRequestErrorCode = "UserProfileMigrationTooManyItems"
+	BadRequestErrorCodeUserWithEmailNotFound                           BadRequestErrorCode = "UserWithEmailNotFound"
 	BadRequestErrorCodeWebhookPolicyDisallowedHeaders                  BadRequestErrorCode = "WebhookPolicyDisallowedHeaders"
 	BadRequestErrorCodeWebhookPolicyDisallowedUrlHost                  BadRequestErrorCode = "WebhookPolicyDisallowedUrlHost"
 	BadRequestErrorCodeWebhookPolicyDisallowedUrlScheme                BadRequestErrorCode = "WebhookPolicyDisallowedUrlScheme"
 	BadRequestErrorCodeWebhookPolicyTimeoutOutOfBounds                 BadRequestErrorCode = "WebhookPolicyTimeoutOutOfBounds"
+)
+
+// Defines values for ConflictErrorCode.
+const (
+	ConcurrentLockCreation      ConflictErrorCode = "ConcurrentLockCreation"
+	ConcurrentRequestDisallowed ConflictErrorCode = "ConcurrentRequestDisallowed"
 )
 
 // Defines values for EvmTxDepositErrorCode.
@@ -233,6 +259,7 @@ const (
 	CannotAssumeIdentity                ForbiddenErrorCode = "CannotAssumeIdentity"
 	CannotCreateOrg                     ForbiddenErrorCode = "CannotCreateOrg"
 	ChainIdNotAllowed                   ForbiddenErrorCode = "ChainIdNotAllowed"
+	ContactNotInOrg                     ForbiddenErrorCode = "ContactNotInOrg"
 	DisabledRole                        ForbiddenErrorCode = "DisabledRole"
 	EmailOtpNotConfigured               ForbiddenErrorCode = "EmailOtpNotConfigured"
 	ExpectedUserSession                 ForbiddenErrorCode = "ExpectedUserSession"
@@ -245,9 +272,9 @@ const (
 	InvalidOrgMembershipRoleChange      ForbiddenErrorCode = "InvalidOrgMembershipRoleChange"
 	InvalidRole                         ForbiddenErrorCode = "InvalidRole"
 	KeyDisabled                         ForbiddenErrorCode = "KeyDisabled"
-	KeyNotInOrg                         ForbiddenErrorCode = "KeyNotInOrg"
 	KeyNotInRole                        ForbiddenErrorCode = "KeyNotInRole"
 	LegacySessionCannotHaveScopeCeiling ForbiddenErrorCode = "LegacySessionCannotHaveScopeCeiling"
+	MemberRoleForbidden                 ForbiddenErrorCode = "MemberRoleForbidden"
 	MfaChallengeExpired                 ForbiddenErrorCode = "MfaChallengeExpired"
 	MfaConfirmationCodeMismatch         ForbiddenErrorCode = "MfaConfirmationCodeMismatch"
 	MfaDisallowedApprover               ForbiddenErrorCode = "MfaDisallowedApprover"
@@ -255,12 +282,15 @@ const (
 	MfaHttpRequestMismatch              ForbiddenErrorCode = "MfaHttpRequestMismatch"
 	MfaNotApprovedYet                   ForbiddenErrorCode = "MfaNotApprovedYet"
 	MfaNotConfigured                    ForbiddenErrorCode = "MfaNotConfigured"
+	MfaOrgRequirementNotMet             ForbiddenErrorCode = "MfaOrgRequirementNotMet"
+	MfaRegistrationDisallowed           ForbiddenErrorCode = "MfaRegistrationDisallowed"
 	MfaRemoveBelowMin                   ForbiddenErrorCode = "MfaRemoveBelowMin"
 	MfaTotpBadCode                      ForbiddenErrorCode = "MfaTotpBadCode"
 	MfaTotpBadConfiguration             ForbiddenErrorCode = "MfaTotpBadConfiguration"
 	MfaTotpRateLimit                    ForbiddenErrorCode = "MfaTotpRateLimit"
 	MfaTypeNotAllowed                   ForbiddenErrorCode = "MfaTypeNotAllowed"
 	MustBeFullMember                    ForbiddenErrorCode = "MustBeFullMember"
+	OidcIdentityLimitReached            ForbiddenErrorCode = "OidcIdentityLimitReached"
 	OidcIssuerNotAllowedForMemberRole   ForbiddenErrorCode = "OidcIssuerNotAllowedForMemberRole"
 	OidcNoMemberRolesAllowed            ForbiddenErrorCode = "OidcNoMemberRolesAllowed"
 	OidcScopeCeilingMissing             ForbiddenErrorCode = "OidcScopeCeilingMissing"
@@ -268,13 +298,16 @@ const (
 	OperationNotAllowed                 ForbiddenErrorCode = "OperationNotAllowed"
 	OrgDisabled                         ForbiddenErrorCode = "OrgDisabled"
 	OrgExportRetrievalDisabled          ForbiddenErrorCode = "OrgExportRetrievalDisabled"
+	OrgFlagNotSet                       ForbiddenErrorCode = "OrgFlagNotSet"
 	OrgIdMismatch                       ForbiddenErrorCode = "OrgIdMismatch"
 	OrgNotFound                         ForbiddenErrorCode = "OrgNotFound"
 	OrgWithoutOwner                     ForbiddenErrorCode = "OrgWithoutOwner"
 	OrphanedUser                        ForbiddenErrorCode = "OrphanedUser"
+	PasskeyLoginDisabled                ForbiddenErrorCode = "PasskeyLoginDisabled"
+	PasskeyNotRegistered                ForbiddenErrorCode = "PasskeyNotRegistered"
+	RemoveKeyFromRoleUserNotAllowed     ForbiddenErrorCode = "RemoveKeyFromRoleUserNotAllowed"
 	RemoveLastOidcIdentity              ForbiddenErrorCode = "RemoveLastOidcIdentity"
 	RoleInParentOrgNotAllowed           ForbiddenErrorCode = "RoleInParentOrgNotAllowed"
-	RoleNotInOrg                        ForbiddenErrorCode = "RoleNotInOrg"
 	ScopedNameNotFound                  ForbiddenErrorCode = "ScopedNameNotFound"
 	SelfDelete                          ForbiddenErrorCode = "SelfDelete"
 	SelfDisable                         ForbiddenErrorCode = "SelfDisable"
@@ -295,9 +328,10 @@ const (
 	TotpAlreadyConfigured               ForbiddenErrorCode = "TotpAlreadyConfigured"
 	TotpConfigurationChanged            ForbiddenErrorCode = "TotpConfigurationChanged"
 	UserDisabled                        ForbiddenErrorCode = "UserDisabled"
+	UserExportDisabled                  ForbiddenErrorCode = "UserExportDisabled"
 	UserExportRequestInvalid            ForbiddenErrorCode = "UserExportRequestInvalid"
 	UserExportRequestNotInOrg           ForbiddenErrorCode = "UserExportRequestNotInOrg"
-	UserMfaNotConfigured                ForbiddenErrorCode = "UserMfaNotConfigured"
+	UserNotContactOwner                 ForbiddenErrorCode = "UserNotContactOwner"
 	UserNotInOrg                        ForbiddenErrorCode = "UserNotInOrg"
 	UserNotInRole                       ForbiddenErrorCode = "UserNotInRole"
 	UserNotKeyOwner                     ForbiddenErrorCode = "UserNotKeyOwner"
@@ -317,6 +351,7 @@ const (
 const (
 	AvaSignCredsMissing                 InternalErrorCode = "AvaSignCredsMissing"
 	AvaSignSignatureMissing             InternalErrorCode = "AvaSignSignatureMissing"
+	BabylonCovSignError                 InternalErrorCode = "BabylonCovSignError"
 	ClaimsParseError                    InternalErrorCode = "ClaimsParseError"
 	CognitoDeleteUserError              InternalErrorCode = "CognitoDeleteUserError"
 	CognitoGetUser                      InternalErrorCode = "CognitoGetUser"
@@ -324,7 +359,6 @@ const (
 	CognitoListUsersError               InternalErrorCode = "CognitoListUsersError"
 	CognitoResendUserInvitation         InternalErrorCode = "CognitoResendUserInvitation"
 	CognitoSetUserPasswordError         InternalErrorCode = "CognitoSetUserPasswordError"
-	ConcurrentLockCreation              InternalErrorCode = "ConcurrentLockCreation"
 	CreateEotsNoncesError               InternalErrorCode = "CreateEotsNoncesError"
 	CreateImportKeyError                InternalErrorCode = "CreateImportKeyError"
 	CreateKeyError                      InternalErrorCode = "CreateKeyError"
@@ -342,13 +376,17 @@ const (
 	DeserializeEncryptedExportKeyError  InternalErrorCode = "DeserializeEncryptedExportKeyError"
 	EmailConstructionError              InternalErrorCode = "EmailConstructionError"
 	EmailTemplateRender                 InternalErrorCode = "EmailTemplateRender"
+	EmptyUpdateModifiedActions          InternalErrorCode = "EmptyUpdateModifiedActions"
+	EmptyUpdateModifiedObject           InternalErrorCode = "EmptyUpdateModifiedObject"
 	EotsSignError                       InternalErrorCode = "EotsSignError"
 	ExpectedRoleSession                 InternalErrorCode = "ExpectedRoleSession"
+	FidoKeyAssociatedWithMultipleUsers  InternalErrorCode = "FidoKeyAssociatedWithMultipleUsers"
 	GenericInternalError                InternalErrorCode = "GenericInternalError"
 	GetAwsSecretError                   InternalErrorCode = "GetAwsSecretError"
 	HistoricalTxBodyMissing             InternalErrorCode = "HistoricalTxBodyMissing"
 	InconsistentMultiValueTestAndSet    InternalErrorCode = "InconsistentMultiValueTestAndSet"
 	InternalHeaderMissing               InternalErrorCode = "InternalHeaderMissing"
+	InvalidAlias                        InternalErrorCode = "InvalidAlias"
 	InvalidBtcAddress                   InternalErrorCode = "InvalidBtcAddress"
 	InvalidEmailAddress                 InternalErrorCode = "InvalidEmailAddress"
 	InvalidInternalHeaderValue          InternalErrorCode = "InvalidInternalHeaderValue"
@@ -387,8 +425,11 @@ const (
 	RequestLocalStateAlreadySet         InternalErrorCode = "RequestLocalStateAlreadySet"
 	ReqwestError                        InternalErrorCode = "ReqwestError"
 	ResolvedParentOrgWithNoScopeCeiling InternalErrorCode = "ResolvedParentOrgWithNoScopeCeiling"
+	S3BuildError                        InternalErrorCode = "S3BuildError"
 	S3CopyError                         InternalErrorCode = "S3CopyError"
+	S3DeleteObjectsError                InternalErrorCode = "S3DeleteObjectsError"
 	S3DownloadError                     InternalErrorCode = "S3DownloadError"
+	S3ListObjectsError                  InternalErrorCode = "S3ListObjectsError"
 	S3PresignedUrlError                 InternalErrorCode = "S3PresignedUrlError"
 	S3UploadError                       InternalErrorCode = "S3UploadError"
 	SecretNotFound                      InternalErrorCode = "SecretNotFound"
@@ -412,6 +453,7 @@ const (
 
 // Defines values for KeyType.
 const (
+	BabylonCov            KeyType = "BabylonCov"
 	BabylonEots           KeyType = "BabylonEots"
 	BlsAvaIcm             KeyType = "BlsAvaIcm"
 	BlsInactive           KeyType = "BlsInactive"
@@ -424,6 +466,7 @@ const (
 	Ed25519SuiAddr        KeyType = "Ed25519SuiAddr"
 	Ed25519TendermintAddr KeyType = "Ed25519TendermintAddr"
 	Ed25519TonAddr        KeyType = "Ed25519TonAddr"
+	Ed25519XrpAddr        KeyType = "Ed25519XrpAddr"
 	Mnemonic              KeyType = "Mnemonic"
 	P256CosmosAddr        KeyType = "P256CosmosAddr"
 	P256Neo3Addr          KeyType = "P256Neo3Addr"
@@ -442,30 +485,13 @@ const (
 	SecpEthAddr           KeyType = "SecpEthAddr"
 	SecpKaspaAddr         KeyType = "SecpKaspaAddr"
 	SecpKaspaTestAddr     KeyType = "SecpKaspaTestAddr"
+	SecpLtc               KeyType = "SecpLtc"
+	SecpLtcTest           KeyType = "SecpLtcTest"
 	SecpTronAddr          KeyType = "SecpTronAddr"
+	SecpXrpAddr           KeyType = "SecpXrpAddr"
 	Stark                 KeyType = "Stark"
 	TaprootBtc            KeyType = "TaprootBtc"
 	TaprootBtcTest        KeyType = "TaprootBtcTest"
-)
-
-// Defines values for MfaType0.
-const (
-	CubeSigner MfaType0 = "CubeSigner"
-)
-
-// Defines values for MfaType1.
-const (
-	Totp MfaType1 = "Totp"
-)
-
-// Defines values for MfaType2.
-const (
-	EmailOtp MfaType2 = "EmailOtp"
-)
-
-// Defines values for MfaType3.
-const (
-	Fido MfaType3 = "Fido"
 )
 
 // Defines values for NotFoundErrorCode.
@@ -485,31 +511,34 @@ const (
 
 // Defines values for OperationKind.
 const (
-	OperationKindAvaChainTxSign OperationKind = "AvaChainTxSign"
-	OperationKindAvaSign        OperationKind = "AvaSign"
-	OperationKindBabylonStaking OperationKind = "BabylonStaking"
-	OperationKindBlobSign       OperationKind = "BlobSign"
-	OperationKindBtcMessageSign OperationKind = "BtcMessageSign"
-	OperationKindBtcSign        OperationKind = "BtcSign"
-	OperationKindEip191Sign     OperationKind = "Eip191Sign"
-	OperationKindEip712Sign     OperationKind = "Eip712Sign"
-	OperationKindEotsNonces     OperationKind = "EotsNonces"
-	OperationKindEotsSign       OperationKind = "EotsSign"
-	OperationKindEth1Sign       OperationKind = "Eth1Sign"
-	OperationKindEth2Sign       OperationKind = "Eth2Sign"
-	OperationKindEth2Stake      OperationKind = "Eth2Stake"
-	OperationKindEth2Unstake    OperationKind = "Eth2Unstake"
-	OperationKindPsbtSign       OperationKind = "PsbtSign"
-	OperationKindRoleUpdate     OperationKind = "RoleUpdate"
-	OperationKindSolanaSign     OperationKind = "SolanaSign"
-	OperationKindSuiSign        OperationKind = "SuiSign"
-	OperationKindTaprootSign    OperationKind = "TaprootSign"
-	OperationKindTendermintSign OperationKind = "TendermintSign"
+	OperationKindAvaChainTxSign      OperationKind = "AvaChainTxSign"
+	OperationKindAvaSign             OperationKind = "AvaSign"
+	OperationKindBabylonCovSign      OperationKind = "BabylonCovSign"
+	OperationKindBabylonRegistration OperationKind = "BabylonRegistration"
+	OperationKindBabylonStaking      OperationKind = "BabylonStaking"
+	OperationKindBlobSign            OperationKind = "BlobSign"
+	OperationKindBtcMessageSign      OperationKind = "BtcMessageSign"
+	OperationKindBtcSign             OperationKind = "BtcSign"
+	OperationKindEip191Sign          OperationKind = "Eip191Sign"
+	OperationKindEip712Sign          OperationKind = "Eip712Sign"
+	OperationKindEotsNonces          OperationKind = "EotsNonces"
+	OperationKindEotsSign            OperationKind = "EotsSign"
+	OperationKindEth1Sign            OperationKind = "Eth1Sign"
+	OperationKindEth2Sign            OperationKind = "Eth2Sign"
+	OperationKindEth2Stake           OperationKind = "Eth2Stake"
+	OperationKindEth2Unstake         OperationKind = "Eth2Unstake"
+	OperationKindPsbtSign            OperationKind = "PsbtSign"
+	OperationKindRoleUpdate          OperationKind = "RoleUpdate"
+	OperationKindSolanaSign          OperationKind = "SolanaSign"
+	OperationKindSuiSign             OperationKind = "SuiSign"
+	OperationKindTaprootSign         OperationKind = "TaprootSign"
+	OperationKindTendermintSign      OperationKind = "TendermintSign"
 )
 
 // Defines values for PolicyErrorOwnCodes.
 const (
 	AddKeyToRoleDisallowed                  PolicyErrorOwnCodes = "AddKeyToRoleDisallowed"
+	BabylonStakingBbnAddress                PolicyErrorOwnCodes = "BabylonStakingBbnAddress"
 	BabylonStakingChangeAddress             PolicyErrorOwnCodes = "BabylonStakingChangeAddress"
 	BabylonStakingDisallowed                PolicyErrorOwnCodes = "BabylonStakingDisallowed"
 	BabylonStakingExplicitParams            PolicyErrorOwnCodes = "BabylonStakingExplicitParams"
@@ -603,6 +632,20 @@ const (
 	ExportUserComplete                  Scope0 = "export:user:complete"
 	ExportUserInit                      Scope0 = "export:user:init"
 	Manage                              Scope0 = "manage:*"
+	ManageAuthMigrationIdentityAdd      Scope0 = "manage:authMigration:identity:add"
+	ManageAuthMigrationIdentityRemove   Scope0 = "manage:authMigration:identity:remove"
+	ManageAuthMigrationUserUpdate       Scope0 = "manage:authMigration:user:update"
+	ManageContact                       Scope0 = "manage:contact:*"
+	ManageContactCreate                 Scope0 = "manage:contact:create"
+	ManageContactDelete                 Scope0 = "manage:contact:delete"
+	ManageContactGet                    Scope0 = "manage:contact:get"
+	ManageContactList                   Scope0 = "manage:contact:list"
+	ManageContactUpdate                 Scope0 = "manage:contact:update:*"
+	ManageContactUpdateAddresses        Scope0 = "manage:contact:update:addresses"
+	ManageContactUpdateEditPolicy       Scope0 = "manage:contact:update:editPolicy"
+	ManageContactUpdateMetadata         Scope0 = "manage:contact:update:metadata"
+	ManageContactUpdateName             Scope0 = "manage:contact:update:name"
+	ManageContactUpdateOwner            Scope0 = "manage:contact:update:owner"
 	ManageEmail                         Scope0 = "manage:email"
 	ManageExport                        Scope0 = "manage:export:*"
 	ManageExportOrg                     Scope0 = "manage:export:org:*"
@@ -634,6 +677,7 @@ const (
 	ManageMfaList                       Scope0 = "manage:mfa:list"
 	ManageMfaReadonly                   Scope0 = "manage:mfa:readonly"
 	ManageMfaRegister                   Scope0 = "manage:mfa:register:*"
+	ManageMfaRegisterEmail              Scope0 = "manage:mfa:register:email"
 	ManageMfaRegisterFido               Scope0 = "manage:mfa:register:fido"
 	ManageMfaRegisterTotp               Scope0 = "manage:mfa:register:totp"
 	ManageMfaUnregister                 Scope0 = "manage:mfa:unregister:*"
@@ -667,6 +711,7 @@ const (
 	ManagePolicy                        Scope0 = "manage:policy:*"
 	ManagePolicyCreate                  Scope0 = "manage:policy:create"
 	ManagePolicyCreateImportKey         Scope0 = "manage:policy:createImportKey"
+	ManagePolicyDelete                  Scope0 = "manage:policy:delete"
 	ManagePolicyGet                     Scope0 = "manage:policy:get"
 	ManagePolicyInvoke                  Scope0 = "manage:policy:invoke"
 	ManagePolicyList                    Scope0 = "manage:policy:list"
@@ -718,11 +763,14 @@ const (
 	Sign                                Scope0 = "sign:*"
 	SignAva                             Scope0 = "sign:ava"
 	SignBabylon                         Scope0 = "sign:babylon:*"
+	SignBabylonCovenant                 Scope0 = "sign:babylon:covenant"
 	SignBabylonEots                     Scope0 = "sign:babylon:eots:*"
 	SignBabylonEotsNonces               Scope0 = "sign:babylon:eots:nonces"
 	SignBabylonEotsSign                 Scope0 = "sign:babylon:eots:sign"
+	SignBabylonRegistration             Scope0 = "sign:babylon:registration"
 	SignBabylonStaking                  Scope0 = "sign:babylon:staking:*"
 	SignBabylonStakingDeposit           Scope0 = "sign:babylon:staking:deposit"
+	SignBabylonStakingSlash             Scope0 = "sign:babylon:staking:slash"
 	SignBabylonStakingUnbond            Scope0 = "sign:babylon:staking:unbond"
 	SignBabylonStakingWithdraw          Scope0 = "sign:babylon:staking:withdraw"
 	SignBlob                            Scope0 = "sign:blob"
@@ -731,7 +779,9 @@ const (
 	SignBtcMessageLegacy                Scope0 = "sign:btc:message:legacy"
 	SignBtcMessageSegwit                Scope0 = "sign:btc:message:segwit"
 	SignBtcPsbt                         Scope0 = "sign:btc:psbt:*"
+	SignBtcPsbtDoge                     Scope0 = "sign:btc:psbt:doge"
 	SignBtcPsbtLegacy                   Scope0 = "sign:btc:psbt:legacy"
+	SignBtcPsbtLtcSegwit                Scope0 = "sign:btc:psbt:ltcSegwit"
 	SignBtcPsbtSegwit                   Scope0 = "sign:btc:psbt:segwit"
 	SignBtcPsbtTaproot                  Scope0 = "sign:btc:psbt:taproot"
 	SignBtcSegwit                       Scope0 = "sign:btc:segwit"
@@ -763,6 +813,12 @@ const (
 	ProxyStartError       SignerErrorOwnCodes = "ProxyStartError"
 	StatusCodeWithMessage SignerErrorOwnCodes = "StatusCodeWithMessage"
 	UnhandledError        SignerErrorOwnCodes = "UnhandledError"
+)
+
+// Defines values for TimeoutErrorCode.
+const (
+	PolicyEngineTimeout        TimeoutErrorCode = "PolicyEngineTimeout"
+	WasmPolicyExecutionTimeout TimeoutErrorCode = "WasmPolicyExecutionTimeout"
 )
 
 // Defines values for UnauthorizedErrorCode.
@@ -832,6 +888,15 @@ type BadRequestErrorCode string
 
 // BlobSignRequest defines model for BlobSignRequest.
 type BlobSignRequest struct {
+	// AdaptorPk An optional base64 string comprising a SEC1-encoded secp256k1 public key.
+	// This field can be used *only* with Schnorr keys.
+	//
+	// If this field is present, the response will be a Schnorr adaptor signature
+	// in the format specified by Blockstream for use in libsecp256k1-zkp. See
+	// <https://github.com/ZhePang/Python_Specification_for_Schnorr_Adaptor/>
+	// for more information.
+	AdaptorPk *string `json:"adaptor_pk"`
+
 	// BlsDst An optional domain separation tag for use *only* with BLS signing requests.
 	// This field must not be supplied for requests involving non-BLS key types.
 	//
@@ -929,6 +994,9 @@ type CommonFields struct {
 	Version *int64 `json:"version,omitempty"`
 }
 
+// ConflictErrorCode defines model for ConflictErrorCode.
+type ConflictErrorCode string
+
 // EditPolicy A policy which governs when and who is allowed to update the entity this policy is
 // attached to (e.g., a role or a key).
 //
@@ -1015,6 +1083,9 @@ type HttpRequestCmp2 struct {
 	SolanaTx SolanaTxCmp `json:"SolanaTx"`
 }
 
+// Id defines model for Id.
+type Id = string
+
 // InternalErrorCode defines model for InternalErrorCode.
 type InternalErrorCode string
 
@@ -1060,36 +1131,14 @@ type MfaPolicy struct {
 	TimeDelay *Seconds `json:"time_delay,omitempty"`
 }
 
-// MfaType defines model for MfaType.
-type MfaType struct {
-	union json.RawMessage
-}
-
-// MfaType0 Log in with CubeSigner user credentials
-type MfaType0 string
-
-// MfaType1 Provide TOTP code
-type MfaType1 string
-
-// MfaType2 Provide OTP code sent via email
-type MfaType2 string
-
-// MfaType3 Answer a FIDO challenge using any registered FIDO key
-type MfaType3 string
-
-// MfaType4 defines model for .
-type MfaType4 struct {
-	// FidoKey Answer a FIDO challenge with a specific FIDO key
-	FidoKey struct {
-		// KeyId The ID of the FIDO key that must be use to approve the request
-		KeyId string `json:"key_id"`
-	} `json:"FidoKey"`
-}
+// MfaType Different types that can be used to approve an MFA request
+type MfaType = string
 
 // NewSessionResponse Information about a new session, returned from multiple endpoints (e.g., login, refresh, etc.).
 type NewSessionResponse struct {
 	// Expiration Session expiration (in seconds since UNIX epoch), beyond which it cannot be refreshed.
 	Expiration *int64 `json:"expiration,omitempty"`
+	OrgId      *Id    `json:"org_id"`
 
 	// RefreshToken Token that can be used to refresh this session.
 	RefreshToken string `json:"refresh_token"`
@@ -1174,6 +1223,9 @@ type SolanaTxCmp struct {
 	IgnoreBlockhash *bool `json:"ignore_blockhash,omitempty"`
 }
 
+// TimeoutErrorCode defines model for TimeoutErrorCode.
+type TimeoutErrorCode string
+
 // UnauthorizedErrorCode defines model for UnauthorizedErrorCode.
 type UnauthorizedErrorCode string
 
@@ -1217,7 +1269,7 @@ type KeyInfo struct {
 	Owner string `json:"owner"`
 
 	// Policy Key policy
-	Policy []map[string]interface{} `json:"policy"`
+	Policy []interface{} `json:"policy"`
 
 	// PublicKey Hex-encoded, serialized public key. The format used depends on the key type:
 	// - Secp256k1 keys use 65-byte uncompressed SECG format;
@@ -1365,146 +1417,6 @@ func (t HttpRequestCmp) MarshalJSON() ([]byte, error) {
 }
 
 func (t *HttpRequestCmp) UnmarshalJSON(b []byte) error {
-	err := t.union.UnmarshalJSON(b)
-	return err
-}
-
-// AsMfaType0 returns the union data inside the MfaType as a MfaType0
-func (t MfaType) AsMfaType0() (MfaType0, error) {
-	var body MfaType0
-	err := json.Unmarshal(t.union, &body)
-	return body, err
-}
-
-// FromMfaType0 overwrites any union data inside the MfaType as the provided MfaType0
-func (t *MfaType) FromMfaType0(v MfaType0) error {
-	b, err := json.Marshal(v)
-	t.union = b
-	return err
-}
-
-// MergeMfaType0 performs a merge with any union data inside the MfaType, using the provided MfaType0
-func (t *MfaType) MergeMfaType0(v MfaType0) error {
-	b, err := json.Marshal(v)
-	if err != nil {
-		return err
-	}
-
-	merged, err := runtime.JSONMerge(t.union, b)
-	t.union = merged
-	return err
-}
-
-// AsMfaType1 returns the union data inside the MfaType as a MfaType1
-func (t MfaType) AsMfaType1() (MfaType1, error) {
-	var body MfaType1
-	err := json.Unmarshal(t.union, &body)
-	return body, err
-}
-
-// FromMfaType1 overwrites any union data inside the MfaType as the provided MfaType1
-func (t *MfaType) FromMfaType1(v MfaType1) error {
-	b, err := json.Marshal(v)
-	t.union = b
-	return err
-}
-
-// MergeMfaType1 performs a merge with any union data inside the MfaType, using the provided MfaType1
-func (t *MfaType) MergeMfaType1(v MfaType1) error {
-	b, err := json.Marshal(v)
-	if err != nil {
-		return err
-	}
-
-	merged, err := runtime.JSONMerge(t.union, b)
-	t.union = merged
-	return err
-}
-
-// AsMfaType2 returns the union data inside the MfaType as a MfaType2
-func (t MfaType) AsMfaType2() (MfaType2, error) {
-	var body MfaType2
-	err := json.Unmarshal(t.union, &body)
-	return body, err
-}
-
-// FromMfaType2 overwrites any union data inside the MfaType as the provided MfaType2
-func (t *MfaType) FromMfaType2(v MfaType2) error {
-	b, err := json.Marshal(v)
-	t.union = b
-	return err
-}
-
-// MergeMfaType2 performs a merge with any union data inside the MfaType, using the provided MfaType2
-func (t *MfaType) MergeMfaType2(v MfaType2) error {
-	b, err := json.Marshal(v)
-	if err != nil {
-		return err
-	}
-
-	merged, err := runtime.JSONMerge(t.union, b)
-	t.union = merged
-	return err
-}
-
-// AsMfaType3 returns the union data inside the MfaType as a MfaType3
-func (t MfaType) AsMfaType3() (MfaType3, error) {
-	var body MfaType3
-	err := json.Unmarshal(t.union, &body)
-	return body, err
-}
-
-// FromMfaType3 overwrites any union data inside the MfaType as the provided MfaType3
-func (t *MfaType) FromMfaType3(v MfaType3) error {
-	b, err := json.Marshal(v)
-	t.union = b
-	return err
-}
-
-// MergeMfaType3 performs a merge with any union data inside the MfaType, using the provided MfaType3
-func (t *MfaType) MergeMfaType3(v MfaType3) error {
-	b, err := json.Marshal(v)
-	if err != nil {
-		return err
-	}
-
-	merged, err := runtime.JSONMerge(t.union, b)
-	t.union = merged
-	return err
-}
-
-// AsMfaType4 returns the union data inside the MfaType as a MfaType4
-func (t MfaType) AsMfaType4() (MfaType4, error) {
-	var body MfaType4
-	err := json.Unmarshal(t.union, &body)
-	return body, err
-}
-
-// FromMfaType4 overwrites any union data inside the MfaType as the provided MfaType4
-func (t *MfaType) FromMfaType4(v MfaType4) error {
-	b, err := json.Marshal(v)
-	t.union = b
-	return err
-}
-
-// MergeMfaType4 performs a merge with any union data inside the MfaType, using the provided MfaType4
-func (t *MfaType) MergeMfaType4(v MfaType4) error {
-	b, err := json.Marshal(v)
-	if err != nil {
-		return err
-	}
-
-	merged, err := runtime.JSONMerge(t.union, b)
-	t.union = merged
-	return err
-}
-
-func (t MfaType) MarshalJSON() ([]byte, error) {
-	b, err := t.union.MarshalJSON()
-	return b, err
-}
-
-func (t *MfaType) UnmarshalJSON(b []byte) error {
 	err := t.union.UnmarshalJSON(b)
 	return err
 }
@@ -1981,6 +1893,58 @@ func (t *SignerErrorCode) FromPreconditionErrorCode(v PreconditionErrorCode) err
 
 // MergePreconditionErrorCode performs a merge with any union data inside the SignerErrorCode, using the provided PreconditionErrorCode
 func (t *SignerErrorCode) MergePreconditionErrorCode(v PreconditionErrorCode) error {
+	b, err := json.Marshal(v)
+	if err != nil {
+		return err
+	}
+
+	merged, err := runtime.JSONMerge(t.union, b)
+	t.union = merged
+	return err
+}
+
+// AsTimeoutErrorCode returns the union data inside the SignerErrorCode as a TimeoutErrorCode
+func (t SignerErrorCode) AsTimeoutErrorCode() (TimeoutErrorCode, error) {
+	var body TimeoutErrorCode
+	err := json.Unmarshal(t.union, &body)
+	return body, err
+}
+
+// FromTimeoutErrorCode overwrites any union data inside the SignerErrorCode as the provided TimeoutErrorCode
+func (t *SignerErrorCode) FromTimeoutErrorCode(v TimeoutErrorCode) error {
+	b, err := json.Marshal(v)
+	t.union = b
+	return err
+}
+
+// MergeTimeoutErrorCode performs a merge with any union data inside the SignerErrorCode, using the provided TimeoutErrorCode
+func (t *SignerErrorCode) MergeTimeoutErrorCode(v TimeoutErrorCode) error {
+	b, err := json.Marshal(v)
+	if err != nil {
+		return err
+	}
+
+	merged, err := runtime.JSONMerge(t.union, b)
+	t.union = merged
+	return err
+}
+
+// AsConflictErrorCode returns the union data inside the SignerErrorCode as a ConflictErrorCode
+func (t SignerErrorCode) AsConflictErrorCode() (ConflictErrorCode, error) {
+	var body ConflictErrorCode
+	err := json.Unmarshal(t.union, &body)
+	return body, err
+}
+
+// FromConflictErrorCode overwrites any union data inside the SignerErrorCode as the provided ConflictErrorCode
+func (t *SignerErrorCode) FromConflictErrorCode(v ConflictErrorCode) error {
+	b, err := json.Marshal(v)
+	t.union = b
+	return err
+}
+
+// MergeConflictErrorCode performs a merge with any union data inside the SignerErrorCode, using the provided ConflictErrorCode
+func (t *SignerErrorCode) MergeConflictErrorCode(v ConflictErrorCode) error {
 	b, err := json.Marshal(v)
 	if err != nil {
 		return err
