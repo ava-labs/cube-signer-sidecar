@@ -9,9 +9,9 @@ import (
 	"strconv"
 
 	"github.com/ava-labs/avalanchego/proto/pb/signer"
-	"github.com/ava-labs/cubist-signer/api"
-	"github.com/ava-labs/cubist-signer/config"
-	"github.com/ava-labs/cubist-signer/signerserver"
+	"github.com/ava-labs/cube-signer-sidecar/api"
+	"github.com/ava-labs/cube-signer-sidecar/config"
+	"github.com/ava-labs/cube-signer-sidecar/signerserver"
 	"google.golang.org/grpc"
 )
 

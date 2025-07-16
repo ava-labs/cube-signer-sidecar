@@ -5,7 +5,7 @@ import (
 	"testing"
 
 	"github.com/ava-labs/avalanchego/utils/logging"
-	"github.com/ava-labs/cubist-signer/tests/utils"
+	"github.com/ava-labs/cube-signer-sidecar/tests/utils"
 	"github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
 )
@@ -24,7 +24,7 @@ var _ = ginkgo.BeforeSuite(func() {
 	logLevel := logging.Info
 	// var ctx context.Context
 	log = logging.NewLogger(
-		"cubist-signer-e2e",
+		"cube-signer-sidecar-e2e",
 		logging.NewWrappedCore(
 			logLevel,
 			os.Stdout,
@@ -32,12 +32,12 @@ var _ = ginkgo.BeforeSuite(func() {
 		),
 	)
 
-	log.Info("Building cubist signer")
+	log.Info("Building cube-signer-sidecar")
 	utils.BuildCubistSigner()
 	log.Info("Set up ginkgo before suite")
 })
 
-var _ = ginkgo.Describe("Cubist Signer Service Integration Tests", func() {
+var _ = ginkgo.Describe("cube-signer-sidecar e2e tests", func() {
 	ginkgo.It("Basic Signing", func() {
 		BasicSigning(log)
 	})

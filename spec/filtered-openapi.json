@@ -1566,7 +1566,7 @@
     },
     "description": "The CubeSigner management and signing service.",
     "title": "CubeSigner API",
-    "version": "v0.121.2"
+    "version": "v0.123.1"
   },
   "openapi": "3.0.3",
   "paths": {

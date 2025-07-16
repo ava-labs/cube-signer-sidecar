@@ -15,7 +15,7 @@ import (
 	http "net/http"
 	reflect "reflect"
 
-	api "github.com/ava-labs/cubist-signer/api"
+	api "github.com/ava-labs/cube-signer-sidecar/api"
 	gomock "go.uber.org/mock/gomock"
 )
 
