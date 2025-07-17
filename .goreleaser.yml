@@ -1,10 +1,10 @@
 # ref. https://goreleaser.com/customization/build/
-project_name: cubist-signer
+project_name: cube-signer-sidecar
 version: 2
 builds:
-  - id: cubist-signer
+  - id: cube-signer-sidecar
     main: ./main/main.go
-    binary: cubist-signer
+    binary: cube-signer-sidecar
     flags:
       - -v
     # windows is ignored by default, as the `goos` field by default only
@@ -66,6 +66,6 @@ release:
   # Default is extracted from the origin remote URL or empty if its private hosted.
   github:
     owner: ava-labs
-    name: cubist-signer
+    name: cube-signer-sidecar
   # If tag indicates rc, will mark it as prerelease
   prerelease: auto
