@@ -12,6 +12,8 @@ jobs:
     name: e2e_tests
     runs-on: ubuntu-22.04
 
+    if: (github.actor != 'dependabot[bot]')
+    
     steps:
       - name: Checkout icm-relayer repository
         uses: actions/checkout@v4
