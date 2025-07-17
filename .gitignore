@@ -2,6 +2,9 @@ build/
 
 .vscode*
 
+# Release build outputs
+osxcross/
+
 # Ginkgo test outputs
 *.test
 

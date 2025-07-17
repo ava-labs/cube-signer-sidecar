@@ -74,6 +74,8 @@ func runServer(cfg config.Config) error {
 		return fmt.Errorf("failed to start gRPC server: %w", err)
 	}
 
+	api.HandleHealthCheck()
+
 	log.Printf("Starting gRPC server on port %s...", port)
 	if err := grpcServer.Serve(lis); err != nil {
 		return fmt.Errorf("failed to serve: %w", err)
