@@ -15,7 +15,3 @@ Please refer to the [Bug Bounty Page](https://immunefi.com/bug-bounty/avalanche/
 ## Supported Versions
 
 Please use the most recently released version to perform testing and to validate security issues.
-
-## Audit Reports
-
-All complete audit reports for the contracts in this repository can be found in the [audits](./audits/) directory.
