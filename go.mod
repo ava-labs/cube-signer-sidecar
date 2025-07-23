@@ -3,7 +3,7 @@ module github.com/ava-labs/cube-signer-sidecar
 go 1.23.11
 
 require (
-	github.com/ava-labs/avalanchego v1.13.2
+	github.com/ava-labs/avalanchego v1.13.3
 	github.com/oapi-codegen/oapi-codegen/v2 v2.5.0
 	github.com/oapi-codegen/runtime v1.1.2
 	github.com/onsi/ginkgo/v2 v2.23.4
