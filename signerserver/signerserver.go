@@ -53,9 +53,8 @@ func New(client *api.ClientWithResponses, cfg config.Config) (*SignerServer, err
 		}
 		tokenData.NewSessionResponse = *newSessionResponse
 	}
+	
 	tokenData.KeyID = KeyID{KeyID: cfg.KeyId}
-
-	fmt.Printf("Loaded token data: %+v\n", tokenData)
 
 	return &SignerServer{
 		client:        client,
