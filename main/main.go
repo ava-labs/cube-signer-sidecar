@@ -6,6 +6,7 @@ import (
 	"log"
 	"net"
 	"os"
+	"os/signal"
 	"strconv"
 
 	"github.com/ava-labs/avalanchego/proto/pb/signer"
@@ -45,6 +46,7 @@ func main() {
 	if err := runServer(cfg); err != nil {
 		log.Fatalf("failed to run server: %v", err)
 	}
+	log.Println("server exited gracefully")
 }
 
 func runServer(cfg config.Config) error {
@@ -60,6 +62,9 @@ func runServer(cfg config.Config) error {
 
 	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()
+
+	// Handle os signals
+	go handleSystemSignals(cancel)
 
 	signerServer.StartBackgroundTokenRefresh(ctx)
 
@@ -82,4 +87,15 @@ func runServer(cfg config.Config) error {
 	}
 
 	return nil
+}
+
+func handleSystemSignals(cancel context.CancelFunc) {
+	sigChan := make(chan os.Signal, 1)
+	signal.Notify(sigChan, os.Interrupt, os.Kill)
+
+	sig := <-sigChan
+	log.Printf("Received os signal: %s", sig.String())
+
+	// Cancel the parent context
+	cancel()
 }
