@@ -14,7 +14,7 @@ const (
 )
 
 type Config struct {
-	UserToken string `mapstructure:"user-token" json:"user-token"`
+	UserToken string `mapstructure:"user-token" json:"user_token"`
 
 	OrgId  string `mapstructure:"org-id" json:"org-id"`
 	KeyId  string `mapstructure:"key-id" json:"key-id"`

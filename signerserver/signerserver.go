@@ -23,6 +23,8 @@ import (
 
 var popDst = base64.StdEncoding.EncodeToString(bls.CiphersuiteProofOfPossession.Bytes())
 
+var MAX_SESSION_LIFETIME int64 = 31536000 // 1 year
+
 type SignerServer struct {
 	signer.UnimplementedSignerServer
 	client        *api.ClientWithResponses
@@ -48,8 +50,8 @@ func New(client *api.ClientWithResponses, token string, id ID) (*SignerServer, e
 	}
 
 	return &SignerServer{
-		client:        client,
-		tokenData:     &tokenData{NewSessionResponse: *newSessionResponse, ID: id},
+		client:    client,
+		tokenData: &tokenData{NewSessionResponse: *newSessionResponse, ID: id},
 		// tokenFilePath: tokenFilePath,
 	}, nil
 }
@@ -85,16 +87,13 @@ func (s *SignerServer) RefreshToken() error {
 }
 
 func createNewSession(client *api.ClientWithResponses, token string, roleId string, orgId string) (*api.NewSessionResponse, error) {
-	res, err := client.CreateRoleTokenWithResponse(context.Background(), orgId, roleId, api.CreateTokenRequest{
-		AuthLifetime:    new(int64),
-		Client:          &api.ClientProfile{},
-		GraceLifetime:   new(int64),
-		OsInfo:          &api.OsInfo{},
-		Purpose:         "bls signing",
-		RefreshLifetime: new(int64),
-		Scopes:          &[]api.Scope{},
-		SessionLifetime: new(int64),
-	}, addUserAuthHeaderFn(token))
+	res, err := client.CreateRoleTokenWithResponse(
+		context.Background(),
+		orgId,
+		roleId,
+		api.CreateTokenRequest{Purpose: "bls signing"},
+		addUserAuthHeaderFn(token),
+	)
 	if err != nil {
 		return nil, fmt.Errorf("failed to refresh session: %w", err)
 	}
