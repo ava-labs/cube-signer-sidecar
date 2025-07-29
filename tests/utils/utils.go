@@ -51,7 +51,6 @@ func CreateDefaultConfig() *config.Config {
 		TokenFilePath:  DefaultTokenPath,
 		SignerEndpoint: DefaultSignerEndpoint,
 		Port:           DefaultPort,
-		UserToken:      "",
 		OrgId:          "",
 		KeyId:          DefaultKeyID,
 		RoleId:         DefaultRoleID,
