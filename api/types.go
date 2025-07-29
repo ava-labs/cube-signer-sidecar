@@ -200,6 +200,8 @@ const (
 	BadRequestErrorCodeRoleNameTaken                                   BadRequestErrorCode = "RoleNameTaken"
 	BadRequestErrorCodeRoleNotFound                                    BadRequestErrorCode = "RoleNotFound"
 	BadRequestErrorCodeSessionRoleMismatch                             BadRequestErrorCode = "SessionRoleMismatch"
+	BadRequestErrorCodeSiweChallengeNotFound                           BadRequestErrorCode = "SiweChallengeNotFound"
+	BadRequestErrorCodeSiweInvalidRequest                              BadRequestErrorCode = "SiweInvalidRequest"
 	BadRequestErrorCodeSourceIpAllowlistEmpty                          BadRequestErrorCode = "SourceIpAllowlistEmpty"
 	BadRequestErrorCodeSuiSenderMismatch                               BadRequestErrorCode = "SuiSenderMismatch"
 	BadRequestErrorCodeTaprootSignError                                BadRequestErrorCode = "TaprootSignError"
@@ -325,6 +327,9 @@ const (
 	SessionRevoked                      ForbiddenErrorCode = "SessionRevoked"
 	SessionRoleChanged                  ForbiddenErrorCode = "SessionRoleChanged"
 	SessionWithoutAnyScopeUnder         ForbiddenErrorCode = "SessionWithoutAnyScopeUnder"
+	SiweChallengeExpired                ForbiddenErrorCode = "SiweChallengeExpired"
+	SiweMessageInvalidSignature         ForbiddenErrorCode = "SiweMessageInvalidSignature"
+	SiweMessageNotValid                 ForbiddenErrorCode = "SiweMessageNotValid"
 	TotpAlreadyConfigured               ForbiddenErrorCode = "TotpAlreadyConfigured"
 	TotpConfigurationChanged            ForbiddenErrorCode = "TotpConfigurationChanged"
 	UserDisabled                        ForbiddenErrorCode = "UserDisabled"
@@ -937,6 +942,18 @@ type BlobSignRequest struct {
 	TaprootTweak *string `json:"taproot_tweak"`
 }
 
+// ClientProfile Client information representing the nature of front-end in [`ClientSessionMetadata`] and reflected in [`SessionMetadata`].
+type ClientProfile struct {
+	// Agent Agent/Product name
+	Agent *string `json:"agent"`
+
+	// Engine Name of the engine
+	Engine *string `json:"engine"`
+
+	// Version Agent/product version
+	Version *string `json:"version"`
+}
+
 // ClientSessionInfo Session information sent to the client.
 // This struct works in tandem with its server-side counterpart [`SessionData`].
 type ClientSessionInfo struct {
@@ -964,6 +981,15 @@ type ClientSessionInfo struct {
 
 	// SessionId Session ID
 	SessionId string `json:"session_id"`
+}
+
+// ClientSessionMetadata Attributes that are expected to be provided by the client
+type ClientSessionMetadata struct {
+	// Client Client information representing the nature of front-end in [`ClientSessionMetadata`] and reflected in [`SessionMetadata`].
+	Client *ClientProfile `json:"client,omitempty"`
+
+	// OsInfo OS information set in [`ClientSessionMetadata`] and reflected in [`SessionMetadata`]
+	OsInfo *OsInfo `json:"os_info,omitempty"`
 }
 
 // CommonFields Fields that are common to different types of resources such as keys
@@ -996,6 +1022,42 @@ type CommonFields struct {
 
 // ConflictErrorCode defines model for ConflictErrorCode.
 type ConflictErrorCode string
+
+// CreateTokenRequest defines model for CreateTokenRequest.
+type CreateTokenRequest struct {
+	// AuthLifetime The lifetime (in seconds) of auth tokens for this session.
+	// Auth tokens can be refreshed (renewed) using a valid (unexpired)
+	// refresh token, but not beyond the session lifetime.
+	AuthLifetime *int64 `json:"auth_lifetime,omitempty"`
+
+	// Client Client information representing the nature of front-end in [`ClientSessionMetadata`] and reflected in [`SessionMetadata`].
+	Client *ClientProfile `json:"client,omitempty"`
+
+	// GraceLifetime The amount of time (in seconds) that an auth token for this session remains
+	// valid after it has been refreshed and a new auth token has been issued. This
+	// helps to address concurrency hazards, for example, if one thread makes requests
+	// with auth token while another refreshes it.
+	GraceLifetime *int64 `json:"grace_lifetime,omitempty"`
+
+	// OsInfo OS information set in [`ClientSessionMetadata`] and reflected in [`SessionMetadata`]
+	OsInfo *OsInfo `json:"os_info,omitempty"`
+
+	// Purpose A human readable description of the purpose of the key
+	Purpose string `json:"purpose"`
+
+	// RefreshLifetime The lifetime (in seconds) of refresh tokens for this session.
+	// If this value is shorter than the session lifetime, inactive sessions
+	// will become invalid once the auth and refresh tokens have both expired.
+	RefreshLifetime *int64 `json:"refresh_lifetime,omitempty"`
+
+	// Scopes Controls what capabilities this session will have. By default, it has all
+	// signing capabilities, i.e., just the 'sign:*' scope.
+	Scopes *[]Scope `json:"scopes"`
+
+	// SessionLifetime The lifetime (in seconds) of the session.
+	// The session cannot be extended beyond its original lifetime.
+	SessionLifetime *int64 `json:"session_lifetime,omitempty"`
+}
 
 // EditPolicy A policy which governs when and who is allowed to update the entity this policy is
 // attached to (e.g., a role or a key).
@@ -1158,6 +1220,14 @@ type NotFoundErrorCode string
 // OperationKind All different kinds of sensitive operations
 type OperationKind string
 
+// OsInfo OS information set in [`ClientSessionMetadata`] and reflected in [`SessionMetadata`]
+type OsInfo struct {
+	Architecture *string `json:"architecture"`
+	Name         *string `json:"name"`
+	Version      *string `json:"version"`
+	WordSize     *string `json:"word_size"`
+}
+
 // PolicyErrorCode defines model for PolicyErrorCode.
 type PolicyErrorCode struct {
 	union json.RawMessage
@@ -1173,6 +1243,29 @@ type PreconditionErrorCode struct {
 
 // PreconditionErrorOwnCodes defines model for PreconditionErrorOwnCodes.
 type PreconditionErrorOwnCodes string
+
+// RatchetConfig defines model for RatchetConfig.
+type RatchetConfig struct {
+	// AuthLifetime The lifetime (in seconds) of auth tokens for this session.
+	// Auth tokens can be refreshed (renewed) using a valid (unexpired)
+	// refresh token, but not beyond the session lifetime.
+	AuthLifetime *int64 `json:"auth_lifetime,omitempty"`
+
+	// GraceLifetime The amount of time (in seconds) that an auth token for this session remains
+	// valid after it has been refreshed and a new auth token has been issued. This
+	// helps to address concurrency hazards, for example, if one thread makes requests
+	// with auth token while another refreshes it.
+	GraceLifetime *int64 `json:"grace_lifetime,omitempty"`
+
+	// RefreshLifetime The lifetime (in seconds) of refresh tokens for this session.
+	// If this value is shorter than the session lifetime, inactive sessions
+	// will become invalid once the auth and refresh tokens have both expired.
+	RefreshLifetime *int64 `json:"refresh_lifetime,omitempty"`
+
+	// SessionLifetime The lifetime (in seconds) of the session.
+	// The session cannot be extended beyond its original lifetime.
+	SessionLifetime *int64 `json:"session_lifetime,omitempty"`
+}
 
 // Scope All scopes for accessing CubeSigner APIs
 type Scope struct {
@@ -1290,6 +1383,9 @@ type SignResponse struct {
 	// Signature The hex-encoded resulting signature.
 	Signature string `json:"signature"`
 }
+
+// CreateRoleTokenJSONRequestBody defines body for CreateRoleToken for application/json ContentType.
+type CreateRoleTokenJSONRequestBody = CreateTokenRequest
 
 // BlobSignJSONRequestBody defines body for BlobSign for application/json ContentType.
 type BlobSignJSONRequestBody = BlobSignRequest

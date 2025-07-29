@@ -49,9 +49,11 @@ func WriteConfig(cfg *config.Config, fname string) string {
 func CreateDefaultConfig() *config.Config {
 	return &config.Config{
 		TokenFilePath:  DefaultTokenPath,
-		KeyID:          DefaultKeyID,
 		SignerEndpoint: DefaultSignerEndpoint,
 		Port:           DefaultPort,
+		OrgId:          "",
+		KeyId:          DefaultKeyID,
+		RoleId:         DefaultRoleID,
 	}
 }
 

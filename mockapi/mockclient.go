@@ -122,6 +122,46 @@ func (mr *MockClientInterfaceMockRecorder) BlobSignWithBody(ctx, orgId, keyId, c
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "BlobSignWithBody", reflect.TypeOf((*MockClientInterface)(nil).BlobSignWithBody), varargs...)
 }
 
+// CreateRoleToken mocks base method.
+func (m *MockClientInterface) CreateRoleToken(ctx context.Context, orgId, roleId string, body api.CreateRoleTokenJSONRequestBody, reqEditors ...api.RequestEditorFn) (*http.Response, error) {
+	m.ctrl.T.Helper()
+	varargs := []any{ctx, orgId, roleId, body}
+	for _, a := range reqEditors {
+		varargs = append(varargs, a)
+	}
+	ret := m.ctrl.Call(m, "CreateRoleToken", varargs...)
+	ret0, _ := ret[0].(*http.Response)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// CreateRoleToken indicates an expected call of CreateRoleToken.
+func (mr *MockClientInterfaceMockRecorder) CreateRoleToken(ctx, orgId, roleId, body any, reqEditors ...any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	varargs := append([]any{ctx, orgId, roleId, body}, reqEditors...)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CreateRoleToken", reflect.TypeOf((*MockClientInterface)(nil).CreateRoleToken), varargs...)
+}
+
+// CreateRoleTokenWithBody mocks base method.
+func (m *MockClientInterface) CreateRoleTokenWithBody(ctx context.Context, orgId, roleId, contentType string, body io.Reader, reqEditors ...api.RequestEditorFn) (*http.Response, error) {
+	m.ctrl.T.Helper()
+	varargs := []any{ctx, orgId, roleId, contentType, body}
+	for _, a := range reqEditors {
+		varargs = append(varargs, a)
+	}
+	ret := m.ctrl.Call(m, "CreateRoleTokenWithBody", varargs...)
+	ret0, _ := ret[0].(*http.Response)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// CreateRoleTokenWithBody indicates an expected call of CreateRoleTokenWithBody.
+func (mr *MockClientInterfaceMockRecorder) CreateRoleTokenWithBody(ctx, orgId, roleId, contentType, body any, reqEditors ...any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	varargs := append([]any{ctx, orgId, roleId, contentType, body}, reqEditors...)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CreateRoleTokenWithBody", reflect.TypeOf((*MockClientInterface)(nil).CreateRoleTokenWithBody), varargs...)
+}
+
 // GetKeyInOrg mocks base method.
 func (m *MockClientInterface) GetKeyInOrg(ctx context.Context, orgId, keyId string, reqEditors ...api.RequestEditorFn) (*http.Response, error) {
 	m.ctrl.T.Helper()
@@ -244,6 +284,46 @@ func (mr *MockClientWithResponsesInterfaceMockRecorder) BlobSignWithResponse(ctx
 	mr.mock.ctrl.T.Helper()
 	varargs := append([]any{ctx, orgId, keyId, body}, reqEditors...)
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "BlobSignWithResponse", reflect.TypeOf((*MockClientWithResponsesInterface)(nil).BlobSignWithResponse), varargs...)
+}
+
+// CreateRoleTokenWithBodyWithResponse mocks base method.
+func (m *MockClientWithResponsesInterface) CreateRoleTokenWithBodyWithResponse(ctx context.Context, orgId, roleId, contentType string, body io.Reader, reqEditors ...api.RequestEditorFn) (*api.CreateRoleTokenResponse, error) {
+	m.ctrl.T.Helper()
+	varargs := []any{ctx, orgId, roleId, contentType, body}
+	for _, a := range reqEditors {
+		varargs = append(varargs, a)
+	}
+	ret := m.ctrl.Call(m, "CreateRoleTokenWithBodyWithResponse", varargs...)
+	ret0, _ := ret[0].(*api.CreateRoleTokenResponse)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// CreateRoleTokenWithBodyWithResponse indicates an expected call of CreateRoleTokenWithBodyWithResponse.
+func (mr *MockClientWithResponsesInterfaceMockRecorder) CreateRoleTokenWithBodyWithResponse(ctx, orgId, roleId, contentType, body any, reqEditors ...any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	varargs := append([]any{ctx, orgId, roleId, contentType, body}, reqEditors...)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CreateRoleTokenWithBodyWithResponse", reflect.TypeOf((*MockClientWithResponsesInterface)(nil).CreateRoleTokenWithBodyWithResponse), varargs...)
+}
+
+// CreateRoleTokenWithResponse mocks base method.
+func (m *MockClientWithResponsesInterface) CreateRoleTokenWithResponse(ctx context.Context, orgId, roleId string, body api.CreateRoleTokenJSONRequestBody, reqEditors ...api.RequestEditorFn) (*api.CreateRoleTokenResponse, error) {
+	m.ctrl.T.Helper()
+	varargs := []any{ctx, orgId, roleId, body}
+	for _, a := range reqEditors {
+		varargs = append(varargs, a)
+	}
+	ret := m.ctrl.Call(m, "CreateRoleTokenWithResponse", varargs...)
+	ret0, _ := ret[0].(*api.CreateRoleTokenResponse)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// CreateRoleTokenWithResponse indicates an expected call of CreateRoleTokenWithResponse.
+func (mr *MockClientWithResponsesInterfaceMockRecorder) CreateRoleTokenWithResponse(ctx, orgId, roleId, body any, reqEditors ...any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	varargs := append([]any{ctx, orgId, roleId, body}, reqEditors...)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CreateRoleTokenWithResponse", reflect.TypeOf((*MockClientWithResponsesInterface)(nil).CreateRoleTokenWithResponse), varargs...)
 }
 
 // GetKeyInOrgWithResponse mocks base method.
