@@ -8,13 +8,8 @@ import (
 
 type tokenData struct {
 	api.NewSessionResponse
-	KeyID
 	// save the rest of the data so that we don't lose data when overwriting the file
 	RawData rawMessageMap `json:"-"`
-}
-
-type KeyID struct {
-	KeyID string `json:"key_id"`
 }
 
 // used for deserializing the keys but not the values
@@ -50,14 +45,9 @@ func toRawData(v any) (map[string]json.RawMessage, error) {
 func (t *tokenData) UnmarshalJSON(data []byte) error {
 	var (
 		NewSessionResponse api.NewSessionResponse
-		keyId              KeyID
 	)
 
 	if err := json.Unmarshal(data, &NewSessionResponse); err != nil {
-		return err
-	}
-
-	if err := json.Unmarshal(data, &keyId); err != nil {
 		return err
 	}
 
@@ -68,7 +58,6 @@ func (t *tokenData) UnmarshalJSON(data []byte) error {
 	}
 
 	t.NewSessionResponse = NewSessionResponse
-	t.KeyID = keyId
 	t.RawData = rawData
 
 	return nil

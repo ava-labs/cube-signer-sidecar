@@ -31,6 +31,7 @@ type SignerServer struct {
 	client        *api.ClientWithResponses
 	tokenData     *tokenData
 	tokenFilePath string
+	keyId         string
 	publicKey     []byte
 }
 
@@ -53,13 +54,12 @@ func New(client *api.ClientWithResponses, cfg config.Config) (*SignerServer, err
 		}
 		tokenData.NewSessionResponse = *newSessionResponse
 	}
-	
-	tokenData.KeyID = KeyID{KeyID: cfg.KeyId}
 
 	return &SignerServer{
 		client:        client,
 		tokenData:     &tokenData,
 		tokenFilePath: cfg.TokenFilePath,
+		keyId:         cfg.KeyId,
 	}, nil
 }
 
@@ -172,7 +172,7 @@ func (s *SignerServer) PublicKey(ctx context.Context, in *signer.PublicKeyReques
 		return publicKeyRes, nil
 	}
 
-	rsp, err := s.client.GetKeyInOrg(ctx, *s.tokenData.OrgId, s.tokenData.KeyID.KeyID, s.addAuthHeaderFn())
+	rsp, err := s.client.GetKeyInOrg(ctx, *s.tokenData.OrgId, s.keyId, s.addAuthHeaderFn())
 	if err != nil {
 		return nil, fmt.Errorf("failed to get key in org: %w", err)
 	}
@@ -256,7 +256,7 @@ func (s *SignerServer) sign(ctx context.Context, bytes []byte, blsDst *string) (
 		BlsDst:        blsDst,
 	}
 
-	res, err := s.client.BlobSignWithResponse(ctx, *s.tokenData.OrgId, s.tokenData.KeyID.KeyID, *blobSignReq, s.addAuthHeaderFn())
+	res, err := s.client.BlobSignWithResponse(ctx, *s.tokenData.OrgId, s.keyId, *blobSignReq, s.addAuthHeaderFn())
 	if err != nil {
 		return nil, fmt.Errorf("failed to sign blob: %w", err)
 	}
