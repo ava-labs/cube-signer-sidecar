@@ -307,6 +307,8 @@
           "InvalidLength",
           "InvalidKeyMaterialId",
           "KeyNotFound",
+          "SiweChallengeNotFound",
+          "SiweInvalidRequest",
           "UserExportDerivedKey",
           "UserExportPublicKeyInvalid",
           "UnableToAccessSmtpRelay",
@@ -499,6 +501,30 @@
           "message_base64": "YWJjZGVmZ2hpamtsbW5vcHFyc3R1dnd4eXoxMjM0NTYK"
         }
       },
+      "ClientProfile": {
+        "description": "Client information representing the nature of front-end in [`ClientSessionMetadata`] and reflected in [`SessionMetadata`].",
+        "properties": {
+          "agent": {
+            "description": "Agent/Product name",
+            "example": "Mozilla Firefox",
+            "nullable": true,
+            "type": "string"
+          },
+          "engine": {
+            "description": "Name of the engine",
+            "example": "Gecko",
+            "nullable": true,
+            "type": "string"
+          },
+          "version": {
+            "description": "Agent/product version",
+            "example": "41.2",
+            "nullable": true,
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
       "ClientSessionInfo": {
         "description": "Session information sent to the client.\nThis struct works in tandem with its server-side counterpart [`SessionData`].",
         "properties": {
@@ -541,6 +567,18 @@
         ],
         "type": "object"
       },
+      "ClientSessionMetadata": {
+        "description": "Attributes that are expected to be provided by the client",
+        "properties": {
+          "client": {
+            "$ref": "#/components/schemas/ClientProfile"
+          },
+          "os_info": {
+            "$ref": "#/components/schemas/OsInfo"
+          }
+        },
+        "type": "object"
+      },
       "CommonFields": {
         "description": "Fields that are common to different types of resources such as keys",
         "properties": {
@@ -581,6 +619,41 @@
           "ConcurrentLockCreation"
         ],
         "type": "string"
+      },
+      "CreateTokenRequest": {
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/RatchetConfig"
+          },
+          {
+            "$ref": "#/components/schemas/ClientSessionMetadata"
+          },
+          {
+            "properties": {
+              "purpose": {
+                "description": "A human readable description of the purpose of the key",
+                "example": "Validator Signing",
+                "type": "string"
+              },
+              "scopes": {
+                "description": "Controls what capabilities this session will have. By default, it has all\nsigning capabilities, i.e., just the 'sign:*' scope.",
+                "example": [
+                  "sign:*"
+                ],
+                "items": {
+                  "$ref": "#/components/schemas/Scope"
+                },
+                "minItems": 1,
+                "nullable": true,
+                "type": "array"
+              }
+            },
+            "required": [
+              "purpose"
+            ],
+            "type": "object"
+          }
+        ]
       },
       "EditPolicy": {
         "description": "A policy which governs when and who is allowed to update the entity this policy is\nattached to (e.g., a role or a key).\n\nWhen attached to a role, by default, this policy applies to role deletion and all\nrole updates (including adding/removing keys and users); in terms of scopes,\nit applies to `manage:role:update:*` and `manage:role:delete`.\n\nWhen attached to a key, by default, this policy applies to key deletion, all\nkey updates, and adding/removing that key to/from a role; in terms of scopes,\nit applies to `manage:key:update:*`, `manage:key:delete`, `manage:role:update:key:*`.\n\nThis default can be changed by setting the `applies_to_scopes` property.",
@@ -770,7 +843,10 @@
           "UserNotContactOwner",
           "LegacySessionCannotHaveScopeCeiling",
           "RoleInParentOrgNotAllowed",
-          "RemoveKeyFromRoleUserNotAllowed"
+          "RemoveKeyFromRoleUserNotAllowed",
+          "SiweChallengeExpired",
+          "SiweMessageNotValid",
+          "SiweMessageInvalidSignature"
         ],
         "type": "string"
       },
@@ -1122,6 +1198,32 @@
         ],
         "type": "string"
       },
+      "OsInfo": {
+        "description": "OS information set in [`ClientSessionMetadata`] and reflected in [`SessionMetadata`]",
+        "properties": {
+          "architecture": {
+            "example": "arm64",
+            "nullable": true,
+            "type": "string"
+          },
+          "name": {
+            "example": "Mac OS",
+            "nullable": true,
+            "type": "string"
+          },
+          "version": {
+            "example": "14.5.0",
+            "nullable": true,
+            "type": "string"
+          },
+          "word_size": {
+            "example": "64-bit",
+            "nullable": true,
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
       "PolicyErrorCode": {
         "oneOf": [
           {
@@ -1233,6 +1335,43 @@
           "MfaApprovalsNotYetValid"
         ],
         "type": "string"
+      },
+      "RatchetConfig": {
+        "properties": {
+          "auth_lifetime": {
+            "default": 300,
+            "description": "The lifetime (in seconds) of auth tokens for this session.\nAuth tokens can be refreshed (renewed) using a valid (unexpired)\nrefresh token, but not beyond the session lifetime.",
+            "example": 3600,
+            "format": "int64",
+            "minimum": 0,
+            "type": "integer"
+          },
+          "grace_lifetime": {
+            "default": 30,
+            "description": "The amount of time (in seconds) that an auth token for this session remains\nvalid after it has been refreshed and a new auth token has been issued. This\nhelps to address concurrency hazards, for example, if one thread makes requests\nwith auth token while another refreshes it.",
+            "example": 30,
+            "format": "int64",
+            "minimum": 0,
+            "type": "integer"
+          },
+          "refresh_lifetime": {
+            "default": 86400,
+            "description": "The lifetime (in seconds) of refresh tokens for this session.\nIf this value is shorter than the session lifetime, inactive sessions\nwill become invalid once the auth and refresh tokens have both expired.",
+            "example": 43200,
+            "format": "int64",
+            "minimum": 0,
+            "type": "integer"
+          },
+          "session_lifetime": {
+            "default": 31536000,
+            "description": "The lifetime (in seconds) of the session.\nThe session cannot be extended beyond its original lifetime.",
+            "example": 86400,
+            "format": "int64",
+            "minimum": 0,
+            "type": "integer"
+          }
+        },
+        "type": "object"
       },
       "Scope": {
         "description": "All scopes for accessing CubeSigner APIs",
@@ -1566,7 +1705,7 @@
     },
     "description": "The CubeSigner management and signing service.",
     "title": "CubeSigner API",
-    "version": "v0.123.1"
+    "version": "v0.125.0"
   },
   "openapi": "3.0.3",
   "paths": {
@@ -1621,6 +1760,70 @@
         "summary": "Get Key",
         "tags": [
           "Keys"
+        ]
+      }
+    },
+    "/v0/org/{org_id}/roles/{role_id}/tokens": {
+      "post": {
+        "description": "Create Token\n\nCreates a new access token for a given role (to be used as \"API Key\" for all signing actions).\nThe `restricted_actions` field on the [Role] determines the membership role that is required to\ncreate tokens.",
+        "operationId": "createRoleToken",
+        "parameters": [
+          {
+            "description": "Name or ID of the desired Org",
+            "example": "Org#124dfe3e-3bbd-487d-80c0-53c55e8ab87a",
+            "in": "path",
+            "name": "org_id",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "Name or ID of the desired Role",
+            "example": "Role#124dfe3e-3bbd-487d-80c0-53c55e8ab87a",
+            "in": "path",
+            "name": "role_id",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateTokenRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "$ref": "#/components/responses/NewSessionResponse"
+          },
+          "default": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "SignerAuth": [
+              "manage:session:create"
+            ]
+          }
+        ],
+        "summary": "Create Token",
+        "tags": [
+          "Role Access Tokens"
         ]
       }
     },

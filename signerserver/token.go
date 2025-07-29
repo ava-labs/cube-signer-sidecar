@@ -14,6 +14,7 @@ type tokenData struct {
 }
 
 type ID struct {
+	KeyID string `json:"key_id"`
 	OrgID  string `json:"org_id"`
 	RoleID string `json:"role_id"`
 }
@@ -32,11 +33,20 @@ func (t *tokenData) MarshalJSON() ([]byte, error) {
 		return nil, err
 	}
 
+	KeyID, err := toRawData(t.KeyID)
+	if err != nil {
+		return nil, err
+	}
+
 	for k, v := range sessionResponse {
 		t.RawData[k] = v
 	}
 
 	for k, v := range id {
+		t.RawData[k] = v
+	}
+
+	for k, v := range KeyID {
 		t.RawData[k] = v
 	}
 

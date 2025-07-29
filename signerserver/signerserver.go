@@ -25,31 +25,32 @@ var popDst = base64.StdEncoding.EncodeToString(bls.CiphersuiteProofOfPossession.
 
 type SignerServer struct {
 	signer.UnimplementedSignerServer
-	OrgID         string
-	KeyID         string
 	client        *api.ClientWithResponses
 	tokenData     *tokenData
 	tokenFilePath string
 	publicKey     []byte
 }
 
-func New(keyID string, tokenFilePath string, client *api.ClientWithResponses) (*SignerServer, error) {
-	tokenFile, err := os.Open(tokenFilePath)
-	if err != nil {
-		return nil, fmt.Errorf("failed to open token file: %w", err)
-	}
+func New(client *api.ClientWithResponses, token string, id ID) (*SignerServer, error) {
+	// tokenFile, err := os.Open(tokenFilePath)
+	// if err != nil {
+	// 	return nil, fmt.Errorf("failed to open token file: %w", err)
+	// }
 
-	var tokenData tokenData
-	if err := json.NewDecoder(tokenFile).Decode(&tokenData); err != nil {
-		return nil, fmt.Errorf("failed to decode token data: %w", err)
+	// var tokenData tokenData
+	// if err := json.NewDecoder(tokenFile).Decode(&tokenData); err != nil {
+	// 	return nil, fmt.Errorf("failed to decode token data: %w", err)
+	// }
+
+	newSessionResponse, err := createNewSession(client, token, id.RoleID, id.OrgID)
+	if err != nil {
+		return nil, fmt.Errorf("failed to create new session: %w", err)
 	}
 
 	return &SignerServer{
-		OrgID:         tokenData.OrgID,
-		KeyID:         keyID,
 		client:        client,
-		tokenData:     &tokenData,
-		tokenFilePath: tokenFilePath,
+		tokenData:     &tokenData{NewSessionResponse: *newSessionResponse, ID: id},
+		// tokenFilePath: tokenFilePath,
 	}, nil
 }
 
@@ -60,10 +61,17 @@ func (s *SignerServer) addAuthHeaderFn() api.RequestEditorFn {
 	}
 }
 
+func addUserAuthHeaderFn(token string) api.RequestEditorFn {
+	return func(ctx context.Context, req *http.Request) error {
+		req.Header.Set("Authorization", token)
+		return nil
+	}
+}
+
 func (s *SignerServer) RefreshToken() error {
 	authData := s.tokenData.toAuthData()
 
-	res, err := s.client.SignerSessionRefreshWithResponse(context.Background(), s.OrgID, *authData, s.addAuthHeaderFn())
+	res, err := s.client.SignerSessionRefreshWithResponse(context.Background(), s.tokenData.OrgID, *authData, s.addAuthHeaderFn())
 	if err != nil {
 		return fmt.Errorf("failed to refresh session: %w", err)
 	}
@@ -73,7 +81,29 @@ func (s *SignerServer) RefreshToken() error {
 	}
 
 	s.tokenData.NewSessionResponse = *res.JSON200
-	return s.saveTokenData()
+	return nil
+}
+
+func createNewSession(client *api.ClientWithResponses, token string, roleId string, orgId string) (*api.NewSessionResponse, error) {
+	res, err := client.CreateRoleTokenWithResponse(context.Background(), orgId, roleId, api.CreateTokenRequest{
+		AuthLifetime:    new(int64),
+		Client:          &api.ClientProfile{},
+		GraceLifetime:   new(int64),
+		OsInfo:          &api.OsInfo{},
+		Purpose:         "bls signing",
+		RefreshLifetime: new(int64),
+		Scopes:          &[]api.Scope{},
+		SessionLifetime: new(int64),
+	}, addUserAuthHeaderFn(token))
+	if err != nil {
+		return nil, fmt.Errorf("failed to refresh session: %w", err)
+	}
+
+	if res.JSON200 == nil {
+		return nil, fmt.Errorf("unexpected status code: %d", res.StatusCode())
+	}
+
+	return res.JSON200, nil
 }
 
 func (s *SignerServer) saveTokenData() error {
@@ -136,7 +166,7 @@ func (s *SignerServer) PublicKey(ctx context.Context, in *signer.PublicKeyReques
 		return publicKeyRes, nil
 	}
 
-	rsp, err := s.client.GetKeyInOrg(ctx, s.OrgID, s.KeyID, s.addAuthHeaderFn())
+	rsp, err := s.client.GetKeyInOrg(ctx, s.tokenData.OrgID, s.tokenData.KeyID, s.addAuthHeaderFn())
 	if err != nil {
 		return nil, fmt.Errorf("failed to get key in org: %w", err)
 	}
@@ -220,7 +250,7 @@ func (s *SignerServer) sign(ctx context.Context, bytes []byte, blsDst *string) (
 		BlsDst:        blsDst,
 	}
 
-	res, err := s.client.BlobSignWithResponse(ctx, s.OrgID, s.KeyID, *blobSignReq, s.addAuthHeaderFn())
+	res, err := s.client.BlobSignWithResponse(ctx, s.tokenData.OrgID, s.tokenData.KeyID, *blobSignReq, s.addAuthHeaderFn())
 	if err != nil {
 		return nil, fmt.Errorf("failed to sign blob: %w", err)
 	}

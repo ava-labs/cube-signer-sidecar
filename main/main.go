@@ -53,7 +53,14 @@ func runServer(cfg config.Config) error {
 		return fmt.Errorf("failed to create API client: %w", err)
 	}
 
-	signerServer, err := signerserver.New(cfg.KeyID, cfg.TokenFilePath, client)
+	signerServer, err := signerserver.New(
+		client, cfg.UserToken,
+		signerserver.ID{
+			KeyID:  cfg.KeyId,
+			OrgID:  cfg.OrgId,
+			RoleID: cfg.RoleId,
+		},
+	)
 	if err != nil {
 		return fmt.Errorf("failed to create signer server: %w", err)
 	}

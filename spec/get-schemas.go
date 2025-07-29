@@ -13,6 +13,7 @@ var relevantPaths = [][]any{
 	{"/v0/org/{org_id}/keys/{key_id}", []string{"get"}},
 	{"/v1/org/{org_id}/blob/sign/{key_id}", make([]string, 0)},
 	{"/v1/org/{org_id}/token/refresh", make([]string, 0)},
+	{"/v0/org/{org_id}/roles/{role_id}/tokens", []string{"post"}},
 }
 
 func getComponentKey(ref string) (string, string) {

@@ -31,10 +31,9 @@ var (
 		ID: ID{
 			OrgID:  "test-org",
 			RoleID: "test-role",
+			KeyID: "test-key",
 		},
 	}
-
-	keyID = "test-key"
 )
 
 func TestSignerServerSaveTokenData(t *testing.T) {
@@ -96,7 +95,7 @@ func TestSignerServerGetPublicKey(t *testing.T) {
 		}).
 		Times(1)
 
-	signerServer := createSignerServer(mockclient, testTokenData, keyID)
+	signerServer := createSignerServer(mockclient, testTokenData)
 
 	res, err := signerServer.PublicKey(context.Background(), &signer.PublicKeyRequest{})
 	require.NoError(err)
@@ -145,7 +144,7 @@ func TestSignerServerSign(t *testing.T) {
 		}).
 		Times(1)
 
-	signerServer := createSignerServer(mockclient, testTokenData, keyID)
+	signerServer := createSignerServer(mockclient, testTokenData)
 	msg := []byte("test-message")
 
 	res, err := signerServer.Sign(context.Background(), &signer.SignRequest{Message: msg})
@@ -196,7 +195,7 @@ func TestSignerServerSignProofOfPossession(t *testing.T) {
 		}).
 		Times(1)
 
-	signerServer := createSignerServer(mockclient, testTokenData, keyID)
+	signerServer := createSignerServer(mockclient, testTokenData)
 	msg := []byte("test-message")
 
 	res, err := signerServer.SignProofOfPossession(context.Background(), &signer.SignProofOfPossessionRequest{Message: msg})
@@ -209,10 +208,8 @@ func TestSignerServerSignProofOfPossession(t *testing.T) {
 	require.True(isValid)
 }
 
-func createSignerServer(mockclient *mockapi.MockClientInterface, tokenData *tokenData, keyID string) *SignerServer {
+func createSignerServer(mockclient *mockapi.MockClientInterface, tokenData *tokenData) *SignerServer {
 	return &SignerServer{
-		OrgID:         tokenData.OrgID,
-		KeyID:         keyID,
 		client:        &api.ClientWithResponses{ClientInterface: mockclient},
 		tokenData:     tokenData,
 		tokenFilePath: "",
