@@ -17,7 +17,6 @@ const (
 	KeyIDKey         = "key-id"
 	EndpointKey      = "signer-endpoint"
 	PortKey          = "port"
-	UseUserTokenKey  = "use-user-token"
 )
 
 func BuildFlagSet() *pflag.FlagSet {
@@ -29,7 +28,6 @@ func BuildFlagSet() *pflag.FlagSet {
 	fs.String(KeyIDKey, "", "Key ID")
 	fs.String(EndpointKey, "", "Signer endpoint")
 	fs.Uint16(PortKey, defaultPort, "Port to listen on")
-	fs.Bool(UseUserTokenKey, false, "Use user token to generate signing token")
 
 	fs.Usage = func() {
 		fmt.Fprintf(os.Stderr, "Usage: %s [flags]\n\n", os.Args[0])

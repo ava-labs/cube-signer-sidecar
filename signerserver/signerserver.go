@@ -19,6 +19,7 @@ import (
 	"github.com/ava-labs/avalanchego/proto/pb/signer"
 	"github.com/ava-labs/avalanchego/utils/crypto/bls"
 	"github.com/ava-labs/cube-signer-sidecar/api"
+	"github.com/ava-labs/cube-signer-sidecar/config"
 )
 
 var popDst = base64.StdEncoding.EncodeToString(bls.CiphersuiteProofOfPossession.Bytes())
@@ -33,37 +34,38 @@ type SignerServer struct {
 	publicKey     []byte
 }
 
-func New(client *api.ClientWithResponses, token string, id ID) (*SignerServer, error) {
-	// tokenFile, err := os.Open(tokenFilePath)
-	// if err != nil {
-	// 	return nil, fmt.Errorf("failed to open token file: %w", err)
-	// }
+func New(client *api.ClientWithResponses, cfg config.Config) (*SignerServer, error) {
+	var tokenData = tokenData{KeyID: KeyID{KeyID: cfg.KeyId}}
 
-	// var tokenData tokenData
-	// if err := json.NewDecoder(tokenFile).Decode(&tokenData); err != nil {
-	// 	return nil, fmt.Errorf("failed to decode token data: %w", err)
-	// }
+	if cfg.TokenFilePath != "" {
+		tokenFile, err := os.Open(cfg.TokenFilePath)
+		if err != nil {
+			return nil, fmt.Errorf("failed to open token file: %w", err)
+		}
 
-	newSessionResponse, err := createNewSession(client, token, id.RoleID, id.OrgID)
-	if err != nil {
-		return nil, fmt.Errorf("failed to create new session: %w", err)
+		if err := json.NewDecoder(tokenFile).Decode(&tokenData); err != nil {
+			return nil, fmt.Errorf("failed to decode token data: %w", err)
+		}
+	} else {
+		newSessionResponse, err := createNewSession(client, cfg.UserToken, cfg.RoleId, cfg.OrgId)
+		if err != nil {
+			return nil, fmt.Errorf("failed to create new session: %w", err)
+		}
+		tokenData.NewSessionResponse = *newSessionResponse
 	}
 
 	return &SignerServer{
-		client:    client,
-		tokenData: &tokenData{NewSessionResponse: *newSessionResponse, ID: id},
-		// tokenFilePath: tokenFilePath,
+		client:        client,
+		tokenData:     &tokenData,
+		tokenFilePath: cfg.TokenFilePath,
 	}, nil
 }
 
 func (s *SignerServer) addAuthHeaderFn() api.RequestEditorFn {
-	return func(ctx context.Context, req *http.Request) error {
-		req.Header.Set("Authorization", s.tokenData.Token)
-		return nil
-	}
+	return addAuthHeaderFn(s.tokenData.Token)
 }
 
-func addUserAuthHeaderFn(token string) api.RequestEditorFn {
+func addAuthHeaderFn(token string) api.RequestEditorFn {
 	return func(ctx context.Context, req *http.Request) error {
 		req.Header.Set("Authorization", token)
 		return nil
@@ -73,17 +75,16 @@ func addUserAuthHeaderFn(token string) api.RequestEditorFn {
 func (s *SignerServer) RefreshToken() error {
 	authData := s.tokenData.toAuthData()
 
-	res, err := s.client.SignerSessionRefreshWithResponse(context.Background(), s.tokenData.OrgID, *authData, s.addAuthHeaderFn())
+	res, err := s.client.SignerSessionRefreshWithResponse(context.Background(), *s.tokenData.OrgId, *authData, s.addAuthHeaderFn())
 	if err != nil {
 		return fmt.Errorf("failed to refresh session: %w", err)
 	}
-
 	if res.JSON200 == nil {
 		return fmt.Errorf("unexpected status code: %d", res.StatusCode())
 	}
 
 	s.tokenData.NewSessionResponse = *res.JSON200
-	return nil
+	return s.saveTokenData()
 }
 
 func createNewSession(client *api.ClientWithResponses, token string, roleId string, orgId string) (*api.NewSessionResponse, error) {
@@ -92,12 +93,11 @@ func createNewSession(client *api.ClientWithResponses, token string, roleId stri
 		orgId,
 		roleId,
 		api.CreateTokenRequest{Purpose: "bls signing"},
-		addUserAuthHeaderFn(token),
+		addAuthHeaderFn(token),
 	)
 	if err != nil {
 		return nil, fmt.Errorf("failed to refresh session: %w", err)
 	}
-
 	if res.JSON200 == nil {
 		return nil, fmt.Errorf("unexpected status code: %d", res.StatusCode())
 	}
@@ -106,6 +106,11 @@ func createNewSession(client *api.ClientWithResponses, token string, roleId stri
 }
 
 func (s *SignerServer) saveTokenData() error {
+	// Skip saving if no token file path is provided
+	if s.tokenFilePath == "" {
+		return nil
+	}
+
 	file, err := os.OpenFile(s.tokenFilePath, os.O_WRONLY, 0644)
 	if err != nil {
 		return fmt.Errorf("failed to open token file: %w", err)
@@ -138,9 +143,9 @@ func (s *SignerServer) StartBackgroundTokenRefresh(ctx context.Context) {
 				}
 
 				timer := time.NewTimer(waitDuration)
+				defer timer.Stop()
 				select {
 				case <-ctx.Done():
-					timer.Stop()
 					return
 				case <-timer.C:
 					if err := s.RefreshToken(); err != nil {
@@ -165,7 +170,7 @@ func (s *SignerServer) PublicKey(ctx context.Context, in *signer.PublicKeyReques
 		return publicKeyRes, nil
 	}
 
-	rsp, err := s.client.GetKeyInOrg(ctx, s.tokenData.OrgID, s.tokenData.KeyID, s.addAuthHeaderFn())
+	rsp, err := s.client.GetKeyInOrg(ctx, *s.tokenData.OrgId, s.tokenData.KeyID.KeyID, s.addAuthHeaderFn())
 	if err != nil {
 		return nil, fmt.Errorf("failed to get key in org: %w", err)
 	}
@@ -249,7 +254,7 @@ func (s *SignerServer) sign(ctx context.Context, bytes []byte, blsDst *string) (
 		BlsDst:        blsDst,
 	}
 
-	res, err := s.client.BlobSignWithResponse(ctx, s.tokenData.OrgID, s.tokenData.KeyID, *blobSignReq, s.addAuthHeaderFn())
+	res, err := s.client.BlobSignWithResponse(ctx, *s.tokenData.OrgId, s.tokenData.KeyID.KeyID, *blobSignReq, s.addAuthHeaderFn())
 	if err != nil {
 		return nil, fmt.Errorf("failed to sign blob: %w", err)
 	}

@@ -2,7 +2,7 @@ package config
 
 import (
 	"fmt"
-	// "os"
+	"os"
 	"strings"
 
 	"github.com/spf13/pflag"
@@ -16,13 +16,12 @@ const (
 type Config struct {
 	UserToken string `mapstructure:"user-token" json:"user_token"`
 
-	OrgId  string `mapstructure:"org-id" json:"org-id"`
-	KeyId  string `mapstructure:"key-id" json:"key-id"`
-	RoleId string `mapstructure:"role-id" json:"role-id"`
-	// TokenFilePath  string `mapstructure:"token-file-path" json:"token-file-path"`
+	OrgId          string `mapstructure:"org-id" json:"org-id"`
+	KeyId          string `mapstructure:"key-id" json:"key-id"`
+	RoleId         string `mapstructure:"role-id" json:"role-id"`
+	TokenFilePath  string `mapstructure:"token-file-path" json:"token-file-path"`
 	SignerEndpoint string `mapstructure:"signer-endpoint" json:"signer-endpoint"`
 	Port           uint16 `mapstructure:"port" json:"port"`
-	// UseUserToken   bool   `mapstructure:"use-user-token" json:"use-user-token"`
 }
 
 func (cfg *Config) Validate() error {
@@ -30,18 +29,17 @@ func (cfg *Config) Validate() error {
 		return fmt.Errorf("signer-endpoint is required")
 	}
 
-	// if !cfg.UseUserToken {
-	// 	if cfg.TokenFilePath == "" {
-	// 		return fmt.Errorf("token-file-path is required")
-
-	// 	}
-	// 	// Just check for existence and permissions of the file here
-	// 	// Any other potential errors will be caught at time of usage
-	// 	_, err := os.Stat(cfg.TokenFilePath)
-	// 	if os.IsNotExist(err) || os.IsPermission(err) {
-	// 		return fmt.Errorf("token-file-path cannot be accessed: %s", cfg.TokenFilePath)
-	// 	}
-	// }
+	if cfg.UserToken == "" {
+		if cfg.TokenFilePath == "" {
+			return fmt.Errorf("token-file-path is required")
+		}
+		// Just check for existence and permissions of the file here
+		// Any other potential errors will be caught at time of usage
+		_, err := os.Stat(cfg.TokenFilePath)
+		if os.IsNotExist(err) || os.IsPermission(err) {
+			return fmt.Errorf("token-file-path cannot be accessed: %s", cfg.TokenFilePath)
+		}
+	}
 	return nil
 }
 

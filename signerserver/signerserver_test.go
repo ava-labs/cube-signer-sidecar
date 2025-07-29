@@ -24,15 +24,13 @@ import (
 )
 
 var (
+	orgId         = "test-org"
 	testTokenData = &tokenData{
 		NewSessionResponse: api.NewSessionResponse{
 			Token: "test-token",
+			OrgId: &orgId,
 		},
-		ID: ID{
-			OrgID:  "test-org",
-			RoleID: "test-role",
-			KeyID: "test-key",
-		},
+		KeyID: KeyID{KeyID: "test-key"},
 	}
 )
 
@@ -50,7 +48,7 @@ func TestSignerServerSaveTokenData(t *testing.T) {
 	server := &SignerServer{
 		tokenFilePath: tmpFile,
 		tokenData: &tokenData{
-			ID:      testTokenData.ID,
+			KeyID:   testTokenData.KeyID,
 			RawData: make(rawMessageMap),
 		},
 	}
@@ -62,9 +60,6 @@ func TestSignerServerSaveTokenData(t *testing.T) {
 	require.NoError(err)
 	require.NoError(json.NewDecoder(file).Decode(savedData))
 	require.NoError(file.Close())
-
-	require.Equal(savedData.OrgID, testTokenData.OrgID)
-	require.Equal(savedData.RoleID, testTokenData.RoleID)
 }
 
 func TestSignerServerGetPublicKey(t *testing.T) {
@@ -79,7 +74,7 @@ func TestSignerServerGetPublicKey(t *testing.T) {
 		EXPECT().
 		GetKeyInOrg(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).
 		DoAndReturn(func(_ context.Context, orgID string, keyID string, reqEditor api.RequestEditorFn) (*http.Response, error) {
-			require.Equal(orgID, testTokenData.OrgID)
+			require.Equal(orgID, *testTokenData.NewSessionResponse.OrgId)
 			require.Equal(keyID, keyID)
 
 			req := newRequest()
@@ -119,7 +114,7 @@ func TestSignerServerSign(t *testing.T) {
 		EXPECT().
 		BlobSign(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).
 		DoAndReturn(func(_ context.Context, orgID string, keyID string, reqBody api.BlobSignRequest, reqEditor api.RequestEditorFn) (*http.Response, error) {
-			require.Equal(orgID, testTokenData.OrgID)
+			require.Equal(orgID, *testTokenData.NewSessionResponse.OrgId)
 			require.Equal(keyID, keyID)
 			require.Nil(reqBody.BlsDst)
 
@@ -170,7 +165,7 @@ func TestSignerServerSignProofOfPossession(t *testing.T) {
 		EXPECT().
 		BlobSign(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).
 		DoAndReturn(func(_ context.Context, orgID string, keyID string, reqBody api.BlobSignRequest, reqEditor api.RequestEditorFn) (*http.Response, error) {
-			require.Equal(orgID, testTokenData.OrgID)
+			require.Equal(orgID, *testTokenData.NewSessionResponse.OrgId)
 			require.Equal(keyID, keyID)
 			require.Equal(popDst, *reqBody.BlsDst)
 
