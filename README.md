@@ -15,7 +15,7 @@ If there are changes in `spec/filtered-openapi.json`, the `go generate ./signers
 
 ## Testing
 
-The `cube-signer-sidecar` depends on the AvalancheGo changes implemented in [this PR](https://github.com/ava-labs/avalanchego/pull/3965). In order to test it, set the `--staking-rpc-signer-endpoint=127.0.0.1:50051` configuration flag, and ensure that the `cube-signer-sidecar` application is running before starting the `avalanchego` node.
+The `cube-signer-sidecar` depends on the AvalancheGo `v1.13.4` or higher. In order to test it, set the `--staking-rpc-signer-endpoint=127.0.0.1:50051` configuration flag, and ensure that the `cube-signer-sidecar` application is running before starting the `avalanchego` node.
 
 ## Running
 
