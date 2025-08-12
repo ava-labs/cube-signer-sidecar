@@ -24,17 +24,14 @@ import (
 )
 
 var (
+	orgId         = "test-org"
+	keyId         = "test-key"
 	testTokenData = &tokenData{
 		NewSessionResponse: api.NewSessionResponse{
 			Token: "test-token",
-		},
-		ID: ID{
-			OrgID:  "test-org",
-			RoleID: "test-role",
+			OrgId: &orgId,
 		},
 	}
-
-	keyID = "test-key"
 )
 
 func TestSignerServerSaveTokenData(t *testing.T) {
@@ -51,9 +48,9 @@ func TestSignerServerSaveTokenData(t *testing.T) {
 	server := &SignerServer{
 		tokenFilePath: tmpFile,
 		tokenData: &tokenData{
-			ID:      testTokenData.ID,
 			RawData: make(rawMessageMap),
 		},
+		keyId: keyId,
 	}
 
 	require.NoError(server.saveTokenData())
@@ -63,9 +60,6 @@ func TestSignerServerSaveTokenData(t *testing.T) {
 	require.NoError(err)
 	require.NoError(json.NewDecoder(file).Decode(savedData))
 	require.NoError(file.Close())
-
-	require.Equal(savedData.OrgID, testTokenData.OrgID)
-	require.Equal(savedData.RoleID, testTokenData.RoleID)
 }
 
 func TestSignerServerGetPublicKey(t *testing.T) {
@@ -79,9 +73,9 @@ func TestSignerServerGetPublicKey(t *testing.T) {
 	mockclient.
 		EXPECT().
 		GetKeyInOrg(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).
-		DoAndReturn(func(_ context.Context, orgID string, keyID string, reqEditor api.RequestEditorFn) (*http.Response, error) {
-			require.Equal(orgID, testTokenData.OrgID)
-			require.Equal(keyID, keyID)
+		DoAndReturn(func(_ context.Context, orgID string, keyId string, reqEditor api.RequestEditorFn) (*http.Response, error) {
+			require.Equal(orgID, *testTokenData.NewSessionResponse.OrgId)
+			require.Equal(keyId, keyId)
 
 			req := newRequest()
 			err := reqEditor(context.Background(), req)
@@ -96,7 +90,7 @@ func TestSignerServerGetPublicKey(t *testing.T) {
 		}).
 		Times(1)
 
-	signerServer := createSignerServer(mockclient, testTokenData, keyID)
+	signerServer := createSignerServer(mockclient, testTokenData)
 
 	res, err := signerServer.PublicKey(context.Background(), &signer.PublicKeyRequest{})
 	require.NoError(err)
@@ -119,9 +113,9 @@ func TestSignerServerSign(t *testing.T) {
 	mockclient.
 		EXPECT().
 		BlobSign(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).
-		DoAndReturn(func(_ context.Context, orgID string, keyID string, reqBody api.BlobSignRequest, reqEditor api.RequestEditorFn) (*http.Response, error) {
-			require.Equal(orgID, testTokenData.OrgID)
-			require.Equal(keyID, keyID)
+		DoAndReturn(func(_ context.Context, orgID string, keyId string, reqBody api.BlobSignRequest, reqEditor api.RequestEditorFn) (*http.Response, error) {
+			require.Equal(orgID, *testTokenData.NewSessionResponse.OrgId)
+			require.Equal(keyId, keyId)
 			require.Nil(reqBody.BlsDst)
 
 			req := newRequest()
@@ -145,7 +139,7 @@ func TestSignerServerSign(t *testing.T) {
 		}).
 		Times(1)
 
-	signerServer := createSignerServer(mockclient, testTokenData, keyID)
+	signerServer := createSignerServer(mockclient, testTokenData)
 	msg := []byte("test-message")
 
 	res, err := signerServer.Sign(context.Background(), &signer.SignRequest{Message: msg})
@@ -170,9 +164,9 @@ func TestSignerServerSignProofOfPossession(t *testing.T) {
 	mockclient.
 		EXPECT().
 		BlobSign(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).
-		DoAndReturn(func(_ context.Context, orgID string, keyID string, reqBody api.BlobSignRequest, reqEditor api.RequestEditorFn) (*http.Response, error) {
-			require.Equal(orgID, testTokenData.OrgID)
-			require.Equal(keyID, keyID)
+		DoAndReturn(func(_ context.Context, orgID string, keyId string, reqBody api.BlobSignRequest, reqEditor api.RequestEditorFn) (*http.Response, error) {
+			require.Equal(orgID, *testTokenData.NewSessionResponse.OrgId)
+			require.Equal(keyId, keyId)
 			require.Equal(popDst, *reqBody.BlsDst)
 
 			req := newRequest()
@@ -196,7 +190,7 @@ func TestSignerServerSignProofOfPossession(t *testing.T) {
 		}).
 		Times(1)
 
-	signerServer := createSignerServer(mockclient, testTokenData, keyID)
+	signerServer := createSignerServer(mockclient, testTokenData)
 	msg := []byte("test-message")
 
 	res, err := signerServer.SignProofOfPossession(context.Background(), &signer.SignProofOfPossessionRequest{Message: msg})
@@ -209,10 +203,8 @@ func TestSignerServerSignProofOfPossession(t *testing.T) {
 	require.True(isValid)
 }
 
-func createSignerServer(mockclient *mockapi.MockClientInterface, tokenData *tokenData, keyID string) *SignerServer {
+func createSignerServer(mockclient *mockapi.MockClientInterface, tokenData *tokenData) *SignerServer {
 	return &SignerServer{
-		OrgID:         tokenData.OrgID,
-		KeyID:         keyID,
 		client:        &api.ClientWithResponses{ClientInterface: mockclient},
 		tokenData:     tokenData,
 		tokenFilePath: "",
