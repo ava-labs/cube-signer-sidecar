@@ -1,6 +1,6 @@
 module github.com/ava-labs/cube-signer-sidecar
 
-go 1.23.11
+go 1.24.6
 
 require (
 	github.com/ava-labs/avalanchego v1.13.3
