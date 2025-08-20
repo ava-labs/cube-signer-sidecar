@@ -3,10 +3,11 @@ module github.com/ava-labs/cube-signer-sidecar
 go 1.24.6
 
 require (
+	github.com/alexliesenfeld/health v0.8.1
 	github.com/ava-labs/avalanchego v1.13.3
 	github.com/oapi-codegen/oapi-codegen/v2 v2.5.0
 	github.com/oapi-codegen/runtime v1.1.2
-	github.com/onsi/ginkgo/v2 v2.23.4
+	github.com/onsi/ginkgo/v2 v2.24.0
 	github.com/onsi/gomega v1.38.0
 	github.com/spf13/pflag v1.0.7
 	github.com/spf13/viper v1.20.1
@@ -17,7 +18,7 @@ require (
 )
 
 require (
-	github.com/alexliesenfeld/health v0.8.1
+	github.com/Masterminds/semver/v3 v3.3.1 // indirect
 	github.com/apapsch/go-jsonmerge/v2 v2.0.0 // indirect
 	github.com/davecgh/go-spew v1.1.1 // indirect
 	github.com/dprotaso/go-yit v0.0.0-20220510233725-9ba8df137936 // indirect
