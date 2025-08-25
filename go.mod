@@ -11,7 +11,7 @@ require (
 	github.com/onsi/gomega v1.38.0
 	github.com/spf13/pflag v1.0.7
 	github.com/spf13/viper v1.20.1
-	github.com/stretchr/testify v1.10.0
+	github.com/stretchr/testify v1.11.0
 	go.uber.org/mock v0.6.0
 	go.uber.org/zap v1.27.0
 	google.golang.org/grpc v1.75.0
