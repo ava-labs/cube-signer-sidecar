@@ -12,8 +12,6 @@ import (
 	"github.com/ava-labs/cube-signer-sidecar/tests/utils"
 	. "github.com/onsi/gomega"
 	"go.uber.org/zap"
-	"google.golang.org/grpc"
-	"google.golang.org/grpc/credentials/insecure"
 )
 
 func BasicSigning(log logging.Logger) {
@@ -24,13 +22,10 @@ func BasicSigning(log logging.Logger) {
 	cancelFn := utils.RunSigner(context.Background(), configPath)
 	defer cancelFn()
 
-	clientConn, err := grpc.NewClient("127.0.0.1:50051", grpc.WithTransportCredentials(insecure.NewCredentials()))
-	Expect(err).Should(BeNil())
-
 	// wait for the signer to start
 	time.Sleep(2 * time.Second)
 
-	signerClient, err := rpcsigner.NewClient(context.Background(), clientConn)
+	signerClient, err := rpcsigner.NewClient(context.Background(), "127.0.0.1:50051")
 	Expect(err).Should(BeNil())
 
 	// generate random bytes
