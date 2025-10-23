@@ -7,7 +7,7 @@ require (
 	github.com/ava-labs/avalanchego v1.13.5
 	github.com/oapi-codegen/oapi-codegen/v2 v2.5.0
 	github.com/oapi-codegen/runtime v1.1.2
-	github.com/onsi/ginkgo/v2 v2.25.3
+	github.com/onsi/ginkgo/v2 v2.27.1
 	github.com/onsi/gomega v1.38.2
 	github.com/spf13/pflag v1.0.10
 	github.com/spf13/viper v1.21.0
