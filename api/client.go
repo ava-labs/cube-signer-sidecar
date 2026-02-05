@@ -92,6 +92,11 @@ type ClientInterface interface {
 	// GetKeyInOrg request
 	GetKeyInOrg(ctx context.Context, orgId string, keyId string, reqEditors ...RequestEditorFn) (*http.Response, error)
 
+	// CreateRoleTokenWithBody request with any body
+	CreateRoleTokenWithBody(ctx context.Context, orgId string, roleId string, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	CreateRoleToken(ctx context.Context, orgId string, roleId string, body CreateRoleTokenJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
+
 	// BlobSignWithBody request with any body
 	BlobSignWithBody(ctx context.Context, orgId string, keyId string, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
 
@@ -105,6 +110,30 @@ type ClientInterface interface {
 
 func (c *Client) GetKeyInOrg(ctx context.Context, orgId string, keyId string, reqEditors ...RequestEditorFn) (*http.Response, error) {
 	req, err := NewGetKeyInOrgRequest(c.Server, orgId, keyId)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) CreateRoleTokenWithBody(ctx context.Context, orgId string, roleId string, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewCreateRoleTokenRequestWithBody(c.Server, orgId, roleId, contentType, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) CreateRoleToken(ctx context.Context, orgId string, roleId string, body CreateRoleTokenJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewCreateRoleTokenRequest(c.Server, orgId, roleId, body)
 	if err != nil {
 		return nil, err
 	}
@@ -200,6 +229,60 @@ func NewGetKeyInOrgRequest(server string, orgId string, keyId string) (*http.Req
 	if err != nil {
 		return nil, err
 	}
+
+	return req, nil
+}
+
+// NewCreateRoleTokenRequest calls the generic CreateRoleToken builder with application/json body
+func NewCreateRoleTokenRequest(server string, orgId string, roleId string, body CreateRoleTokenJSONRequestBody) (*http.Request, error) {
+	var bodyReader io.Reader
+	buf, err := json.Marshal(body)
+	if err != nil {
+		return nil, err
+	}
+	bodyReader = bytes.NewReader(buf)
+	return NewCreateRoleTokenRequestWithBody(server, orgId, roleId, "application/json", bodyReader)
+}
+
+// NewCreateRoleTokenRequestWithBody generates requests for CreateRoleToken with any type of body
+func NewCreateRoleTokenRequestWithBody(server string, orgId string, roleId string, contentType string, body io.Reader) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithLocation("simple", false, "org_id", runtime.ParamLocationPath, orgId)
+	if err != nil {
+		return nil, err
+	}
+
+	var pathParam1 string
+
+	pathParam1, err = runtime.StyleParamWithLocation("simple", false, "role_id", runtime.ParamLocationPath, roleId)
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/v0/org/%s/roles/%s/tokens", pathParam0, pathParam1)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest("POST", queryURL.String(), body)
+	if err != nil {
+		return nil, err
+	}
+
+	req.Header.Add("Content-Type", contentType)
 
 	return req, nil
 }
@@ -351,6 +434,11 @@ type ClientWithResponsesInterface interface {
 	// GetKeyInOrgWithResponse request
 	GetKeyInOrgWithResponse(ctx context.Context, orgId string, keyId string, reqEditors ...RequestEditorFn) (*GetKeyInOrgResponse, error)
 
+	// CreateRoleTokenWithBodyWithResponse request with any body
+	CreateRoleTokenWithBodyWithResponse(ctx context.Context, orgId string, roleId string, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*CreateRoleTokenResponse, error)
+
+	CreateRoleTokenWithResponse(ctx context.Context, orgId string, roleId string, body CreateRoleTokenJSONRequestBody, reqEditors ...RequestEditorFn) (*CreateRoleTokenResponse, error)
+
 	// BlobSignWithBodyWithResponse request with any body
 	BlobSignWithBodyWithResponse(ctx context.Context, orgId string, keyId string, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*BlobSignResponse, error)
 
@@ -379,6 +467,29 @@ func (r GetKeyInOrgResponse) Status() string {
 
 // StatusCode returns HTTPResponse.StatusCode
 func (r GetKeyInOrgResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+type CreateRoleTokenResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON200      *NewSessionResponse
+	JSONDefault  *ErrorResponse
+}
+
+// Status returns HTTPResponse.Status
+func (r CreateRoleTokenResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r CreateRoleTokenResponse) StatusCode() int {
 	if r.HTTPResponse != nil {
 		return r.HTTPResponse.StatusCode
 	}
@@ -441,6 +552,23 @@ func (c *ClientWithResponses) GetKeyInOrgWithResponse(ctx context.Context, orgId
 	return ParseGetKeyInOrgResponse(rsp)
 }
 
+// CreateRoleTokenWithBodyWithResponse request with arbitrary body returning *CreateRoleTokenResponse
+func (c *ClientWithResponses) CreateRoleTokenWithBodyWithResponse(ctx context.Context, orgId string, roleId string, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*CreateRoleTokenResponse, error) {
+	rsp, err := c.CreateRoleTokenWithBody(ctx, orgId, roleId, contentType, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseCreateRoleTokenResponse(rsp)
+}
+
+func (c *ClientWithResponses) CreateRoleTokenWithResponse(ctx context.Context, orgId string, roleId string, body CreateRoleTokenJSONRequestBody, reqEditors ...RequestEditorFn) (*CreateRoleTokenResponse, error) {
+	rsp, err := c.CreateRoleToken(ctx, orgId, roleId, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseCreateRoleTokenResponse(rsp)
+}
+
 // BlobSignWithBodyWithResponse request with arbitrary body returning *BlobSignResponse
 func (c *ClientWithResponses) BlobSignWithBodyWithResponse(ctx context.Context, orgId string, keyId string, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*BlobSignResponse, error) {
 	rsp, err := c.BlobSignWithBody(ctx, orgId, keyId, contentType, body, reqEditors...)
@@ -491,6 +619,39 @@ func ParseGetKeyInOrgResponse(rsp *http.Response) (*GetKeyInOrgResponse, error) 
 	switch {
 	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
 		var dest KeyInfo
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && true:
+		var dest ErrorResponse
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSONDefault = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseCreateRoleTokenResponse parses an HTTP response from a CreateRoleTokenWithResponse call
+func ParseCreateRoleTokenResponse(rsp *http.Response) (*CreateRoleTokenResponse, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &CreateRoleTokenResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest NewSessionResponse
 		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
 			return nil, err
 		}

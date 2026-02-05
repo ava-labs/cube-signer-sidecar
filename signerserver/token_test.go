@@ -57,8 +57,7 @@ func TestTokenDataUnmarshalJSON(t *testing.T) {
 	err := json.Unmarshal([]byte(tokenJSON), &token)
 	require.NoError(err)
 
-	require.Equal(token.OrgID, orgID)
-	require.Equal(token.RoleID, roleID)
+	require.Equal(*token.OrgId, orgID)
 
 	sessionInfo := token.SessionInfo
 	require.Equal(sessionInfo.AuthToken, authToken)

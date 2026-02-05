@@ -13,8 +13,12 @@ const (
 	VersionKey    = "version"
 	HelpKey       = "help"
 
-	TokenFilePathKey = "token-file-path"
+	UserTokenKey  = "user-token"
+
+	OrgIdKey         = "org-id"
 	KeyIDKey         = "key-id"
+	RoleIdKey       = "role-id"
+	TokenFilePathKey = "token-file-path"
 	EndpointKey      = "signer-endpoint"
 	PortKey          = "port"
 )
@@ -25,7 +29,11 @@ func BuildFlagSet() *pflag.FlagSet {
 	fs.String(ConfigFileKey, "", "Path to the config file")
 
 	fs.String(TokenFilePathKey, "", "Path to the token file")
+	fs.String(UserTokenKey, "", "User token for creating new signing sessions")
+	
+	fs.String(OrgIdKey, "", "Organization ID for the signing session")
 	fs.String(KeyIDKey, "", "Key ID")
+	fs.String(RoleIdKey, "", "Role ID for the signing session")
 	fs.String(EndpointKey, "", "Signer endpoint")
 	fs.Uint16(PortKey, defaultPort, "Port to listen on")
 
