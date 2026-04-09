@@ -21,7 +21,9 @@ const (
 // Defines values for BadGatewayErrorCode.
 const (
 	CallWebhookError                 BadGatewayErrorCode = "CallWebhookError"
+	CustomChainRpcError              BadGatewayErrorCode = "CustomChainRpcError"
 	EsploraApiError                  BadGatewayErrorCode = "EsploraApiError"
+	Generic                          BadGatewayErrorCode = "Generic"
 	OAuthProviderError               BadGatewayErrorCode = "OAuthProviderError"
 	OidcDisoveryFailed               BadGatewayErrorCode = "OidcDisoveryFailed"
 	OidcIssuerJwkEndpointUnavailable BadGatewayErrorCode = "OidcIssuerJwkEndpointUnavailable"
@@ -48,10 +50,14 @@ const (
 	BadRequestErrorCodeCannotDeletePendingSubscription                 BadRequestErrorCode = "CannotDeletePendingSubscription"
 	BadRequestErrorCodeCannotResendUserInvitation                      BadRequestErrorCode = "CannotResendUserInvitation"
 	BadRequestErrorCodeCognitoUserAlreadyOrgMember                     BadRequestErrorCode = "CognitoUserAlreadyOrgMember"
+	BadRequestErrorCodeContactAddressesInvalid                         BadRequestErrorCode = "ContactAddressesInvalid"
+	BadRequestErrorCodeContactLabelInvalid                             BadRequestErrorCode = "ContactLabelInvalid"
+	BadRequestErrorCodeContactModified                                 BadRequestErrorCode = "ContactModified"
 	BadRequestErrorCodeContactNameInvalid                              BadRequestErrorCode = "ContactNameInvalid"
 	BadRequestErrorCodeCustomStakingAmountNotAllowedForWrapperContract BadRequestErrorCode = "CustomStakingAmountNotAllowedForWrapperContract"
 	BadRequestErrorCodeDeleteOidcUserError                             BadRequestErrorCode = "DeleteOidcUserError"
 	BadRequestErrorCodeDeleteUserError                                 BadRequestErrorCode = "DeleteUserError"
+	BadRequestErrorCodeDisallowedAllowRuleReference                    BadRequestErrorCode = "DisallowedAllowRuleReference"
 	BadRequestErrorCodeDuplicateFieldEntry                             BadRequestErrorCode = "DuplicateFieldEntry"
 	BadRequestErrorCodeEip712SignError                                 BadRequestErrorCode = "Eip712SignError"
 	BadRequestErrorCodeEmailOtpDelayTooShortForRegisterMfa             BadRequestErrorCode = "EmailOtpDelayTooShortForRegisterMfa"
@@ -75,17 +81,20 @@ const (
 	BadRequestErrorCodeGenericBadRequest                               BadRequestErrorCode = "GenericBadRequest"
 	BadRequestErrorCodeIdpUserAlreadyExists                            BadRequestErrorCode = "IdpUserAlreadyExists"
 	BadRequestErrorCodeImportKeyMissing                                BadRequestErrorCode = "ImportKeyMissing"
+	BadRequestErrorCodeInputTooShort                                   BadRequestErrorCode = "InputTooShort"
 	BadRequestErrorCodeInvalidAbiMethods                               BadRequestErrorCode = "InvalidAbiMethods"
 	BadRequestErrorCodeInvalidBabylonStakingPolicyParams               BadRequestErrorCode = "InvalidBabylonStakingPolicyParams"
 	BadRequestErrorCodeInvalidBase32Value                              BadRequestErrorCode = "InvalidBase32Value"
 	BadRequestErrorCodeInvalidBase58Value                              BadRequestErrorCode = "InvalidBase58Value"
 	BadRequestErrorCodeInvalidBlobSignRequest                          BadRequestErrorCode = "InvalidBlobSignRequest"
 	BadRequestErrorCodeInvalidBody                                     BadRequestErrorCode = "InvalidBody"
-	BadRequestErrorCodeInvalidBtcAddressForChain                       BadRequestErrorCode = "InvalidBtcAddressForChain"
 	BadRequestErrorCodeInvalidBtcTxReceiversEmptyAllowlist             BadRequestErrorCode = "InvalidBtcTxReceiversEmptyAllowlist"
 	BadRequestErrorCodeInvalidCreateKeyCount                           BadRequestErrorCode = "InvalidCreateKeyCount"
 	BadRequestErrorCodeInvalidCreateUserRequest                        BadRequestErrorCode = "InvalidCreateUserRequest"
+	BadRequestErrorCodeInvalidCustomChains                             BadRequestErrorCode = "InvalidCustomChains"
 	BadRequestErrorCodeInvalidDeriveKeyRequest                         BadRequestErrorCode = "InvalidDeriveKeyRequest"
+	BadRequestErrorCodeInvalidDiffieHellmanCount                       BadRequestErrorCode = "InvalidDiffieHellmanCount"
+	BadRequestErrorCodeInvalidDiffieHellmanRequest                     BadRequestErrorCode = "InvalidDiffieHellmanRequest"
 	BadRequestErrorCodeInvalidEip191SignRequest                        BadRequestErrorCode = "InvalidEip191SignRequest"
 	BadRequestErrorCodeInvalidEip712SignRequest                        BadRequestErrorCode = "InvalidEip712SignRequest"
 	BadRequestErrorCodeInvalidEmail                                    BadRequestErrorCode = "InvalidEmail"
@@ -100,6 +109,7 @@ const (
 	BadRequestErrorCodeInvalidForkVersionLength                        BadRequestErrorCode = "InvalidForkVersionLength"
 	BadRequestErrorCodeInvalidHexValue                                 BadRequestErrorCode = "InvalidHexValue"
 	BadRequestErrorCodeInvalidIdentityProof                            BadRequestErrorCode = "InvalidIdentityProof"
+	BadRequestErrorCodeInvalidImportKey                                BadRequestErrorCode = "InvalidImportKey"
 	BadRequestErrorCodeInvalidJwt                                      BadRequestErrorCode = "InvalidJwt"
 	BadRequestErrorCodeInvalidKeyId                                    BadRequestErrorCode = "InvalidKeyId"
 	BadRequestErrorCodeInvalidKeyMaterial                              BadRequestErrorCode = "InvalidKeyMaterial"
@@ -128,6 +138,7 @@ const (
 	BadRequestErrorCodeInvalidOrgPolicyRule                            BadRequestErrorCode = "InvalidOrgPolicyRule"
 	BadRequestErrorCodeInvalidPaginationToken                          BadRequestErrorCode = "InvalidPaginationToken"
 	BadRequestErrorCodeInvalidPassword                                 BadRequestErrorCode = "InvalidPassword"
+	BadRequestErrorCodeInvalidPolicy                                   BadRequestErrorCode = "InvalidPolicy"
 	BadRequestErrorCodeInvalidPolicyLogsRequest                        BadRequestErrorCode = "InvalidPolicyLogsRequest"
 	BadRequestErrorCodeInvalidPolicyReference                          BadRequestErrorCode = "InvalidPolicyReference"
 	BadRequestErrorCodeInvalidRange                                    BadRequestErrorCode = "InvalidRange"
@@ -147,6 +158,7 @@ const (
 	BadRequestErrorCodeInvalidTendermintRequest                        BadRequestErrorCode = "InvalidTendermintRequest"
 	BadRequestErrorCodeInvalidTimeLockAlreadyInThePast                 BadRequestErrorCode = "InvalidTimeLockAlreadyInThePast"
 	BadRequestErrorCodeInvalidTotpFailureLimit                         BadRequestErrorCode = "InvalidTotpFailureLimit"
+	BadRequestErrorCodeInvalidTweakLength                              BadRequestErrorCode = "InvalidTweakLength"
 	BadRequestErrorCodeInvalidUnstakeRequest                           BadRequestErrorCode = "InvalidUnstakeRequest"
 	BadRequestErrorCodeInvalidUpdate                                   BadRequestErrorCode = "InvalidUpdate"
 	BadRequestErrorCodeInvalidUpdateOrgRequestDisallowedMfaType        BadRequestErrorCode = "InvalidUpdateOrgRequestDisallowedMfaType"
@@ -154,6 +166,7 @@ const (
 	BadRequestErrorCodeInvalidWasmPolicy                               BadRequestErrorCode = "InvalidWasmPolicy"
 	BadRequestErrorCodeInvitationNoLongerValid                         BadRequestErrorCode = "InvitationNoLongerValid"
 	BadRequestErrorCodeKeyNotFound                                     BadRequestErrorCode = "KeyNotFound"
+	BadRequestErrorCodeKwkNotFoundInRegion                             BadRequestErrorCode = "KwkNotFoundInRegion"
 	BadRequestErrorCodeLimitWindowTooLong                              BadRequestErrorCode = "LimitWindowTooLong"
 	BadRequestErrorCodeMessageAlreadySigned                            BadRequestErrorCode = "MessageAlreadySigned"
 	BadRequestErrorCodeMessageNotFound                                 BadRequestErrorCode = "MessageNotFound"
@@ -161,8 +174,9 @@ const (
 	BadRequestErrorCodeMessageReplaced                                 BadRequestErrorCode = "MessageReplaced"
 	BadRequestErrorCodeMfaRequestNotFound                              BadRequestErrorCode = "MfaRequestNotFound"
 	BadRequestErrorCodeMmiChainIdMissing                               BadRequestErrorCode = "MmiChainIdMissing"
-	BadRequestErrorCodeMmiRpcUrlMissing                                BadRequestErrorCode = "MmiRpcUrlMissing"
+	BadRequestErrorCodeMultipleExclusiveFieldsProvided                 BadRequestErrorCode = "MultipleExclusiveFieldsProvided"
 	BadRequestErrorCodeNameTaken                                       BadRequestErrorCode = "NameTaken"
+	BadRequestErrorCodeNistP256PublicKeyInvalid                        BadRequestErrorCode = "NistP256PublicKeyInvalid"
 	BadRequestErrorCodeNoOidcDataInProof                               BadRequestErrorCode = "NoOidcDataInProof"
 	BadRequestErrorCodeNoSingleKeyForUser                              BadRequestErrorCode = "NoSingleKeyForUser"
 	BadRequestErrorCodeOidcIdentityAlreadyExists                       BadRequestErrorCode = "OidcIdentityAlreadyExists"
@@ -186,7 +200,8 @@ const (
 	BadRequestErrorCodePolicyNotAttached                               BadRequestErrorCode = "PolicyNotAttached"
 	BadRequestErrorCodePolicyNotFound                                  BadRequestErrorCode = "PolicyNotFound"
 	BadRequestErrorCodePolicyRuleDisallowedByType                      BadRequestErrorCode = "PolicyRuleDisallowedByType"
-	BadRequestErrorCodePolicyRuleKeyMismatch                           BadRequestErrorCode = "PolicyRuleKeyMismatch"
+	BadRequestErrorCodePolicySecretLimitReached                        BadRequestErrorCode = "PolicySecretLimitReached"
+	BadRequestErrorCodePolicySecretTooLarge                            BadRequestErrorCode = "PolicySecretTooLarge"
 	BadRequestErrorCodePolicyStillAttached                             BadRequestErrorCode = "PolicyStillAttached"
 	BadRequestErrorCodePolicyTypeDisallowed                            BadRequestErrorCode = "PolicyTypeDisallowed"
 	BadRequestErrorCodePolicyVersionInvalid                            BadRequestErrorCode = "PolicyVersionInvalid"
@@ -194,12 +209,14 @@ const (
 	BadRequestErrorCodePolicyVersionNotFound                           BadRequestErrorCode = "PolicyVersionNotFound"
 	BadRequestErrorCodePsbtSigning                                     BadRequestErrorCode = "PsbtSigning"
 	BadRequestErrorCodeQueryMetricsError                               BadRequestErrorCode = "QueryMetricsError"
-	BadRequestErrorCodeQueryMetricsValidationError                     BadRequestErrorCode = "QueryMetricsValidationError"
 	BadRequestErrorCodeRedundantDerivationPath                         BadRequestErrorCode = "RedundantDerivationPath"
 	BadRequestErrorCodeReservedName                                    BadRequestErrorCode = "ReservedName"
 	BadRequestErrorCodeRoleNameTaken                                   BadRequestErrorCode = "RoleNameTaken"
 	BadRequestErrorCodeRoleNotFound                                    BadRequestErrorCode = "RoleNotFound"
+	BadRequestErrorCodeRpcUrlMissing                                   BadRequestErrorCode = "RpcUrlMissing"
 	BadRequestErrorCodeSessionRoleMismatch                             BadRequestErrorCode = "SessionRoleMismatch"
+	BadRequestErrorCodeSiweChallengeNotFound                           BadRequestErrorCode = "SiweChallengeNotFound"
+	BadRequestErrorCodeSiweInvalidRequest                              BadRequestErrorCode = "SiweInvalidRequest"
 	BadRequestErrorCodeSourceIpAllowlistEmpty                          BadRequestErrorCode = "SourceIpAllowlistEmpty"
 	BadRequestErrorCodeSuiSenderMismatch                               BadRequestErrorCode = "SuiSenderMismatch"
 	BadRequestErrorCodeTaprootSignError                                BadRequestErrorCode = "TaprootSignError"
@@ -212,6 +229,7 @@ const (
 	BadRequestErrorCodeUnableToAccessSmtpRelay                         BadRequestErrorCode = "UnableToAccessSmtpRelay"
 	BadRequestErrorCodeUnsupportedLegacyCognitoSession                 BadRequestErrorCode = "UnsupportedLegacyCognitoSession"
 	BadRequestErrorCodeUserAlreadyExists                               BadRequestErrorCode = "UserAlreadyExists"
+	BadRequestErrorCodeUserAlreadyHasIdentity                          BadRequestErrorCode = "UserAlreadyHasIdentity"
 	BadRequestErrorCodeUserEmailNotConfigured                          BadRequestErrorCode = "UserEmailNotConfigured"
 	BadRequestErrorCodeUserExportDerivedKey                            BadRequestErrorCode = "UserExportDerivedKey"
 	BadRequestErrorCodeUserExportInProgress                            BadRequestErrorCode = "UserExportInProgress"
@@ -220,6 +238,7 @@ const (
 	BadRequestErrorCodeUserProfileMigrationMultipleEntries             BadRequestErrorCode = "UserProfileMigrationMultipleEntries"
 	BadRequestErrorCodeUserProfileMigrationTooManyItems                BadRequestErrorCode = "UserProfileMigrationTooManyItems"
 	BadRequestErrorCodeUserWithEmailNotFound                           BadRequestErrorCode = "UserWithEmailNotFound"
+	BadRequestErrorCodeValidationError                                 BadRequestErrorCode = "ValidationError"
 	BadRequestErrorCodeWebhookPolicyDisallowedHeaders                  BadRequestErrorCode = "WebhookPolicyDisallowedHeaders"
 	BadRequestErrorCodeWebhookPolicyDisallowedUrlHost                  BadRequestErrorCode = "WebhookPolicyDisallowedUrlHost"
 	BadRequestErrorCodeWebhookPolicyDisallowedUrlScheme                BadRequestErrorCode = "WebhookPolicyDisallowedUrlScheme"
@@ -253,93 +272,289 @@ const (
 	EvmTxDepositWrongDepositArgType             EvmTxDepositErrorCode = "EvmTxDepositWrongDepositArgType"
 )
 
+// Defines values for ExplicitScope.
+const (
+	Export                              ExplicitScope = "export:*"
+	ExportUser                          ExplicitScope = "export:user:*"
+	ExportUserComplete                  ExplicitScope = "export:user:complete"
+	ExportUserInit                      ExplicitScope = "export:user:init"
+	Manage                              ExplicitScope = "manage:*"
+	ManageAuthMigration                 ExplicitScope = "manage:authMigration:*"
+	ManageAuthMigrationIdentityAdd      ExplicitScope = "manage:authMigration:identity:add"
+	ManageAuthMigrationIdentityRemove   ExplicitScope = "manage:authMigration:identity:remove"
+	ManageAuthMigrationUserUpdate       ExplicitScope = "manage:authMigration:user:update"
+	ManageContact                       ExplicitScope = "manage:contact:*"
+	ManageContactCreate                 ExplicitScope = "manage:contact:create"
+	ManageContactDelete                 ExplicitScope = "manage:contact:delete"
+	ManageContactGet                    ExplicitScope = "manage:contact:get"
+	ManageContactList                   ExplicitScope = "manage:contact:list"
+	ManageContactLookup                 ExplicitScope = "manage:contact:lookup:*"
+	ManageContactLookupAddress          ExplicitScope = "manage:contact:lookup:address"
+	ManageContactReadonly               ExplicitScope = "manage:contact:readonly"
+	ManageContactUpdate                 ExplicitScope = "manage:contact:update:*"
+	ManageContactUpdateAddresses        ExplicitScope = "manage:contact:update:addresses"
+	ManageContactUpdateEditPolicy       ExplicitScope = "manage:contact:update:editPolicy"
+	ManageContactUpdateLabels           ExplicitScope = "manage:contact:update:labels"
+	ManageContactUpdateMetadata         ExplicitScope = "manage:contact:update:metadata"
+	ManageContactUpdateName             ExplicitScope = "manage:contact:update:name"
+	ManageContactUpdateOwner            ExplicitScope = "manage:contact:update:owner"
+	ManageEmail                         ExplicitScope = "manage:email"
+	ManageExport                        ExplicitScope = "manage:export:*"
+	ManageExportOrg                     ExplicitScope = "manage:export:org:*"
+	ManageExportOrgGet                  ExplicitScope = "manage:export:org:get"
+	ManageExportReadonly                ExplicitScope = "manage:export:readonly"
+	ManageExportUser                    ExplicitScope = "manage:export:user:*"
+	ManageExportUserDelete              ExplicitScope = "manage:export:user:delete"
+	ManageExportUserList                ExplicitScope = "manage:export:user:list"
+	ManageIdentity                      ExplicitScope = "manage:identity:*"
+	ManageIdentityAdd                   ExplicitScope = "manage:identity:add"
+	ManageIdentityList                  ExplicitScope = "manage:identity:list"
+	ManageIdentityReadonly              ExplicitScope = "manage:identity:readonly"
+	ManageIdentityRemove                ExplicitScope = "manage:identity:remove"
+	ManageIdentityVerify                ExplicitScope = "manage:identity:verify"
+	ManageKey                           ExplicitScope = "manage:key:*"
+	ManageKeyAttest                     ExplicitScope = "manage:key:attest"
+	ManageKeyCreate                     ExplicitScope = "manage:key:create"
+	ManageKeyDelete                     ExplicitScope = "manage:key:delete"
+	ManageKeyGet                        ExplicitScope = "manage:key:get"
+	ManageKeyHistoryTxList              ExplicitScope = "manage:key:history:tx:list"
+	ManageKeyImport                     ExplicitScope = "manage:key:import"
+	ManageKeyList                       ExplicitScope = "manage:key:list"
+	ManageKeyListRoles                  ExplicitScope = "manage:key:listRoles"
+	ManageKeyReadonly                   ExplicitScope = "manage:key:readonly"
+	ManageKeyUpdate                     ExplicitScope = "manage:key:update:*"
+	ManageKeyUpdateEditPolicy           ExplicitScope = "manage:key:update:editPolicy"
+	ManageKeyUpdateEnabled              ExplicitScope = "manage:key:update:enabled"
+	ManageKeyUpdateMetadata             ExplicitScope = "manage:key:update:metadata"
+	ManageKeyUpdateOwner                ExplicitScope = "manage:key:update:owner"
+	ManageKeyUpdatePolicy               ExplicitScope = "manage:key:update:policy"
+	ManageMfa                           ExplicitScope = "manage:mfa:*"
+	ManageMfaList                       ExplicitScope = "manage:mfa:list"
+	ManageMfaReadonly                   ExplicitScope = "manage:mfa:readonly"
+	ManageMfaRegister                   ExplicitScope = "manage:mfa:register:*"
+	ManageMfaRegisterEmail              ExplicitScope = "manage:mfa:register:email"
+	ManageMfaRegisterFido               ExplicitScope = "manage:mfa:register:fido"
+	ManageMfaRegisterTotp               ExplicitScope = "manage:mfa:register:totp"
+	ManageMfaUnregister                 ExplicitScope = "manage:mfa:unregister:*"
+	ManageMfaUnregisterFido             ExplicitScope = "manage:mfa:unregister:fido"
+	ManageMfaUnregisterTotp             ExplicitScope = "manage:mfa:unregister:totp"
+	ManageMfaVerify                     ExplicitScope = "manage:mfa:verify:*"
+	ManageMfaVerifyTotp                 ExplicitScope = "manage:mfa:verify:totp"
+	ManageMfaVote                       ExplicitScope = "manage:mfa:vote:*"
+	ManageMfaVoteCs                     ExplicitScope = "manage:mfa:vote:cs"
+	ManageMfaVoteEmail                  ExplicitScope = "manage:mfa:vote:email"
+	ManageMfaVoteFido                   ExplicitScope = "manage:mfa:vote:fido"
+	ManageMfaVoteTotp                   ExplicitScope = "manage:mfa:vote:totp"
+	ManageMmi                           ExplicitScope = "manage:mmi:*"
+	ManageMmiDelete                     ExplicitScope = "manage:mmi:delete"
+	ManageMmiGet                        ExplicitScope = "manage:mmi:get"
+	ManageMmiList                       ExplicitScope = "manage:mmi:list"
+	ManageMmiReadonly                   ExplicitScope = "manage:mmi:readonly"
+	ManageMmiReject                     ExplicitScope = "manage:mmi:reject"
+	ManageOrg                           ExplicitScope = "manage:org:*"
+	ManageOrgAddUser                    ExplicitScope = "manage:org:addUser"
+	ManageOrgAuditQuery                 ExplicitScope = "manage:org:audit:query"
+	ManageOrgCreate                     ExplicitScope = "manage:org:create"
+	ManageOrgDeleteUser                 ExplicitScope = "manage:org:deleteUser"
+	ManageOrgGet                        ExplicitScope = "manage:org:get"
+	ManageOrgInviteAlien                ExplicitScope = "manage:org:inviteAlien"
+	ManageOrgInviteUser                 ExplicitScope = "manage:org:inviteUser"
+	ManageOrgListUsers                  ExplicitScope = "manage:org:listUsers"
+	ManageOrgMetricsQuery               ExplicitScope = "manage:org:metrics:query"
+	ManageOrgReadonly                   ExplicitScope = "manage:org:readonly"
+	ManageOrgUpdateMembership           ExplicitScope = "manage:org:updateMembership"
+	ManageOrgUserGet                    ExplicitScope = "manage:org:user:get"
+	ManageOrgUserResetMfa               ExplicitScope = "manage:org:user:resetMfa"
+	ManagePolicy                        ExplicitScope = "manage:policy:*"
+	ManagePolicyCreate                  ExplicitScope = "manage:policy:create"
+	ManagePolicyCreateImportKey         ExplicitScope = "manage:policy:createImportKey"
+	ManagePolicyDelete                  ExplicitScope = "manage:policy:delete"
+	ManagePolicyGet                     ExplicitScope = "manage:policy:get"
+	ManagePolicyInvoke                  ExplicitScope = "manage:policy:invoke"
+	ManagePolicyList                    ExplicitScope = "manage:policy:list"
+	ManagePolicyReadonly                ExplicitScope = "manage:policy:readonly"
+	ManagePolicySecrets                 ExplicitScope = "manage:policy:secrets:*"
+	ManagePolicySecretsGet              ExplicitScope = "manage:policy:secrets:get"
+	ManagePolicySecretsUpdate           ExplicitScope = "manage:policy:secrets:update:*"
+	ManagePolicySecretsUpdateAcl        ExplicitScope = "manage:policy:secrets:update:acl"
+	ManagePolicySecretsUpdateEditPolicy ExplicitScope = "manage:policy:secrets:update:editPolicy"
+	ManagePolicySecretsUpdateValues     ExplicitScope = "manage:policy:secrets:update:values"
+	ManagePolicyUpdate                  ExplicitScope = "manage:policy:update:*"
+	ManagePolicyUpdateAcl               ExplicitScope = "manage:policy:update:acl"
+	ManagePolicyUpdateEditPolicy        ExplicitScope = "manage:policy:update:editPolicy"
+	ManagePolicyUpdateMetadata          ExplicitScope = "manage:policy:update:metadata"
+	ManagePolicyUpdateName              ExplicitScope = "manage:policy:update:name"
+	ManagePolicyUpdateOwner             ExplicitScope = "manage:policy:update:owner"
+	ManagePolicyUpdateRule              ExplicitScope = "manage:policy:update:rule"
+	ManagePolicyWasm                    ExplicitScope = "manage:policy:wasm:*"
+	ManagePolicyWasmUpload              ExplicitScope = "manage:policy:wasm:upload"
+	ManageReadonly                      ExplicitScope = "manage:readonly"
+	ManageRole                          ExplicitScope = "manage:role:*"
+	ManageRoleAttest                    ExplicitScope = "manage:role:attest"
+	ManageRoleCreate                    ExplicitScope = "manage:role:create"
+	ManageRoleDelete                    ExplicitScope = "manage:role:delete"
+	ManageRoleGet                       ExplicitScope = "manage:role:get:*"
+	ManageRoleGetKeys                   ExplicitScope = "manage:role:get:keys"
+	ManageRoleGetKeysGet                ExplicitScope = "manage:role:get:keys:get"
+	ManageRoleGetKeysList               ExplicitScope = "manage:role:get:keys:list"
+	ManageRoleGetUsers                  ExplicitScope = "manage:role:get:users"
+	ManageRoleHistoryTxList             ExplicitScope = "manage:role:history:tx:list"
+	ManageRoleList                      ExplicitScope = "manage:role:list"
+	ManageRoleReadonly                  ExplicitScope = "manage:role:readonly"
+	ManageRoleUpdate                    ExplicitScope = "manage:role:update:*"
+	ManageRoleUpdateEditPolicy          ExplicitScope = "manage:role:update:editPolicy"
+	ManageRoleUpdateEnabled             ExplicitScope = "manage:role:update:enabled"
+	ManageRoleUpdateKey                 ExplicitScope = "manage:role:update:key:*"
+	ManageRoleUpdateKeyAdd              ExplicitScope = "manage:role:update:key:add"
+	ManageRoleUpdateKeyRemove           ExplicitScope = "manage:role:update:key:remove"
+	ManageRoleUpdatePolicy              ExplicitScope = "manage:role:update:policy"
+	ManageRoleUpdateUser                ExplicitScope = "manage:role:update:user:*"
+	ManageRoleUpdateUserAdd             ExplicitScope = "manage:role:update:user:add"
+	ManageRoleUpdateUserRemove          ExplicitScope = "manage:role:update:user:remove"
+	ManageSession                       ExplicitScope = "manage:session:*"
+	ManageSessionCreate                 ExplicitScope = "manage:session:create"
+	ManageSessionExtend                 ExplicitScope = "manage:session:extend"
+	ManageSessionGet                    ExplicitScope = "manage:session:get"
+	ManageSessionList                   ExplicitScope = "manage:session:list"
+	ManageSessionReadonly               ExplicitScope = "manage:session:readonly"
+	ManageSessionRevoke                 ExplicitScope = "manage:session:revoke"
+	Mmi                                 ExplicitScope = "mmi:*"
+	OrgAccess                           ExplicitScope = "orgAccess:*"
+	OrgAccessChild                      ExplicitScope = "orgAccess:child:*"
+	Sign                                ExplicitScope = "sign:*"
+	SignAva                             ExplicitScope = "sign:ava"
+	SignBabylon                         ExplicitScope = "sign:babylon:*"
+	SignBabylonCovenant                 ExplicitScope = "sign:babylon:covenant"
+	SignBabylonEots                     ExplicitScope = "sign:babylon:eots:*"
+	SignBabylonEotsNonces               ExplicitScope = "sign:babylon:eots:nonces"
+	SignBabylonEotsSign                 ExplicitScope = "sign:babylon:eots:sign"
+	SignBabylonRegistration             ExplicitScope = "sign:babylon:registration"
+	SignBabylonStaking                  ExplicitScope = "sign:babylon:staking:*"
+	SignBabylonStakingDeposit           ExplicitScope = "sign:babylon:staking:deposit"
+	SignBabylonStakingSlash             ExplicitScope = "sign:babylon:staking:slash"
+	SignBabylonStakingUnbond            ExplicitScope = "sign:babylon:staking:unbond"
+	SignBabylonStakingWithdraw          ExplicitScope = "sign:babylon:staking:withdraw"
+	SignBlob                            ExplicitScope = "sign:blob"
+	SignBtc                             ExplicitScope = "sign:btc:*"
+	SignBtcMessage                      ExplicitScope = "sign:btc:message:*"
+	SignBtcMessageLegacy                ExplicitScope = "sign:btc:message:legacy"
+	SignBtcMessageSegwit                ExplicitScope = "sign:btc:message:segwit"
+	SignBtcPsbt                         ExplicitScope = "sign:btc:psbt:*"
+	SignBtcPsbtDoge                     ExplicitScope = "sign:btc:psbt:doge"
+	SignBtcPsbtLegacy                   ExplicitScope = "sign:btc:psbt:legacy"
+	SignBtcPsbtLtcSegwit                ExplicitScope = "sign:btc:psbt:ltcSegwit"
+	SignBtcPsbtSegwit                   ExplicitScope = "sign:btc:psbt:segwit"
+	SignBtcPsbtTaproot                  ExplicitScope = "sign:btc:psbt:taproot"
+	SignBtcSegwit                       ExplicitScope = "sign:btc:segwit"
+	SignBtcTaproot                      ExplicitScope = "sign:btc:taproot"
+	SignDiffieHellman                   ExplicitScope = "sign:diffieHellman"
+	SignEth2                            ExplicitScope = "sign:eth2:*"
+	SignEth2Stake                       ExplicitScope = "sign:eth2:stake"
+	SignEth2Unstake                     ExplicitScope = "sign:eth2:unstake"
+	SignEth2Validate                    ExplicitScope = "sign:eth2:validate"
+	SignEvm                             ExplicitScope = "sign:evm:*"
+	SignEvmEip191                       ExplicitScope = "sign:evm:eip191"
+	SignEvmEip712                       ExplicitScope = "sign:evm:eip712"
+	SignEvmTx                           ExplicitScope = "sign:evm:tx"
+	SignMmi                             ExplicitScope = "sign:mmi"
+	SignSolana                          ExplicitScope = "sign:solana"
+	SignSui                             ExplicitScope = "sign:sui"
+	SignTendermint                      ExplicitScope = "sign:tendermint"
+)
+
 // Defines values for ForbiddenErrorCode.
 const (
-	AutoAddBlsKeyToProtectedRole        ForbiddenErrorCode = "AutoAddBlsKeyToProtectedRole"
-	CannotAssumeIdentity                ForbiddenErrorCode = "CannotAssumeIdentity"
-	CannotCreateOrg                     ForbiddenErrorCode = "CannotCreateOrg"
-	ChainIdNotAllowed                   ForbiddenErrorCode = "ChainIdNotAllowed"
-	ContactNotInOrg                     ForbiddenErrorCode = "ContactNotInOrg"
-	DisabledRole                        ForbiddenErrorCode = "DisabledRole"
-	EmailOtpNotConfigured               ForbiddenErrorCode = "EmailOtpNotConfigured"
-	ExpectedUserSession                 ForbiddenErrorCode = "ExpectedUserSession"
-	FidoRequiredToRemoveTotp            ForbiddenErrorCode = "FidoRequiredToRemoveTotp"
-	FullSessionRequired                 ForbiddenErrorCode = "FullSessionRequired"
-	ImproperSessionScope                ForbiddenErrorCode = "ImproperSessionScope"
-	InvalidArn                          ForbiddenErrorCode = "InvalidArn"
-	InvalidAuthHeader                   ForbiddenErrorCode = "InvalidAuthHeader"
-	InvalidOrg                          ForbiddenErrorCode = "InvalidOrg"
-	InvalidOrgMembershipRoleChange      ForbiddenErrorCode = "InvalidOrgMembershipRoleChange"
-	InvalidRole                         ForbiddenErrorCode = "InvalidRole"
-	KeyDisabled                         ForbiddenErrorCode = "KeyDisabled"
-	KeyNotInRole                        ForbiddenErrorCode = "KeyNotInRole"
-	LegacySessionCannotHaveScopeCeiling ForbiddenErrorCode = "LegacySessionCannotHaveScopeCeiling"
-	MemberRoleForbidden                 ForbiddenErrorCode = "MemberRoleForbidden"
-	MfaChallengeExpired                 ForbiddenErrorCode = "MfaChallengeExpired"
-	MfaConfirmationCodeMismatch         ForbiddenErrorCode = "MfaConfirmationCodeMismatch"
-	MfaDisallowedApprover               ForbiddenErrorCode = "MfaDisallowedApprover"
-	MfaDisallowedIdentity               ForbiddenErrorCode = "MfaDisallowedIdentity"
-	MfaHttpRequestMismatch              ForbiddenErrorCode = "MfaHttpRequestMismatch"
-	MfaNotApprovedYet                   ForbiddenErrorCode = "MfaNotApprovedYet"
-	MfaNotConfigured                    ForbiddenErrorCode = "MfaNotConfigured"
-	MfaOrgRequirementNotMet             ForbiddenErrorCode = "MfaOrgRequirementNotMet"
-	MfaRegistrationDisallowed           ForbiddenErrorCode = "MfaRegistrationDisallowed"
-	MfaRemoveBelowMin                   ForbiddenErrorCode = "MfaRemoveBelowMin"
-	MfaTotpBadCode                      ForbiddenErrorCode = "MfaTotpBadCode"
-	MfaTotpBadConfiguration             ForbiddenErrorCode = "MfaTotpBadConfiguration"
-	MfaTotpRateLimit                    ForbiddenErrorCode = "MfaTotpRateLimit"
-	MfaTypeNotAllowed                   ForbiddenErrorCode = "MfaTypeNotAllowed"
-	MustBeFullMember                    ForbiddenErrorCode = "MustBeFullMember"
-	OidcIdentityLimitReached            ForbiddenErrorCode = "OidcIdentityLimitReached"
-	OidcIssuerNotAllowedForMemberRole   ForbiddenErrorCode = "OidcIssuerNotAllowedForMemberRole"
-	OidcNoMemberRolesAllowed            ForbiddenErrorCode = "OidcNoMemberRolesAllowed"
-	OidcScopeCeilingMissing             ForbiddenErrorCode = "OidcScopeCeilingMissing"
-	OidcUserNotFound                    ForbiddenErrorCode = "OidcUserNotFound"
-	OperationNotAllowed                 ForbiddenErrorCode = "OperationNotAllowed"
-	OrgDisabled                         ForbiddenErrorCode = "OrgDisabled"
-	OrgExportRetrievalDisabled          ForbiddenErrorCode = "OrgExportRetrievalDisabled"
-	OrgFlagNotSet                       ForbiddenErrorCode = "OrgFlagNotSet"
-	OrgIdMismatch                       ForbiddenErrorCode = "OrgIdMismatch"
-	OrgNotFound                         ForbiddenErrorCode = "OrgNotFound"
-	OrgWithoutOwner                     ForbiddenErrorCode = "OrgWithoutOwner"
-	OrphanedUser                        ForbiddenErrorCode = "OrphanedUser"
-	PasskeyLoginDisabled                ForbiddenErrorCode = "PasskeyLoginDisabled"
-	PasskeyNotRegistered                ForbiddenErrorCode = "PasskeyNotRegistered"
-	RemoveKeyFromRoleUserNotAllowed     ForbiddenErrorCode = "RemoveKeyFromRoleUserNotAllowed"
-	RemoveLastOidcIdentity              ForbiddenErrorCode = "RemoveLastOidcIdentity"
-	RoleInParentOrgNotAllowed           ForbiddenErrorCode = "RoleInParentOrgNotAllowed"
-	ScopedNameNotFound                  ForbiddenErrorCode = "ScopedNameNotFound"
-	SelfDelete                          ForbiddenErrorCode = "SelfDelete"
-	SelfDisable                         ForbiddenErrorCode = "SelfDisable"
-	SentryDisallowed                    ForbiddenErrorCode = "SentryDisallowed"
-	SessionAuthTokenExpired             ForbiddenErrorCode = "SessionAuthTokenExpired"
-	SessionChanged                      ForbiddenErrorCode = "SessionChanged"
-	SessionExpired                      ForbiddenErrorCode = "SessionExpired"
-	SessionForWrongOrg                  ForbiddenErrorCode = "SessionForWrongOrg"
-	SessionInvalidAuthToken             ForbiddenErrorCode = "SessionInvalidAuthToken"
-	SessionInvalidEpochToken            ForbiddenErrorCode = "SessionInvalidEpochToken"
-	SessionInvalidRefreshToken          ForbiddenErrorCode = "SessionInvalidRefreshToken"
-	SessionNotFound                     ForbiddenErrorCode = "SessionNotFound"
-	SessionPossiblyStolenToken          ForbiddenErrorCode = "SessionPossiblyStolenToken"
-	SessionRefreshTokenExpired          ForbiddenErrorCode = "SessionRefreshTokenExpired"
-	SessionRevoked                      ForbiddenErrorCode = "SessionRevoked"
-	SessionRoleChanged                  ForbiddenErrorCode = "SessionRoleChanged"
-	SessionWithoutAnyScopeUnder         ForbiddenErrorCode = "SessionWithoutAnyScopeUnder"
-	TotpAlreadyConfigured               ForbiddenErrorCode = "TotpAlreadyConfigured"
-	TotpConfigurationChanged            ForbiddenErrorCode = "TotpConfigurationChanged"
-	UserDisabled                        ForbiddenErrorCode = "UserDisabled"
-	UserExportDisabled                  ForbiddenErrorCode = "UserExportDisabled"
-	UserExportRequestInvalid            ForbiddenErrorCode = "UserExportRequestInvalid"
-	UserExportRequestNotInOrg           ForbiddenErrorCode = "UserExportRequestNotInOrg"
-	UserNotContactOwner                 ForbiddenErrorCode = "UserNotContactOwner"
-	UserNotInOrg                        ForbiddenErrorCode = "UserNotInOrg"
-	UserNotInRole                       ForbiddenErrorCode = "UserNotInRole"
-	UserNotKeyOwner                     ForbiddenErrorCode = "UserNotKeyOwner"
-	UserNotOrgOwner                     ForbiddenErrorCode = "UserNotOrgOwner"
-	UserNotOriginalKeyOwner             ForbiddenErrorCode = "UserNotOriginalKeyOwner"
-	UserNotPolicyOwner                  ForbiddenErrorCode = "UserNotPolicyOwner"
-	UserRoleUnprivileged                ForbiddenErrorCode = "UserRoleUnprivileged"
-	WrongMfaEmailOtpJwt                 ForbiddenErrorCode = "WrongMfaEmailOtpJwt"
+	Acl                                    ForbiddenErrorCode = "Acl"
+	AlienKeyCreate                         ForbiddenErrorCode = "AlienKeyCreate"
+	AutoAddBlsKeyToProtectedRole           ForbiddenErrorCode = "AutoAddBlsKeyToProtectedRole"
+	CannotAssumeIdentity                   ForbiddenErrorCode = "CannotAssumeIdentity"
+	CannotCreateOrg                        ForbiddenErrorCode = "CannotCreateOrg"
+	ChainIdNotAllowed                      ForbiddenErrorCode = "ChainIdNotAllowed"
+	ChangingKeyExportRequirementIsDisabled ForbiddenErrorCode = "ChangingKeyExportRequirementIsDisabled"
+	ContactNotInOrg                        ForbiddenErrorCode = "ContactNotInOrg"
+	DisabledRole                           ForbiddenErrorCode = "DisabledRole"
+	EmailOtpNotConfigured                  ForbiddenErrorCode = "EmailOtpNotConfigured"
+	ExpectedUserSession                    ForbiddenErrorCode = "ExpectedUserSession"
+	FidoRequiredToRemoveTotp               ForbiddenErrorCode = "FidoRequiredToRemoveTotp"
+	FullSessionRequired                    ForbiddenErrorCode = "FullSessionRequired"
+	ImproperSessionScope                   ForbiddenErrorCode = "ImproperSessionScope"
+	InvalidArn                             ForbiddenErrorCode = "InvalidArn"
+	InvalidAuthHeader                      ForbiddenErrorCode = "InvalidAuthHeader"
+	InvalidOrg                             ForbiddenErrorCode = "InvalidOrg"
+	InvalidOrgMembershipRoleChange         ForbiddenErrorCode = "InvalidOrgMembershipRoleChange"
+	InvalidRole                            ForbiddenErrorCode = "InvalidRole"
+	KeyDisabled                            ForbiddenErrorCode = "KeyDisabled"
+	KeyNotInRole                           ForbiddenErrorCode = "KeyNotInRole"
+	LegacySessionCannotHaveScopeCeiling    ForbiddenErrorCode = "LegacySessionCannotHaveScopeCeiling"
+	MemberRoleForbidden                    ForbiddenErrorCode = "MemberRoleForbidden"
+	MfaChallengeExpired                    ForbiddenErrorCode = "MfaChallengeExpired"
+	MfaConfirmationCodeMismatch            ForbiddenErrorCode = "MfaConfirmationCodeMismatch"
+	MfaDisallowedApprover                  ForbiddenErrorCode = "MfaDisallowedApprover"
+	MfaDisallowedIdentity                  ForbiddenErrorCode = "MfaDisallowedIdentity"
+	MfaHttpRequestMismatch                 ForbiddenErrorCode = "MfaHttpRequestMismatch"
+	MfaNotApprovedYet                      ForbiddenErrorCode = "MfaNotApprovedYet"
+	MfaNotConfigured                       ForbiddenErrorCode = "MfaNotConfigured"
+	MfaOrgRequirementNotMet                ForbiddenErrorCode = "MfaOrgRequirementNotMet"
+	MfaRegistrationDisallowed              ForbiddenErrorCode = "MfaRegistrationDisallowed"
+	MfaRemoveBelowMin                      ForbiddenErrorCode = "MfaRemoveBelowMin"
+	MfaTotpBadCode                         ForbiddenErrorCode = "MfaTotpBadCode"
+	MfaTotpBadConfiguration                ForbiddenErrorCode = "MfaTotpBadConfiguration"
+	MfaTotpRateLimit                       ForbiddenErrorCode = "MfaTotpRateLimit"
+	MfaTypeNotAllowed                      ForbiddenErrorCode = "MfaTypeNotAllowed"
+	MustBeFullMember                       ForbiddenErrorCode = "MustBeFullMember"
+	OidcIdentityLimitReached               ForbiddenErrorCode = "OidcIdentityLimitReached"
+	OidcIssuerNotAllowedForMemberRole      ForbiddenErrorCode = "OidcIssuerNotAllowedForMemberRole"
+	OidcNoMemberRolesAllowed               ForbiddenErrorCode = "OidcNoMemberRolesAllowed"
+	OidcScopeCeilingMissing                ForbiddenErrorCode = "OidcScopeCeilingMissing"
+	OidcUserNotFound                       ForbiddenErrorCode = "OidcUserNotFound"
+	OperationNotAllowed                    ForbiddenErrorCode = "OperationNotAllowed"
+	OrgDisabled                            ForbiddenErrorCode = "OrgDisabled"
+	OrgExportRetrievalDisabled             ForbiddenErrorCode = "OrgExportRetrievalDisabled"
+	OrgFlagNotSet                          ForbiddenErrorCode = "OrgFlagNotSet"
+	OrgIdMismatch                          ForbiddenErrorCode = "OrgIdMismatch"
+	OrgNotFound                            ForbiddenErrorCode = "OrgNotFound"
+	OrgWithoutOwner                        ForbiddenErrorCode = "OrgWithoutOwner"
+	OrphanedUser                           ForbiddenErrorCode = "OrphanedUser"
+	PasskeyLoginDisabled                   ForbiddenErrorCode = "PasskeyLoginDisabled"
+	PasskeyNotRegistered                   ForbiddenErrorCode = "PasskeyNotRegistered"
+	RemoveKeyFromRoleUserNotAllowed        ForbiddenErrorCode = "RemoveKeyFromRoleUserNotAllowed"
+	RemoveLastOidcIdentity                 ForbiddenErrorCode = "RemoveLastOidcIdentity"
+	RoleInParentOrgNotAllowed              ForbiddenErrorCode = "RoleInParentOrgNotAllowed"
+	ScopedNameNotFound                     ForbiddenErrorCode = "ScopedNameNotFound"
+	SelfDelete                             ForbiddenErrorCode = "SelfDelete"
+	SelfDisable                            ForbiddenErrorCode = "SelfDisable"
+	SentryDisallowed                       ForbiddenErrorCode = "SentryDisallowed"
+	SessionAuthTokenExpired                ForbiddenErrorCode = "SessionAuthTokenExpired"
+	SessionChanged                         ForbiddenErrorCode = "SessionChanged"
+	SessionExpired                         ForbiddenErrorCode = "SessionExpired"
+	SessionForWrongOrg                     ForbiddenErrorCode = "SessionForWrongOrg"
+	SessionInvalidAuthToken                ForbiddenErrorCode = "SessionInvalidAuthToken"
+	SessionInvalidEpochToken               ForbiddenErrorCode = "SessionInvalidEpochToken"
+	SessionInvalidRefreshToken             ForbiddenErrorCode = "SessionInvalidRefreshToken"
+	SessionNotFound                        ForbiddenErrorCode = "SessionNotFound"
+	SessionPossiblyStolenToken             ForbiddenErrorCode = "SessionPossiblyStolenToken"
+	SessionRefreshTokenExpired             ForbiddenErrorCode = "SessionRefreshTokenExpired"
+	SessionRevoked                         ForbiddenErrorCode = "SessionRevoked"
+	SessionRoleChanged                     ForbiddenErrorCode = "SessionRoleChanged"
+	SessionWithoutAnyScopeUnder            ForbiddenErrorCode = "SessionWithoutAnyScopeUnder"
+	SiweChallengeExpired                   ForbiddenErrorCode = "SiweChallengeExpired"
+	SiweMessageInvalidSignature            ForbiddenErrorCode = "SiweMessageInvalidSignature"
+	SiweMessageNotValid                    ForbiddenErrorCode = "SiweMessageNotValid"
+	TotpAlreadyConfigured                  ForbiddenErrorCode = "TotpAlreadyConfigured"
+	TotpConfigurationChanged               ForbiddenErrorCode = "TotpConfigurationChanged"
+	UserDisabled                           ForbiddenErrorCode = "UserDisabled"
+	UserExportDisabled                     ForbiddenErrorCode = "UserExportDisabled"
+	UserExportRequestInvalid               ForbiddenErrorCode = "UserExportRequestInvalid"
+	UserExportRequestNotInOrg              ForbiddenErrorCode = "UserExportRequestNotInOrg"
+	UserNotContactOwner                    ForbiddenErrorCode = "UserNotContactOwner"
+	UserNotInOrg                           ForbiddenErrorCode = "UserNotInOrg"
+	UserNotInRole                          ForbiddenErrorCode = "UserNotInRole"
+	UserNotKeyOwner                        ForbiddenErrorCode = "UserNotKeyOwner"
+	UserNotOrgOwner                        ForbiddenErrorCode = "UserNotOrgOwner"
+	UserNotOriginalKeyOwner                ForbiddenErrorCode = "UserNotOriginalKeyOwner"
+	UserNotPolicyOwner                     ForbiddenErrorCode = "UserNotPolicyOwner"
+	UserRoleUnprivileged                   ForbiddenErrorCode = "UserRoleUnprivileged"
+	WrongMfaEmailOtpJwt                    ForbiddenErrorCode = "WrongMfaEmailOtpJwt"
 )
 
 // Defines values for HttpRequestCmp0.
@@ -349,6 +564,7 @@ const (
 
 // Defines values for InternalErrorCode.
 const (
+	AssumeRoleWithoutEvidence           InternalErrorCode = "AssumeRoleWithoutEvidence"
 	AvaSignCredsMissing                 InternalErrorCode = "AvaSignCredsMissing"
 	AvaSignSignatureMissing             InternalErrorCode = "AvaSignSignatureMissing"
 	BabylonCovSignError                 InternalErrorCode = "BabylonCovSignError"
@@ -366,6 +582,7 @@ const (
 	CubistSignerError                   InternalErrorCode = "CubistSignerError"
 	CwListMetricsError                  InternalErrorCode = "CwListMetricsError"
 	CwPutMetricDataError                InternalErrorCode = "CwPutMetricDataError"
+	DbContactAddressesInvalid           InternalErrorCode = "DbContactAddressesInvalid"
 	DbDeleteError                       InternalErrorCode = "DbDeleteError"
 	DbGetError                          InternalErrorCode = "DbGetError"
 	DbGetItemsError                     InternalErrorCode = "DbGetItemsError"
@@ -387,6 +604,7 @@ const (
 	InconsistentMultiValueTestAndSet    InternalErrorCode = "InconsistentMultiValueTestAndSet"
 	InternalHeaderMissing               InternalErrorCode = "InternalHeaderMissing"
 	InvalidAlias                        InternalErrorCode = "InvalidAlias"
+	InvalidAuditLogEntry                InternalErrorCode = "InvalidAuditLogEntry"
 	InvalidBtcAddress                   InternalErrorCode = "InvalidBtcAddress"
 	InvalidEmailAddress                 InternalErrorCode = "InvalidEmailAddress"
 	InvalidInternalHeaderValue          InternalErrorCode = "InvalidInternalHeaderValue"
@@ -433,6 +651,7 @@ const (
 	S3PresignedUrlError                 InternalErrorCode = "S3PresignedUrlError"
 	S3UploadError                       InternalErrorCode = "S3UploadError"
 	SecretNotFound                      InternalErrorCode = "SecretNotFound"
+	SegwitTweakFailed                   InternalErrorCode = "SegwitTweakFailed"
 	SendMailError                       InternalErrorCode = "SendMailError"
 	SerdeError                          InternalErrorCode = "SerdeError"
 	SerializeEncryptedExportKeyError    InternalErrorCode = "SerializeEncryptedExportKeyError"
@@ -449,16 +668,21 @@ const (
 	TsQueryError                        InternalErrorCode = "TsQueryError"
 	TsWriteError                        InternalErrorCode = "TsWriteError"
 	UncheckedOrg                        InternalErrorCode = "UncheckedOrg"
+	UnexpectedAclAction                 InternalErrorCode = "UnexpectedAclAction"
+	UnexpectedCheckerRule               InternalErrorCode = "UnexpectedCheckerRule"
+	UnresolvedPolicyReference           InternalErrorCode = "UnresolvedPolicyReference"
 )
 
 // Defines values for KeyType.
 const (
+	BabyJubjub            KeyType = "BabyJubjub"
 	BabylonCov            KeyType = "BabylonCov"
 	BabylonEots           KeyType = "BabylonEots"
 	BlsAvaIcm             KeyType = "BlsAvaIcm"
 	BlsInactive           KeyType = "BlsInactive"
 	BlsPub                KeyType = "BlsPub"
 	Ed25519AptosAddr      KeyType = "Ed25519AptosAddr"
+	Ed25519CantonAddr     KeyType = "Ed25519CantonAddr"
 	Ed25519CardanoAddrVk  KeyType = "Ed25519CardanoAddrVk"
 	Ed25519SolanaAddr     KeyType = "Ed25519SolanaAddr"
 	Ed25519StellarAddr    KeyType = "Ed25519StellarAddr"
@@ -496,10 +720,12 @@ const (
 
 // Defines values for NotFoundErrorCode.
 const (
+	CustomChainNotFound          NotFoundErrorCode = "CustomChainNotFound"
 	FidoChallengeNotFound        NotFoundErrorCode = "FidoChallengeNotFound"
 	FidoKeyNotFound              NotFoundErrorCode = "FidoKeyNotFound"
 	OrgExportCiphertextNotFound  NotFoundErrorCode = "OrgExportCiphertextNotFound"
 	PolicySecretNotFound         NotFoundErrorCode = "PolicySecretNotFound"
+	TimestreamDisabled           NotFoundErrorCode = "TimestreamDisabled"
 	TotpChallengeNotFound        NotFoundErrorCode = "TotpChallengeNotFound"
 	TotpNotConfigured            NotFoundErrorCode = "TotpNotConfigured"
 	UploadObjectNotFound         NotFoundErrorCode = "UploadObjectNotFound"
@@ -519,6 +745,7 @@ const (
 	OperationKindBlobSign            OperationKind = "BlobSign"
 	OperationKindBtcMessageSign      OperationKind = "BtcMessageSign"
 	OperationKindBtcSign             OperationKind = "BtcSign"
+	OperationKindDiffieHellman       OperationKind = "DiffieHellman"
 	OperationKindEip191Sign          OperationKind = "Eip191Sign"
 	OperationKindEip712Sign          OperationKind = "Eip712Sign"
 	OperationKindEotsNonces          OperationKind = "EotsNonces"
@@ -556,6 +783,7 @@ const (
 	BtcTxDisallowedOutputs                  PolicyErrorOwnCodes = "BtcTxDisallowedOutputs"
 	BtcValueOverflow                        PolicyErrorOwnCodes = "BtcValueOverflow"
 	DeniedByWebhook                         PolicyErrorOwnCodes = "DeniedByWebhook"
+	DiffieHellmanExchangeNotAllowed         PolicyErrorOwnCodes = "DiffieHellmanExchangeNotAllowed"
 	Eip191SigningNotAllowed                 PolicyErrorOwnCodes = "Eip191SigningNotAllowed"
 	Eip712SigningNotAllowed                 PolicyErrorOwnCodes = "Eip712SigningNotAllowed"
 	Erc20DataInvalid                        PolicyErrorOwnCodes = "Erc20DataInvalid"
@@ -571,20 +799,23 @@ const (
 	EvmDataDisallowed                       PolicyErrorOwnCodes = "EvmDataDisallowed"
 	EvmDataInvalid                          PolicyErrorOwnCodes = "EvmDataInvalid"
 	EvmDataNotDefined                       PolicyErrorOwnCodes = "EvmDataNotDefined"
+	EvmFunctionCallDisallowedArg            PolicyErrorOwnCodes = "EvmFunctionCallDisallowedArg"
 	EvmFunctionCallInvalid                  PolicyErrorOwnCodes = "EvmFunctionCallInvalid"
 	EvmFunctionNotInAllowlist               PolicyErrorOwnCodes = "EvmFunctionNotInAllowlist"
+	EvmTxChainIdMismatch                    PolicyErrorOwnCodes = "EvmTxChainIdMismatch"
 	EvmTxExceededGasCost                    PolicyErrorOwnCodes = "EvmTxExceededGasCost"
 	EvmTxExceededValue                      PolicyErrorOwnCodes = "EvmTxExceededValue"
 	EvmTxGasCostUndefined                   PolicyErrorOwnCodes = "EvmTxGasCostUndefined"
 	EvmTxReceiverMismatch                   PolicyErrorOwnCodes = "EvmTxReceiverMismatch"
 	EvmTxSenderMismatch                     PolicyErrorOwnCodes = "EvmTxSenderMismatch"
-	EvmTxValueUndefined                     PolicyErrorOwnCodes = "EvmTxValueUndefined"
+	Inapplicable                            PolicyErrorOwnCodes = "Inapplicable"
 	InvalidSourceIp                         PolicyErrorOwnCodes = "InvalidSourceIp"
 	KeyAccessError                          PolicyErrorOwnCodes = "KeyAccessError"
 	KeyInMultipleRoles                      PolicyErrorOwnCodes = "KeyInMultipleRoles"
 	KeysAlreadyInRole                       PolicyErrorOwnCodes = "KeysAlreadyInRole"
 	NoOidcAuthSourcesDefined                PolicyErrorOwnCodes = "NoOidcAuthSourcesDefined"
 	NotInIpv4Allowlist                      PolicyErrorOwnCodes = "NotInIpv4Allowlist"
+	NotInOperationAllowlist                 PolicyErrorOwnCodes = "NotInOperationAllowlist"
 	NotInOriginAllowlist                    PolicyErrorOwnCodes = "NotInOriginAllowlist"
 	OidcSourceNotAllowed                    PolicyErrorOwnCodes = "OidcSourceNotAllowed"
 	PolicyDisjunctionError                  PolicyErrorOwnCodes = "PolicyDisjunctionError"
@@ -620,184 +851,13 @@ const (
 	Eth2MultiDepositUnknownInitialDeposit         PreconditionErrorOwnCodes = "Eth2MultiDepositUnknownInitialDeposit"
 	Eth2MultiDepositWithdrawalAddressMismatch     PreconditionErrorOwnCodes = "Eth2MultiDepositWithdrawalAddressMismatch"
 	Eth2ProposerSlotTooLow                        PreconditionErrorOwnCodes = "Eth2ProposerSlotTooLow"
+	FailOnMfaRequired                             PreconditionErrorOwnCodes = "FailOnMfaRequired"
+	KeyRegionChangedRecently                      PreconditionErrorOwnCodes = "KeyRegionChangedRecently"
+	KeyRegionLocked                               PreconditionErrorOwnCodes = "KeyRegionLocked"
 	MfaApprovalsNotYetValid                       PreconditionErrorOwnCodes = "MfaApprovalsNotYetValid"
+	MfaRegionLocked                               PreconditionErrorOwnCodes = "MfaRegionLocked"
 	TendermintConcurrentSigning                   PreconditionErrorOwnCodes = "TendermintConcurrentSigning"
 	TendermintStateError                          PreconditionErrorOwnCodes = "TendermintStateError"
-)
-
-// Defines values for Scope0.
-const (
-	Export                              Scope0 = "export:*"
-	ExportUser                          Scope0 = "export:user:*"
-	ExportUserComplete                  Scope0 = "export:user:complete"
-	ExportUserInit                      Scope0 = "export:user:init"
-	Manage                              Scope0 = "manage:*"
-	ManageAuthMigrationIdentityAdd      Scope0 = "manage:authMigration:identity:add"
-	ManageAuthMigrationIdentityRemove   Scope0 = "manage:authMigration:identity:remove"
-	ManageAuthMigrationUserUpdate       Scope0 = "manage:authMigration:user:update"
-	ManageContact                       Scope0 = "manage:contact:*"
-	ManageContactCreate                 Scope0 = "manage:contact:create"
-	ManageContactDelete                 Scope0 = "manage:contact:delete"
-	ManageContactGet                    Scope0 = "manage:contact:get"
-	ManageContactList                   Scope0 = "manage:contact:list"
-	ManageContactUpdate                 Scope0 = "manage:contact:update:*"
-	ManageContactUpdateAddresses        Scope0 = "manage:contact:update:addresses"
-	ManageContactUpdateEditPolicy       Scope0 = "manage:contact:update:editPolicy"
-	ManageContactUpdateMetadata         Scope0 = "manage:contact:update:metadata"
-	ManageContactUpdateName             Scope0 = "manage:contact:update:name"
-	ManageContactUpdateOwner            Scope0 = "manage:contact:update:owner"
-	ManageEmail                         Scope0 = "manage:email"
-	ManageExport                        Scope0 = "manage:export:*"
-	ManageExportOrg                     Scope0 = "manage:export:org:*"
-	ManageExportOrgGet                  Scope0 = "manage:export:org:get"
-	ManageExportUser                    Scope0 = "manage:export:user:*"
-	ManageExportUserDelete              Scope0 = "manage:export:user:delete"
-	ManageExportUserList                Scope0 = "manage:export:user:list"
-	ManageIdentity                      Scope0 = "manage:identity:*"
-	ManageIdentityAdd                   Scope0 = "manage:identity:add"
-	ManageIdentityList                  Scope0 = "manage:identity:list"
-	ManageIdentityRemove                Scope0 = "manage:identity:remove"
-	ManageIdentityVerify                Scope0 = "manage:identity:verify"
-	ManageKey                           Scope0 = "manage:key:*"
-	ManageKeyCreate                     Scope0 = "manage:key:create"
-	ManageKeyDelete                     Scope0 = "manage:key:delete"
-	ManageKeyGet                        Scope0 = "manage:key:get"
-	ManageKeyHistoryTxList              Scope0 = "manage:key:history:tx:list"
-	ManageKeyImport                     Scope0 = "manage:key:import"
-	ManageKeyList                       Scope0 = "manage:key:list"
-	ManageKeyListRoles                  Scope0 = "manage:key:listRoles"
-	ManageKeyReadonly                   Scope0 = "manage:key:readonly"
-	ManageKeyUpdate                     Scope0 = "manage:key:update:*"
-	ManageKeyUpdateEditPolicy           Scope0 = "manage:key:update:editPolicy"
-	ManageKeyUpdateEnabled              Scope0 = "manage:key:update:enabled"
-	ManageKeyUpdateMetadata             Scope0 = "manage:key:update:metadata"
-	ManageKeyUpdateOwner                Scope0 = "manage:key:update:owner"
-	ManageKeyUpdatePolicy               Scope0 = "manage:key:update:policy"
-	ManageMfa                           Scope0 = "manage:mfa:*"
-	ManageMfaList                       Scope0 = "manage:mfa:list"
-	ManageMfaReadonly                   Scope0 = "manage:mfa:readonly"
-	ManageMfaRegister                   Scope0 = "manage:mfa:register:*"
-	ManageMfaRegisterEmail              Scope0 = "manage:mfa:register:email"
-	ManageMfaRegisterFido               Scope0 = "manage:mfa:register:fido"
-	ManageMfaRegisterTotp               Scope0 = "manage:mfa:register:totp"
-	ManageMfaUnregister                 Scope0 = "manage:mfa:unregister:*"
-	ManageMfaUnregisterFido             Scope0 = "manage:mfa:unregister:fido"
-	ManageMfaUnregisterTotp             Scope0 = "manage:mfa:unregister:totp"
-	ManageMfaVerify                     Scope0 = "manage:mfa:verify:*"
-	ManageMfaVerifyTotp                 Scope0 = "manage:mfa:verify:totp"
-	ManageMfaVote                       Scope0 = "manage:mfa:vote:*"
-	ManageMfaVoteCs                     Scope0 = "manage:mfa:vote:cs"
-	ManageMfaVoteEmail                  Scope0 = "manage:mfa:vote:email"
-	ManageMfaVoteFido                   Scope0 = "manage:mfa:vote:fido"
-	ManageMfaVoteTotp                   Scope0 = "manage:mfa:vote:totp"
-	ManageMmi                           Scope0 = "manage:mmi:*"
-	ManageMmiDelete                     Scope0 = "manage:mmi:delete"
-	ManageMmiGet                        Scope0 = "manage:mmi:get"
-	ManageMmiList                       Scope0 = "manage:mmi:list"
-	ManageMmiReadonly                   Scope0 = "manage:mmi:readonly"
-	ManageMmiReject                     Scope0 = "manage:mmi:reject"
-	ManageOrg                           Scope0 = "manage:org:*"
-	ManageOrgAddUser                    Scope0 = "manage:org:addUser"
-	ManageOrgCreate                     Scope0 = "manage:org:create"
-	ManageOrgDeleteUser                 Scope0 = "manage:org:deleteUser"
-	ManageOrgGet                        Scope0 = "manage:org:get"
-	ManageOrgInviteAlien                Scope0 = "manage:org:inviteAlien"
-	ManageOrgInviteUser                 Scope0 = "manage:org:inviteUser"
-	ManageOrgListUsers                  Scope0 = "manage:org:listUsers"
-	ManageOrgMetricsQuery               Scope0 = "manage:org:metrics:query"
-	ManageOrgReadonly                   Scope0 = "manage:org:readonly"
-	ManageOrgUpdateMembership           Scope0 = "manage:org:updateMembership"
-	ManageOrgUserGet                    Scope0 = "manage:org:user:get"
-	ManagePolicy                        Scope0 = "manage:policy:*"
-	ManagePolicyCreate                  Scope0 = "manage:policy:create"
-	ManagePolicyCreateImportKey         Scope0 = "manage:policy:createImportKey"
-	ManagePolicyDelete                  Scope0 = "manage:policy:delete"
-	ManagePolicyGet                     Scope0 = "manage:policy:get"
-	ManagePolicyInvoke                  Scope0 = "manage:policy:invoke"
-	ManagePolicyList                    Scope0 = "manage:policy:list"
-	ManagePolicySecrets                 Scope0 = "manage:policy:secrets:*"
-	ManagePolicySecretsGet              Scope0 = "manage:policy:secrets:get"
-	ManagePolicySecretsUpdate           Scope0 = "manage:policy:secrets:update:*"
-	ManagePolicySecretsUpdateEditPolicy Scope0 = "manage:policy:secrets:update:editPolicy"
-	ManagePolicySecretsUpdateValues     Scope0 = "manage:policy:secrets:update:values"
-	ManagePolicyUpdate                  Scope0 = "manage:policy:update:*"
-	ManagePolicyUpdateEditPolicy        Scope0 = "manage:policy:update:editPolicy"
-	ManagePolicyUpdateMetadata          Scope0 = "manage:policy:update:metadata"
-	ManagePolicyUpdateName              Scope0 = "manage:policy:update:name"
-	ManagePolicyUpdateOwner             Scope0 = "manage:policy:update:owner"
-	ManagePolicyUpdateRule              Scope0 = "manage:policy:update:rule"
-	ManagePolicyWasm                    Scope0 = "manage:policy:wasm:*"
-	ManagePolicyWasmUpload              Scope0 = "manage:policy:wasm:upload"
-	ManageReadonly                      Scope0 = "manage:readonly"
-	ManageRole                          Scope0 = "manage:role:*"
-	ManageRoleCreate                    Scope0 = "manage:role:create"
-	ManageRoleDelete                    Scope0 = "manage:role:delete"
-	ManageRoleGet                       Scope0 = "manage:role:get:*"
-	ManageRoleGetKeys                   Scope0 = "manage:role:get:keys"
-	ManageRoleGetKeysGet                Scope0 = "manage:role:get:keys:get"
-	ManageRoleGetKeysList               Scope0 = "manage:role:get:keys:list"
-	ManageRoleGetUsers                  Scope0 = "manage:role:get:users"
-	ManageRoleHistoryTxList             Scope0 = "manage:role:history:tx:list"
-	ManageRoleList                      Scope0 = "manage:role:list"
-	ManageRoleReadonly                  Scope0 = "manage:role:readonly"
-	ManageRoleUpdate                    Scope0 = "manage:role:update:*"
-	ManageRoleUpdateEditPolicy          Scope0 = "manage:role:update:editPolicy"
-	ManageRoleUpdateEnabled             Scope0 = "manage:role:update:enabled"
-	ManageRoleUpdateKey                 Scope0 = "manage:role:update:key:*"
-	ManageRoleUpdateKeyAdd              Scope0 = "manage:role:update:key:add"
-	ManageRoleUpdateKeyRemove           Scope0 = "manage:role:update:key:remove"
-	ManageRoleUpdatePolicy              Scope0 = "manage:role:update:policy"
-	ManageRoleUpdateUser                Scope0 = "manage:role:update:user:*"
-	ManageRoleUpdateUserAdd             Scope0 = "manage:role:update:user:add"
-	ManageRoleUpdateUserRemove          Scope0 = "manage:role:update:user:remove"
-	ManageSession                       Scope0 = "manage:session:*"
-	ManageSessionCreate                 Scope0 = "manage:session:create"
-	ManageSessionExtend                 Scope0 = "manage:session:extend"
-	ManageSessionGet                    Scope0 = "manage:session:get"
-	ManageSessionList                   Scope0 = "manage:session:list"
-	ManageSessionReadonly               Scope0 = "manage:session:readonly"
-	ManageSessionRevoke                 Scope0 = "manage:session:revoke"
-	Mmi                                 Scope0 = "mmi:*"
-	OrgAccess                           Scope0 = "orgAccess:*"
-	OrgAccessChild                      Scope0 = "orgAccess:child:*"
-	Sign                                Scope0 = "sign:*"
-	SignAva                             Scope0 = "sign:ava"
-	SignBabylon                         Scope0 = "sign:babylon:*"
-	SignBabylonCovenant                 Scope0 = "sign:babylon:covenant"
-	SignBabylonEots                     Scope0 = "sign:babylon:eots:*"
-	SignBabylonEotsNonces               Scope0 = "sign:babylon:eots:nonces"
-	SignBabylonEotsSign                 Scope0 = "sign:babylon:eots:sign"
-	SignBabylonRegistration             Scope0 = "sign:babylon:registration"
-	SignBabylonStaking                  Scope0 = "sign:babylon:staking:*"
-	SignBabylonStakingDeposit           Scope0 = "sign:babylon:staking:deposit"
-	SignBabylonStakingSlash             Scope0 = "sign:babylon:staking:slash"
-	SignBabylonStakingUnbond            Scope0 = "sign:babylon:staking:unbond"
-	SignBabylonStakingWithdraw          Scope0 = "sign:babylon:staking:withdraw"
-	SignBlob                            Scope0 = "sign:blob"
-	SignBtc                             Scope0 = "sign:btc:*"
-	SignBtcMessage                      Scope0 = "sign:btc:message:*"
-	SignBtcMessageLegacy                Scope0 = "sign:btc:message:legacy"
-	SignBtcMessageSegwit                Scope0 = "sign:btc:message:segwit"
-	SignBtcPsbt                         Scope0 = "sign:btc:psbt:*"
-	SignBtcPsbtDoge                     Scope0 = "sign:btc:psbt:doge"
-	SignBtcPsbtLegacy                   Scope0 = "sign:btc:psbt:legacy"
-	SignBtcPsbtLtcSegwit                Scope0 = "sign:btc:psbt:ltcSegwit"
-	SignBtcPsbtSegwit                   Scope0 = "sign:btc:psbt:segwit"
-	SignBtcPsbtTaproot                  Scope0 = "sign:btc:psbt:taproot"
-	SignBtcSegwit                       Scope0 = "sign:btc:segwit"
-	SignBtcTaproot                      Scope0 = "sign:btc:taproot"
-	SignEth2                            Scope0 = "sign:eth2:*"
-	SignEth2Stake                       Scope0 = "sign:eth2:stake"
-	SignEth2Unstake                     Scope0 = "sign:eth2:unstake"
-	SignEth2Validate                    Scope0 = "sign:eth2:validate"
-	SignEvm                             Scope0 = "sign:evm:*"
-	SignEvmEip191                       Scope0 = "sign:evm:eip191"
-	SignEvmEip712                       Scope0 = "sign:evm:eip712"
-	SignEvmTx                           Scope0 = "sign:evm:tx"
-	SignMmi                             Scope0 = "sign:mmi"
-	SignSolana                          Scope0 = "sign:solana"
-	SignSui                             Scope0 = "sign:sui"
-	SignTendermint                      Scope0 = "sign:tendermint"
 )
 
 // Defines values for ScopeSet0.
@@ -807,12 +867,13 @@ const (
 
 // Defines values for SignerErrorOwnCodes.
 const (
-	EnclaveError          SignerErrorOwnCodes = "EnclaveError"
-	JrpcError             SignerErrorOwnCodes = "JrpcError"
-	PreComputed           SignerErrorOwnCodes = "PreComputed"
-	ProxyStartError       SignerErrorOwnCodes = "ProxyStartError"
-	StatusCodeWithMessage SignerErrorOwnCodes = "StatusCodeWithMessage"
-	UnhandledError        SignerErrorOwnCodes = "UnhandledError"
+	EnclaveError            SignerErrorOwnCodes = "EnclaveError"
+	JrpcError               SignerErrorOwnCodes = "JrpcError"
+	PolicyErrorWithEvalTree SignerErrorOwnCodes = "PolicyErrorWithEvalTree"
+	PreComputed             SignerErrorOwnCodes = "PreComputed"
+	ProxyStartError         SignerErrorOwnCodes = "ProxyStartError"
+	StatusCodeWithMessage   SignerErrorOwnCodes = "StatusCodeWithMessage"
+	UnhandledError          SignerErrorOwnCodes = "UnhandledError"
 )
 
 // Defines values for TimeoutErrorCode.
@@ -835,6 +896,9 @@ type AcceptedResponse struct {
 
 	// Message Error message
 	Message string `json:"message"`
+
+	// PolicyEvalTree Optional policy evaluation tree (included in signer responses, when requested)
+	PolicyEvalTree interface{} `json:"policy_eval_tree"`
 
 	// RequestId Optional request identifier
 	RequestId *string `json:"request_id,omitempty"`
@@ -860,8 +924,11 @@ type AcceptedValue0 struct {
 		Ids []string `json:"ids"`
 
 		// OrgId Organization id
-		OrgId   string              `json:"org_id"`
-		Session *NewSessionResponse `json:"session"`
+		OrgId string `json:"org_id"`
+
+		// PolicyEvalTree Optional policy evaluation tree (included in signer responses, when requested)
+		PolicyEvalTree interface{}         `json:"policy_eval_tree"`
+		Session        *NewSessionResponse `json:"session"`
 	} `json:"MfaRequired"`
 }
 
@@ -909,6 +976,15 @@ type BlobSignRequest struct {
 	// at least 16 bytes.
 	BlsDst *string `json:"bls_dst"`
 
+	// Explain Request additional information to be included in the response, explaining
+	// the outcome (i.e., permitted vs. denied vs. MFA required) of the sign request.
+	// Defaults to false.
+	Explain *bool `json:"explain,omitempty"`
+
+	// FailOnMfa If MFA is required, fail the request instead of returning 202 and creating
+	// pending MFA request. Defaults to false.
+	FailOnMfa *bool `json:"fail_on_mfa,omitempty"`
+
 	// MessageBase64 The blob to sign, encoded as a base64 string.
 	//
 	// Note that certain signing keys impose additional requirements on the contents of
@@ -919,8 +995,8 @@ type BlobSignRequest struct {
 	// of pending MFA requests and/or historical key transactions more transparent. It can also be used e.g., to carry additional data to WebHook policies.
 	Metadata interface{} `json:"metadata"`
 
-	// SegwitTweak An optional tweak value for use *only* with Segwit (i.e., SecpBtc and SecpBtcTest)
-	// keys. This field must not be supplied for requests involving any other key type.
+	// SegwitTweak An optional tweak value for use only with (some) secp256k1 key types.
+	// This field must not be supplied for requests involving any other key type.
 	//
 	// If this field is not present or null, no tweak is applied. Otherwise, this field
 	// must contain a base-64 string encoding a vector of exactly 32 bytes. See the
@@ -966,7 +1042,7 @@ type ClientSessionInfo struct {
 	SessionId string `json:"session_id"`
 }
 
-// CommonFields Fields that are common to different types of resources such as keys
+// CommonFields defines model for CommonFields.
 type CommonFields struct {
 	Created *EpochDateTime `json:"created"`
 
@@ -1029,6 +1105,9 @@ type ErrorResponse struct {
 	// Message Error message
 	Message string `json:"message"`
 
+	// PolicyEvalTree Optional policy evaluation tree (included in signer responses, when requested)
+	PolicyEvalTree interface{} `json:"policy_eval_tree"`
+
 	// RequestId Optional request identifier
 	RequestId *string `json:"request_id,omitempty"`
 }
@@ -1061,6 +1140,9 @@ type EvmTxCmp struct {
 
 // EvmTxDepositErrorCode defines model for EvmTxDepositErrorCode.
 type EvmTxDepositErrorCode string
+
+// ExplicitScope Explicitly named scopes for accessing CubeSigner APIs
+type ExplicitScope string
 
 // ForbiddenErrorCode defines model for ForbiddenErrorCode.
 type ForbiddenErrorCode string
@@ -1179,9 +1261,6 @@ type Scope struct {
 	union json.RawMessage
 }
 
-// Scope0 Explicitly named scopes for accessing CubeSigner APIs
-type Scope0 string
-
 // Scope1 Scopes including wildcard fragments for accessing CubeSigner APIs
 type Scope1 = string
 
@@ -1271,6 +1350,9 @@ type KeyInfo struct {
 	// Policy Key policy
 	Policy []interface{} `json:"policy"`
 
+	// Provenance The key provenance.
+	Provenance *string `json:"provenance"`
+
 	// PublicKey Hex-encoded, serialized public key. The format used depends on the key type:
 	// - Secp256k1 keys use 65-byte uncompressed SECG format;
 	// - Stark keys use 33-byte compressed SECG format;
@@ -1281,12 +1363,18 @@ type KeyInfo struct {
 	// Purpose The purpose for which the key can be used (e.g., chain id for which the key is allowed to sign messages)
 	Purpose string `json:"purpose"`
 
+	// Region The region affinity for this key
+	Region *string `json:"region,omitempty"`
+
 	// Version Version of this object
 	Version *int64 `json:"version,omitempty"`
 }
 
 // SignResponse defines model for SignResponse.
 type SignResponse struct {
+	// PolicyEvalTree Optional policy evaluation tree.
+	PolicyEvalTree interface{} `json:"policy_eval_tree"`
+
 	// Signature The hex-encoded resulting signature.
 	Signature string `json:"signature"`
 }
@@ -1545,22 +1633,22 @@ func (t *PreconditionErrorCode) UnmarshalJSON(b []byte) error {
 	return err
 }
 
-// AsScope0 returns the union data inside the Scope as a Scope0
-func (t Scope) AsScope0() (Scope0, error) {
-	var body Scope0
+// AsExplicitScope returns the union data inside the Scope as a ExplicitScope
+func (t Scope) AsExplicitScope() (ExplicitScope, error) {
+	var body ExplicitScope
 	err := json.Unmarshal(t.union, &body)
 	return body, err
 }
 
-// FromScope0 overwrites any union data inside the Scope as the provided Scope0
-func (t *Scope) FromScope0(v Scope0) error {
+// FromExplicitScope overwrites any union data inside the Scope as the provided ExplicitScope
+func (t *Scope) FromExplicitScope(v ExplicitScope) error {
 	b, err := json.Marshal(v)
 	t.union = b
 	return err
 }
 
-// MergeScope0 performs a merge with any union data inside the Scope, using the provided Scope0
-func (t *Scope) MergeScope0(v Scope0) error {
+// MergeExplicitScope performs a merge with any union data inside the Scope, using the provided ExplicitScope
+func (t *Scope) MergeExplicitScope(v ExplicitScope) error {
 	b, err := json.Marshal(v)
 	if err != nil {
 		return err

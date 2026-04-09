@@ -54,6 +54,11 @@
                       "items": {},
                       "type": "array"
                     },
+                    "provenance": {
+                      "description": "The key provenance.",
+                      "nullable": true,
+                      "type": "string"
+                    },
                     "public_key": {
                       "description": "Hex-encoded, serialized public key. The format used depends on the key type:\n- Secp256k1 keys use 65-byte uncompressed SECG format;\n- Stark keys use 33-byte compressed SECG format;\n- BLS keys use 48-byte compressed BLS12-381 (ZCash) format;\n- Ed25519 keys use the canonical 32-byte encoding specified in RFC 8032.",
                       "example": "0x04d2688b6bc2ce7f9879b9e745f3c4dc177908c5cef0c1b64cff19ae7ff27dee623c64fe9d9c325c7fbbc748bbd5f607ce14dd83e28ebbbb7d3e7f2ffb70a79431",
@@ -62,6 +67,10 @@
                     "purpose": {
                       "description": "The purpose for which the key can be used (e.g., chain id for which the key is allowed to sign messages)",
                       "example": "Eth2Validator(1)",
+                      "type": "string"
+                    },
+                    "region": {
+                      "description": "The region affinity for this key",
                       "type": "string"
                     }
                   },
@@ -131,16 +140,30 @@
         "content": {
           "application/json": {
             "schema": {
-              "properties": {
-                "signature": {
-                  "description": "The hex-encoded resulting signature.",
-                  "type": "string"
+              "allOf": [
+                {
+                  "description": "Common fields that are optionally included in every response",
+                  "properties": {
+                    "policy_eval_tree": {
+                      "description": "Optional policy evaluation tree.",
+                      "nullable": true
+                    }
+                  },
+                  "type": "object"
+                },
+                {
+                  "properties": {
+                    "signature": {
+                      "description": "The hex-encoded resulting signature.",
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "signature"
+                  ],
+                  "type": "object"
                 }
-              },
-              "required": [
-                "signature"
-              ],
-              "type": "object"
+              ]
             }
           }
         },
@@ -180,6 +203,10 @@
                   "org_id": {
                     "description": "Organization id",
                     "type": "string"
+                  },
+                  "policy_eval_tree": {
+                    "description": "Optional policy evaluation tree (included in signer responses, when requested)",
+                    "nullable": true
                   },
                   "session": {
                     "allOf": [
@@ -239,6 +266,8 @@
       },
       "BadGatewayErrorCode": {
         "enum": [
+          "Generic",
+          "CustomChainRpcError",
           "EsploraApiError",
           "SentryApiError",
           "CallWebhookError",
@@ -252,12 +281,13 @@
       "BadRequestErrorCode": {
         "enum": [
           "GenericBadRequest",
+          "DisallowedAllowRuleReference",
           "InvalidPaginationToken",
           "InvalidEmail",
           "InvalidEmailTemplate",
           "QueryMetricsError",
           "InvalidTelegramData",
-          "QueryMetricsValidationError",
+          "ValidationError",
           "WebhookPolicyTimeoutOutOfBounds",
           "WebhookPolicyDisallowedUrlScheme",
           "WebhookPolicyDisallowedUrlHost",
@@ -281,15 +311,19 @@
           "InvalidBtcTxReceiversEmptyAllowlist",
           "InvalidRequireRoleSessionAllowlist",
           "InvalidCreateKeyCount",
+          "InvalidDiffieHellmanCount",
           "OrgInviteExistingUser",
           "OrgUserAlreadyExists",
           "OrgNameTaken",
+          "KwkNotFoundInRegion",
           "OrgIsNotOrgExport",
           "RoleNameTaken",
           "PolicyNameTaken",
           "NameTaken",
           "ContactNameInvalid",
-          "InvalidBtcAddressForChain",
+          "ContactAddressesInvalid",
+          "ContactLabelInvalid",
+          "ContactModified",
           "PolicyNotFound",
           "PolicyVersionNotFound",
           "PolicyRuleDisallowedByType",
@@ -307,8 +341,11 @@
           "InvalidLength",
           "InvalidKeyMaterialId",
           "KeyNotFound",
+          "SiweChallengeNotFound",
+          "SiweInvalidRequest",
           "UserExportDerivedKey",
           "UserExportPublicKeyInvalid",
+          "NistP256PublicKeyInvalid",
           "UnableToAccessSmtpRelay",
           "UserExportInProgress",
           "RoleNotFound",
@@ -331,6 +368,7 @@
           "EmailOtpDelayTooShortForRegisterMfa",
           "InvalidStakeDeposit",
           "InvalidBlobSignRequest",
+          "InvalidDiffieHellmanRequest",
           "InvalidSolanaSignRequest",
           "InvalidEip712SignRequest",
           "OnlySpecifyOne",
@@ -348,7 +386,6 @@
           "UserNotFound",
           "UserWithEmailNotFound",
           "PolicyKeyMismatch",
-          "PolicyRuleKeyMismatch",
           "EmptyScopes",
           "InvalidScopesForRoleSession",
           "InvalidLifetime",
@@ -359,6 +396,7 @@
           "Erc20ContractDisallowed",
           "EmptyRuleError",
           "OptionalListEmpty",
+          "MultipleExclusiveFieldsProvided",
           "DuplicateFieldEntry",
           "InvalidRange",
           "InvalidOrgPolicyRepeatedRule",
@@ -375,6 +413,7 @@
           "InvalidMemberRoleInRecipientAdd",
           "ThirdPartyUserAlreadyExists",
           "OidcIdentityAlreadyExists",
+          "UserAlreadyHasIdentity",
           "ThirdPartyUserNotFound",
           "DeleteOidcUserError",
           "DeleteUserError",
@@ -414,7 +453,7 @@
           "InvalidEth2SigningPolicyEpochRange",
           "InvalidEth2SigningPolicyTimestampRange",
           "InvalidEth2SigningPolicyOverlappingRule",
-          "MmiRpcUrlMissing",
+          "RpcUrlMissing",
           "MmiChainIdMissing",
           "EthersInvalidRpcUrl",
           "EthersGetTransactionCountError",
@@ -432,18 +471,25 @@
           "InvalidTendermintRequest",
           "PolicyVersionMaxReached",
           "PolicyVersionInvalid",
+          "PolicySecretLimitReached",
+          "PolicySecretTooLarge",
+          "InvalidImportKey",
           "AlienOwnerInvalid",
           "EmptyUpdateRequest",
           "InvalidPolicyReference",
           "PolicyEngineDisabled",
           "InvalidWasmPolicy",
+          "InvalidPolicy",
           "RedundantDerivationPath",
           "ImportKeyMissing",
           "InvalidAbiMethods",
           "BabylonCovSign",
           "InvalidPolicyLogsRequest",
           "UserProfileMigrationMultipleEntries",
-          "UserProfileMigrationTooManyItems"
+          "UserProfileMigrationTooManyItems",
+          "InputTooShort",
+          "InvalidTweakLength",
+          "InvalidCustomChains"
         ],
         "type": "string"
       },
@@ -451,6 +497,14 @@
         "allOf": [
           {
             "properties": {
+              "explain": {
+                "description": "Request additional information to be included in the response, explaining\nthe outcome (i.e., permitted vs. denied vs. MFA required) of the sign request.\nDefaults to false.",
+                "type": "boolean"
+              },
+              "fail_on_mfa": {
+                "description": "If MFA is required, fail the request instead of returning 202 and creating\npending MFA request. Defaults to false.",
+                "type": "boolean"
+              },
               "metadata": {
                 "description": "Optional metadata. Passing additional information as metadata can be used to make reviewing\nof pending MFA requests and/or historical key transactions more transparent. It can also be used e.g., to carry additional data to WebHook policies.",
                 "nullable": true
@@ -477,7 +531,7 @@
                 "type": "string"
               },
               "segwit_tweak": {
-                "description": "An optional tweak value for use *only* with Segwit (i.e., SecpBtc and SecpBtcTest)\nkeys. This field must not be supplied for requests involving any other key type.\n\nIf this field is not present or null, no tweak is applied. Otherwise, this field\nmust contain a base-64 string encoding a vector of exactly 32 bytes. See the\nCubeSigner documentation for more information on the Segwit tweaking procedure.",
+                "description": "An optional tweak value for use only with (some) secp256k1 key types.\nThis field must not be supplied for requests involving any other key type.\n\nIf this field is not present or null, no tweak is applied. Otherwise, this field\nmust contain a base-64 string encoding a vector of exactly 32 bytes. See the\nCubeSigner documentation for more information on the Segwit tweaking procedure.",
                 "example": "F41HAy2q5Gn8laF2CuMsZbRAQTmD+4Ob3VUMZ7TBGK4=",
                 "nullable": true,
                 "type": "string"
@@ -542,38 +596,48 @@
         "type": "object"
       },
       "CommonFields": {
-        "description": "Fields that are common to different types of resources such as keys",
-        "properties": {
-          "created": {
-            "allOf": [
-              {
-                "$ref": "#/components/schemas/EpochDateTime"
+        "allOf": [
+          {
+            "description": "Versioning fields (e.g., version number, creation time, and last modified times)\nthat are common to different types of resources.",
+            "properties": {
+              "created": {
+                "allOf": [
+                  {
+                    "$ref": "#/components/schemas/EpochDateTime"
+                  }
+                ],
+                "nullable": true
+              },
+              "last_modified": {
+                "allOf": [
+                  {
+                    "$ref": "#/components/schemas/EpochDateTime"
+                  }
+                ],
+                "nullable": true
+              },
+              "version": {
+                "description": "Version of this object",
+                "format": "int64",
+                "minimum": 0,
+                "type": "integer"
               }
-            ],
-            "nullable": true
+            },
+            "type": "object"
           },
-          "edit_policy": {
-            "$ref": "#/components/schemas/EditPolicy"
-          },
-          "last_modified": {
-            "allOf": [
-              {
-                "$ref": "#/components/schemas/EpochDateTime"
+          {
+            "properties": {
+              "edit_policy": {
+                "$ref": "#/components/schemas/EditPolicy"
+              },
+              "metadata": {
+                "description": "User-defined metadata. When rendering (e.g., in the browser) you should treat\nit as untrusted user data (and avoid injecting metadata into HTML directly) if\nuntrusted users can create/update keys (or their metadata)."
               }
-            ],
-            "nullable": true
-          },
-          "metadata": {
-            "description": "User-defined metadata. When rendering (e.g., in the browser) you should treat\nit as untrusted user data (and avoid injecting metadata into HTML directly) if\nuntrusted users can create/update keys (or their metadata)."
-          },
-          "version": {
-            "description": "Version of this object",
-            "format": "int64",
-            "minimum": 0,
-            "type": "integer"
+            },
+            "type": "object"
           }
-        },
-        "type": "object"
+        ],
+        "description": "Fields that are common to different types of resources such as keys, roles, etc.\nIncludes versioning fields plus metadata, edit policy, etc."
       },
       "ConflictErrorCode": {
         "enum": [
@@ -631,6 +695,10 @@
             "description": "Error message",
             "type": "string"
           },
+          "policy_eval_tree": {
+            "description": "Optional policy evaluation tree (included in signer responses, when requested)",
+            "nullable": true
+          },
           "request_id": {
             "description": "Optional request identifier",
             "type": "string"
@@ -684,8 +752,202 @@
         ],
         "type": "string"
       },
+      "ExplicitScope": {
+        "description": "Explicitly named scopes for accessing CubeSigner APIs",
+        "enum": [
+          "sign:*",
+          "sign:ava",
+          "sign:blob",
+          "sign:diffieHellman",
+          "sign:btc:*",
+          "sign:btc:segwit",
+          "sign:btc:taproot",
+          "sign:btc:psbt:*",
+          "sign:btc:psbt:doge",
+          "sign:btc:psbt:legacy",
+          "sign:btc:psbt:segwit",
+          "sign:btc:psbt:taproot",
+          "sign:btc:psbt:ltcSegwit",
+          "sign:btc:message:*",
+          "sign:btc:message:segwit",
+          "sign:btc:message:legacy",
+          "sign:babylon:*",
+          "sign:babylon:eots:*",
+          "sign:babylon:eots:nonces",
+          "sign:babylon:eots:sign",
+          "sign:babylon:staking:*",
+          "sign:babylon:staking:deposit",
+          "sign:babylon:staking:unbond",
+          "sign:babylon:staking:withdraw",
+          "sign:babylon:staking:slash",
+          "sign:babylon:registration",
+          "sign:babylon:covenant",
+          "sign:evm:*",
+          "sign:evm:tx",
+          "sign:evm:eip191",
+          "sign:evm:eip712",
+          "sign:eth2:*",
+          "sign:eth2:validate",
+          "sign:eth2:stake",
+          "sign:eth2:unstake",
+          "sign:solana",
+          "sign:sui",
+          "sign:tendermint",
+          "sign:mmi",
+          "manage:*",
+          "manage:readonly",
+          "manage:email",
+          "manage:mfa:*",
+          "manage:mfa:readonly",
+          "manage:mfa:list",
+          "manage:mfa:vote:*",
+          "manage:mfa:vote:cs",
+          "manage:mfa:vote:email",
+          "manage:mfa:vote:fido",
+          "manage:mfa:vote:totp",
+          "manage:mfa:register:*",
+          "manage:mfa:register:fido",
+          "manage:mfa:register:totp",
+          "manage:mfa:register:email",
+          "manage:mfa:unregister:*",
+          "manage:mfa:unregister:fido",
+          "manage:mfa:unregister:totp",
+          "manage:mfa:verify:*",
+          "manage:mfa:verify:totp",
+          "manage:key:*",
+          "manage:key:readonly",
+          "manage:key:get",
+          "manage:key:attest",
+          "manage:key:listRoles",
+          "manage:key:list",
+          "manage:key:history:tx:list",
+          "manage:key:create",
+          "manage:key:import",
+          "manage:key:update:*",
+          "manage:key:update:owner",
+          "manage:key:update:policy",
+          "manage:key:update:enabled",
+          "manage:key:update:metadata",
+          "manage:key:update:editPolicy",
+          "manage:key:delete",
+          "manage:policy:*",
+          "manage:policy:readonly",
+          "manage:policy:create",
+          "manage:policy:get",
+          "manage:policy:list",
+          "manage:policy:delete",
+          "manage:policy:update:*",
+          "manage:policy:update:owner",
+          "manage:policy:update:name",
+          "manage:policy:update:acl",
+          "manage:policy:update:editPolicy",
+          "manage:policy:update:metadata",
+          "manage:policy:update:rule",
+          "manage:policy:invoke",
+          "manage:policy:wasm:*",
+          "manage:policy:wasm:upload",
+          "manage:policy:secrets:*",
+          "manage:policy:secrets:get",
+          "manage:policy:secrets:update:*",
+          "manage:policy:secrets:update:values",
+          "manage:policy:secrets:update:acl",
+          "manage:policy:secrets:update:editPolicy",
+          "manage:contact:*",
+          "manage:contact:readonly",
+          "manage:contact:create",
+          "manage:contact:get",
+          "manage:contact:list",
+          "manage:contact:delete",
+          "manage:contact:update:*",
+          "manage:contact:update:name",
+          "manage:contact:update:addresses",
+          "manage:contact:update:owner",
+          "manage:contact:update:labels",
+          "manage:contact:update:metadata",
+          "manage:contact:update:editPolicy",
+          "manage:contact:lookup:*",
+          "manage:contact:lookup:address",
+          "manage:policy:createImportKey",
+          "manage:role:*",
+          "manage:role:readonly",
+          "manage:role:create",
+          "manage:role:delete",
+          "manage:role:get:*",
+          "manage:role:attest",
+          "manage:role:get:keys",
+          "manage:role:get:keys:list",
+          "manage:role:get:keys:get",
+          "manage:role:get:users",
+          "manage:role:list",
+          "manage:role:update:*",
+          "manage:role:update:enabled",
+          "manage:role:update:policy",
+          "manage:role:update:editPolicy",
+          "manage:role:update:key:*",
+          "manage:role:update:key:add",
+          "manage:role:update:key:remove",
+          "manage:role:update:user:*",
+          "manage:role:update:user:add",
+          "manage:role:update:user:remove",
+          "manage:role:history:tx:list",
+          "manage:identity:*",
+          "manage:identity:readonly",
+          "manage:identity:verify",
+          "manage:identity:add",
+          "manage:identity:remove",
+          "manage:identity:list",
+          "manage:org:*",
+          "manage:org:create",
+          "manage:org:metrics:query",
+          "manage:org:audit:query",
+          "manage:org:readonly",
+          "manage:org:addUser",
+          "manage:org:inviteUser",
+          "manage:org:inviteAlien",
+          "manage:org:updateMembership",
+          "manage:org:listUsers",
+          "manage:org:user:get",
+          "manage:org:deleteUser",
+          "manage:org:get",
+          "manage:org:user:resetMfa",
+          "manage:session:*",
+          "manage:session:readonly",
+          "manage:session:get",
+          "manage:session:list",
+          "manage:session:create",
+          "manage:session:extend",
+          "manage:session:revoke",
+          "manage:export:*",
+          "manage:export:readonly",
+          "manage:export:org:*",
+          "manage:export:org:get",
+          "manage:export:user:*",
+          "manage:export:user:delete",
+          "manage:export:user:list",
+          "manage:authMigration:*",
+          "manage:authMigration:identity:add",
+          "manage:authMigration:identity:remove",
+          "manage:authMigration:user:update",
+          "manage:mmi:*",
+          "manage:mmi:readonly",
+          "manage:mmi:get",
+          "manage:mmi:list",
+          "manage:mmi:reject",
+          "manage:mmi:delete",
+          "export:*",
+          "export:user:*",
+          "export:user:init",
+          "export:user:complete",
+          "mmi:*",
+          "orgAccess:*",
+          "orgAccess:child:*"
+        ],
+        "title": "ExplicitScope",
+        "type": "string"
+      },
       "ForbiddenErrorCode": {
         "enum": [
+          "AlienKeyCreate",
           "CannotAssumeIdentity",
           "SentryDisallowed",
           "PasskeyLoginDisabled",
@@ -765,12 +1027,17 @@
           "RemoveLastOidcIdentity",
           "OperationNotAllowed",
           "OrgExportRetrievalDisabled",
+          "ChangingKeyExportRequirementIsDisabled",
           "AutoAddBlsKeyToProtectedRole",
           "UserNotPolicyOwner",
           "UserNotContactOwner",
           "LegacySessionCannotHaveScopeCeiling",
           "RoleInParentOrgNotAllowed",
-          "RemoveKeyFromRoleUserNotAllowed"
+          "RemoveKeyFromRoleUserNotAllowed",
+          "SiweChallengeExpired",
+          "SiweMessageNotValid",
+          "SiweMessageInvalidSignature",
+          "Acl"
         ],
         "type": "string"
       },
@@ -814,6 +1081,10 @@
       "InternalErrorCode": {
         "enum": [
           "NoMaterialId",
+          "InvalidAuditLogEntry",
+          "UnexpectedCheckerRule",
+          "UnresolvedPolicyReference",
+          "UnexpectedAclAction",
           "FidoKeyAssociatedWithMultipleUsers",
           "ClaimsParseError",
           "InvalidThrottleId",
@@ -859,6 +1130,7 @@
           "CognitoResendUserInvitation",
           "CognitoSetUserPasswordError",
           "GenericInternalError",
+          "AssumeRoleWithoutEvidence",
           "OidcAuthWithoutOrg",
           "MissingKeyMetadata",
           "KmsEnableKeyError",
@@ -884,6 +1156,7 @@
           "OidcOrgMismatch",
           "OidcIssuerInvalidJwk",
           "InvalidPkForMaterialId",
+          "SegwitTweakFailed",
           "UncheckedOrg",
           "SessionOrgIdMissing",
           "AvaSignCredsMissing",
@@ -912,7 +1185,8 @@
           "CreatePolicyImportKeyError",
           "InvalidAlias",
           "EmptyUpdateModifiedObject",
-          "EmptyUpdateModifiedActions"
+          "EmptyUpdateModifiedActions",
+          "DbContactAddressesInvalid"
         ],
         "type": "string"
       },
@@ -952,6 +1226,7 @@
           "Ed25519CardanoAddrVk",
           "Ed25519StellarAddr",
           "Ed25519SubstrateAddr",
+          "Ed25519CantonAddr",
           "Mnemonic",
           "Stark",
           "BabylonEots",
@@ -974,7 +1249,8 @@
           "SecpLtc",
           "SecpLtcTest",
           "SecpXrpAddr",
-          "Ed25519XrpAddr"
+          "Ed25519XrpAddr",
+          "BabyJubjub"
         ],
         "type": "string"
       },
@@ -1090,7 +1366,9 @@
           "UserExportCiphertextNotFound",
           "OrgExportCiphertextNotFound",
           "UploadObjectNotFound",
-          "PolicySecretNotFound"
+          "PolicySecretNotFound",
+          "TimestreamDisabled",
+          "CustomChainNotFound"
         ],
         "type": "string"
       },
@@ -1105,6 +1383,7 @@
           "BlobSign",
           "BtcMessageSign",
           "BtcSign",
+          "DiffieHellman",
           "PsbtSign",
           "TaprootSign",
           "Eip191Sign",
@@ -1134,6 +1413,7 @@
       },
       "PolicyErrorOwnCodes": {
         "enum": [
+          "Inapplicable",
           "SuiTxReceiversDisallowedTransactionKind",
           "SuiTxReceiversDisallowedTransferAddress",
           "SuiTxReceiversDisallowedCommand",
@@ -1142,9 +1422,9 @@
           "BtcValueOverflow",
           "BtcSighashTypeDisallowed",
           "EvmTxReceiverMismatch",
+          "EvmTxChainIdMismatch",
           "EvmTxSenderMismatch",
           "EvmTxExceededValue",
-          "EvmTxValueUndefined",
           "EvmTxExceededGasCost",
           "EvmTxGasCostUndefined",
           "EvmDataDisallowed",
@@ -1160,14 +1440,17 @@
           "Erc20SpenderMismatch",
           "EvmFunctionNotInAllowlist",
           "EvmFunctionCallInvalid",
+          "EvmFunctionCallDisallowedArg",
           "PolicyDisjunctionError",
           "PolicyNegationError",
           "Eth2ExceededMaxUnstake",
           "Eth2ConcurrentUnstaking",
           "NotInIpv4Allowlist",
           "NotInOriginAllowlist",
+          "NotInOperationAllowlist",
           "InvalidSourceIp",
           "RawSigningNotAllowed",
+          "DiffieHellmanExchangeNotAllowed",
           "Eip712SigningNotAllowed",
           "OidcSourceNotAllowed",
           "NoOidcAuthSourcesDefined",
@@ -1218,6 +1501,10 @@
       },
       "PreconditionErrorOwnCodes": {
         "enum": [
+          "FailOnMfaRequired",
+          "KeyRegionLocked",
+          "KeyRegionChangedRecently",
+          "MfaRegionLocked",
           "Eth2ProposerSlotTooLow",
           "Eth2AttestationSourceEpochTooLow",
           "Eth2AttestationTargetEpochTooLow",
@@ -1238,182 +1525,7 @@
         "description": "All scopes for accessing CubeSigner APIs",
         "oneOf": [
           {
-            "description": "Explicitly named scopes for accessing CubeSigner APIs",
-            "enum": [
-              "sign:*",
-              "sign:ava",
-              "sign:blob",
-              "sign:btc:*",
-              "sign:btc:segwit",
-              "sign:btc:taproot",
-              "sign:btc:psbt:*",
-              "sign:btc:psbt:doge",
-              "sign:btc:psbt:legacy",
-              "sign:btc:psbt:segwit",
-              "sign:btc:psbt:taproot",
-              "sign:btc:psbt:ltcSegwit",
-              "sign:btc:message:*",
-              "sign:btc:message:segwit",
-              "sign:btc:message:legacy",
-              "sign:babylon:*",
-              "sign:babylon:eots:*",
-              "sign:babylon:eots:nonces",
-              "sign:babylon:eots:sign",
-              "sign:babylon:staking:*",
-              "sign:babylon:staking:deposit",
-              "sign:babylon:staking:unbond",
-              "sign:babylon:staking:withdraw",
-              "sign:babylon:staking:slash",
-              "sign:babylon:registration",
-              "sign:babylon:covenant",
-              "sign:evm:*",
-              "sign:evm:tx",
-              "sign:evm:eip191",
-              "sign:evm:eip712",
-              "sign:eth2:*",
-              "sign:eth2:validate",
-              "sign:eth2:stake",
-              "sign:eth2:unstake",
-              "sign:solana",
-              "sign:sui",
-              "sign:tendermint",
-              "sign:mmi",
-              "manage:*",
-              "manage:readonly",
-              "manage:email",
-              "manage:mfa:*",
-              "manage:mfa:readonly",
-              "manage:mfa:list",
-              "manage:mfa:vote:*",
-              "manage:mfa:vote:cs",
-              "manage:mfa:vote:email",
-              "manage:mfa:vote:fido",
-              "manage:mfa:vote:totp",
-              "manage:mfa:register:*",
-              "manage:mfa:register:fido",
-              "manage:mfa:register:totp",
-              "manage:mfa:register:email",
-              "manage:mfa:unregister:*",
-              "manage:mfa:unregister:fido",
-              "manage:mfa:unregister:totp",
-              "manage:mfa:verify:*",
-              "manage:mfa:verify:totp",
-              "manage:key:*",
-              "manage:key:readonly",
-              "manage:key:get",
-              "manage:key:listRoles",
-              "manage:key:list",
-              "manage:key:history:tx:list",
-              "manage:key:create",
-              "manage:key:import",
-              "manage:key:update:*",
-              "manage:key:update:owner",
-              "manage:key:update:policy",
-              "manage:key:update:enabled",
-              "manage:key:update:metadata",
-              "manage:key:update:editPolicy",
-              "manage:key:delete",
-              "manage:policy:*",
-              "manage:policy:create",
-              "manage:policy:get",
-              "manage:policy:list",
-              "manage:policy:delete",
-              "manage:policy:update:*",
-              "manage:policy:update:owner",
-              "manage:policy:update:name",
-              "manage:policy:update:editPolicy",
-              "manage:policy:update:metadata",
-              "manage:policy:update:rule",
-              "manage:policy:invoke",
-              "manage:policy:wasm:*",
-              "manage:policy:wasm:upload",
-              "manage:policy:secrets:*",
-              "manage:policy:secrets:get",
-              "manage:policy:secrets:update:*",
-              "manage:policy:secrets:update:values",
-              "manage:policy:secrets:update:editPolicy",
-              "manage:contact:*",
-              "manage:contact:create",
-              "manage:contact:get",
-              "manage:contact:list",
-              "manage:contact:delete",
-              "manage:contact:update:*",
-              "manage:contact:update:name",
-              "manage:contact:update:addresses",
-              "manage:contact:update:owner",
-              "manage:contact:update:metadata",
-              "manage:contact:update:editPolicy",
-              "manage:policy:createImportKey",
-              "manage:role:*",
-              "manage:role:readonly",
-              "manage:role:create",
-              "manage:role:delete",
-              "manage:role:get:*",
-              "manage:role:get:keys",
-              "manage:role:get:keys:list",
-              "manage:role:get:keys:get",
-              "manage:role:get:users",
-              "manage:role:list",
-              "manage:role:update:*",
-              "manage:role:update:enabled",
-              "manage:role:update:policy",
-              "manage:role:update:editPolicy",
-              "manage:role:update:key:*",
-              "manage:role:update:key:add",
-              "manage:role:update:key:remove",
-              "manage:role:update:user:*",
-              "manage:role:update:user:add",
-              "manage:role:update:user:remove",
-              "manage:role:history:tx:list",
-              "manage:identity:*",
-              "manage:identity:verify",
-              "manage:identity:add",
-              "manage:identity:remove",
-              "manage:identity:list",
-              "manage:org:*",
-              "manage:org:create",
-              "manage:org:metrics:query",
-              "manage:org:readonly",
-              "manage:org:addUser",
-              "manage:org:inviteUser",
-              "manage:org:inviteAlien",
-              "manage:org:updateMembership",
-              "manage:org:listUsers",
-              "manage:org:user:get",
-              "manage:org:deleteUser",
-              "manage:org:get",
-              "manage:session:*",
-              "manage:session:readonly",
-              "manage:session:get",
-              "manage:session:list",
-              "manage:session:create",
-              "manage:session:extend",
-              "manage:session:revoke",
-              "manage:export:*",
-              "manage:export:org:*",
-              "manage:export:org:get",
-              "manage:export:user:*",
-              "manage:export:user:delete",
-              "manage:export:user:list",
-              "manage:authMigration:identity:add",
-              "manage:authMigration:identity:remove",
-              "manage:authMigration:user:update",
-              "manage:mmi:*",
-              "manage:mmi:readonly",
-              "manage:mmi:get",
-              "manage:mmi:list",
-              "manage:mmi:reject",
-              "manage:mmi:delete",
-              "export:*",
-              "export:user:*",
-              "export:user:init",
-              "export:user:complete",
-              "mmi:*",
-              "orgAccess:*",
-              "orgAccess:child:*"
-            ],
-            "title": "ExplicitScopes",
-            "type": "string"
+            "$ref": "#/components/schemas/ExplicitScope"
           },
           {
             "description": "Scopes including wildcard fragments for accessing CubeSigner APIs",
@@ -1515,7 +1627,8 @@
           "JrpcError",
           "UnhandledError",
           "ProxyStartError",
-          "EnclaveError"
+          "EnclaveError",
+          "PolicyErrorWithEvalTree"
         ],
         "type": "string"
       },
@@ -1566,7 +1679,7 @@
     },
     "description": "The CubeSigner management and signing service.",
     "title": "CubeSigner API",
-    "version": "v0.123.1"
+    "version": "v0.167.0"
   },
   "openapi": "3.0.3",
   "paths": {
