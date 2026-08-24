@@ -100,6 +100,14 @@ func runServer(cfg config.Config) error {
 
 	api.HandleHealthCheck()
 
+	// Stop serving once a shutdown signal cancels the context, letting in-flight
+	// signing requests finish first.
+	go func() {
+		<-ctx.Done()
+		log.Println("Shutting down gRPC server...")
+		grpcServer.GracefulStop()
+	}()
+
 	log.Printf("Starting gRPC server on %s...", address)
 	if err := grpcServer.Serve(lis); err != nil {
 		return fmt.Errorf("failed to serve: %w", err)
