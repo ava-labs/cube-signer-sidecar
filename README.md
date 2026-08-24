@@ -54,6 +54,9 @@ Below is a list of configuration options that can be set via a JSON config file 
 
   This is the path to the token file, created in the last step above.
 
+  This file holds the session's refresh credential, so it must not be readable by
+  group or others; the sidecar refuses to start otherwise (`chmod 600 <path_to_token_file>.json`).
+
   The `refresh-token` (part of the JSON output of `cs token create`) has a short TTL by default, and the `cube-signer-sidecar` must be started before it expires. Once started, the `<path_to_token>.json` file will be continuously refreshed as needed. To change any of the default token parameters, see `cs token create --help`.
 
 - `"signer-endpoint": string` (required)

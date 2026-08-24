@@ -28,9 +28,20 @@ func (cfg *Config) Validate() error {
 
 	// Just check for existence and permissions of the file here
 	// Any other potential errors will be caught at time of usage
-	_, err := os.Stat(cfg.TokenFilePath)
+	info, err := os.Stat(cfg.TokenFilePath)
 	if os.IsNotExist(err) || os.IsPermission(err) {
 		return fmt.Errorf("token-file-path cannot be accessed: %s", cfg.TokenFilePath)
+	}
+
+	// The token file is a bearer credential for the signing role: refuse to use
+	// one that other local users can read.
+	if err == nil {
+		if mode := info.Mode().Perm(); mode&0077 != 0 {
+			return fmt.Errorf(
+				"token-file-path %s has permissions %#o; it must not be readable by group or others (chmod 600)",
+				cfg.TokenFilePath, mode,
+			)
+		}
 	}
 
 	if cfg.KeyID == "" {

@@ -49,3 +49,16 @@ func TestValidateRejectsNonHTTPSEndpoint(t *testing.T) {
 		})
 	}
 }
+
+// The token file is a bearer credential for the signing role.
+func TestValidateRejectsWorldReadableTokenFile(t *testing.T) {
+	for _, mode := range []os.FileMode{0644, 0640, 0604, 0666} {
+		t.Run(mode.String(), func(t *testing.T) {
+			cfg := validConfig(t)
+			cfg.TokenFilePath = newTokenFile(t, mode)
+
+			err := cfg.Validate()
+			require.ErrorContains(t, err, "must not be readable by group or others")
+		})
+	}
+}
