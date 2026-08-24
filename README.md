@@ -58,7 +58,8 @@ Below is a list of configuration options that can be set via a JSON config file 
 
 - `"signer-endpoint": string` (required)
 
-  The CubeSigner API endpoint.
+  The CubeSigner API endpoint. Must be an `https` URL: the session token is sent
+  to it as a bearer credential.
 
 - `"key-id": string` (required)
 

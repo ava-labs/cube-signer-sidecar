@@ -2,6 +2,7 @@ package config
 
 import (
 	"fmt"
+	"net/url"
 	"os"
 	"strings"
 
@@ -38,6 +39,19 @@ func (cfg *Config) Validate() error {
 
 	if cfg.SignerEndpoint == "" {
 		return fmt.Errorf("signer-endpoint is required")
+	}
+
+	// The session token is sent to this endpoint as a bearer credential, so it
+	// must not travel over plaintext HTTP.
+	endpoint, err := url.Parse(cfg.SignerEndpoint)
+	if err != nil {
+		return fmt.Errorf("signer-endpoint is not a valid URL: %w", err)
+	}
+	if endpoint.Scheme != "https" {
+		return fmt.Errorf("signer-endpoint must use https, got %q", cfg.SignerEndpoint)
+	}
+	if endpoint.Host == "" {
+		return fmt.Errorf("signer-endpoint is missing a host: %q", cfg.SignerEndpoint)
 	}
 	return nil
 }
