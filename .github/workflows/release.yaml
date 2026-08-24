@@ -8,6 +8,9 @@ on:
     tags:
       - "**"
 
+permissions:
+  contents: write # goreleaser creates the GitHub release
+
 jobs:
   release:
     runs-on: ubuntu-22.04
