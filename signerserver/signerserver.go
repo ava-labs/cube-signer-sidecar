@@ -282,7 +282,7 @@ func (s *SignerServer) PublicKey(ctx context.Context, in *signer.PublicKeyReques
 		return nil, fmt.Errorf("unexpected status code: %d", res.StatusCode())
 	}
 
-	publicKey, err := hex.DecodeString(res.JSON200.PublicKey[2:])
+	publicKey, err := decodePrefixedHex(res.JSON200.PublicKey, bls.PublicKeyLen)
 	if err != nil {
 		return nil, fmt.Errorf("failed to decode public key: %w", err)
 	}
@@ -294,6 +294,32 @@ func (s *SignerServer) PublicKey(ctx context.Context, in *signer.PublicKeyReques
 	return &signer.PublicKeyResponse{
 		PublicKey: publicKey,
 	}, nil
+}
+
+// decodePrefixedHex decodes a "0x"-prefixed hex string returned by the
+// CubeSigner API into exactly expectedLen bytes.
+//
+// The prefix is verified rather than assumed, since slicing it off blindly
+// panics on a shorter-than-expected value. The length is checked because a
+// hex string can decode successfully and still be unusable: "0x" yields a
+// zero-length (but non-nil) slice, which would otherwise be handed to
+// AvalancheGo as a public key or signature.
+func decodePrefixedHex(s string, expectedLen int) ([]byte, error) {
+	hexDigits, found := strings.CutPrefix(s, "0x")
+	if !found {
+		return nil, fmt.Errorf("expected a 0x-prefixed hex string, got %q", s)
+	}
+
+	decoded, err := hex.DecodeString(hexDigits)
+	if err != nil {
+		return nil, err
+	}
+
+	if len(decoded) != expectedLen {
+		return nil, fmt.Errorf("expected %d bytes, got %d", expectedLen, len(decoded))
+	}
+
+	return decoded, nil
 }
 
 type KeyInfo struct {
@@ -361,7 +387,12 @@ func (s *SignerServer) sign(ctx context.Context, bytes []byte, blsDst *string) (
 		return nil, fmt.Errorf("unexpected status code: %d", res.StatusCode())
 	}
 
-	return hex.DecodeString(res.JSON200.Signature[2:])
+	signature, err := decodePrefixedHex(res.JSON200.Signature, bls.SignatureLen)
+	if err != nil {
+		return nil, fmt.Errorf("failed to decode signature: %w", err)
+	}
+
+	return signature, nil
 }
 
 func (s *SignerServer) Sign(ctx context.Context, in *signer.SignRequest) (*signer.SignResponse, error) {

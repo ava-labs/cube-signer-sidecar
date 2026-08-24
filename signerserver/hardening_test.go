@@ -7,11 +7,14 @@ import (
 	"net/http"
 	"os"
 	"path/filepath"
+	"strings"
 	"sync"
 	"sync/atomic"
 	"testing"
 	"time"
 
+	"github.com/ava-labs/avalanchego/proto/pb/signer"
+	"github.com/ava-labs/avalanchego/utils/crypto/bls"
 	"github.com/ava-labs/cube-signer-sidecar/api"
 	"github.com/ava-labs/cube-signer-sidecar/mockapi"
 	"github.com/stretchr/testify/require"
@@ -301,4 +304,118 @@ func TestPublicKeyConcurrentAccess(t *testing.T) {
 		}()
 	}
 	wg.Wait()
+}
+
+// Hex values from the API must be validated rather than sliced blindly. A value
+// that decodes cleanly can still be the wrong length, so the length is part of
+// the contract: "0x" decodes to a zero-length but non-nil slice, which would
+// otherwise be handed to AvalancheGo and cached as a public key.
+func TestDecodePrefixedHex(t *testing.T) {
+	tests := []struct {
+		name        string
+		input       string
+		expectedLen int
+		expected    []byte
+		wantErr     bool
+	}{
+		{name: "valid", input: "0xdeadbeef", expectedLen: 4, expected: []byte{0xde, 0xad, 0xbe, 0xef}},
+		{name: "empty", input: "", expectedLen: 4, wantErr: true},
+		{name: "too short for prefix", input: "0", expectedLen: 4, wantErr: true},
+		{name: "missing prefix", input: "deadbeef", expectedLen: 4, wantErr: true},
+		{name: "not hex", input: "0xzz", expectedLen: 4, wantErr: true},
+		{name: "odd length", input: "0xabc", expectedLen: 4, wantErr: true},
+		{name: "prefix only", input: "0x", expectedLen: 4, wantErr: true},
+		{name: "zero length not accepted as public key", input: "0x", expectedLen: bls.PublicKeyLen, wantErr: true},
+		{name: "too few bytes", input: "0xdead", expectedLen: 4, wantErr: true},
+		{name: "too many bytes", input: "0xdeadbeefff", expectedLen: 4, wantErr: true},
+	}
+
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			got, err := decodePrefixedHex(test.input, test.expectedLen)
+			if test.wantErr {
+				require.Error(t, err)
+				require.Nil(t, got)
+				return
+			}
+			require.NoError(t, err)
+			require.Equal(t, test.expected, got)
+		})
+	}
+}
+
+// A public key of the wrong length must be rejected and must not be cached: the
+// cache is consulted on every subsequent request, so a bad value would persist
+// for the lifetime of the process.
+func TestPublicKeyWrongLengthNotCached(t *testing.T) {
+	for _, publicKey := range []string{"0x", "0xdeadbeef", "0x" + strings.Repeat("ab", bls.PublicKeyLen+1)} {
+		t.Run(publicKey, func(t *testing.T) {
+			require := require.New(t)
+			ctrl := gomock.NewController(t)
+			mockclient := mockapi.NewMockClientInterface(ctrl)
+
+			mockclient.EXPECT().
+				GetKeyInOrg(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).
+				DoAndReturn(func(_ context.Context, _ string, _ string, _ api.RequestEditorFn) (*http.Response, error) {
+					return toJSONResponse(t, &KeyInfo{PublicKey: publicKey}), nil
+				}).
+				Times(1)
+
+			server := createSignerServer(mockclient, testTokenData, keyID)
+
+			res, err := server.PublicKey(context.Background(), &signer.PublicKeyRequest{})
+			require.Error(err)
+			require.Nil(res)
+			require.Nil(server.cachedPublicKey(), "an invalid public key must never be cached")
+		})
+	}
+}
+
+// A signature of the wrong length must be rejected rather than passed through to
+// AvalancheGo as if it were valid.
+func TestSignWrongLengthSignature(t *testing.T) {
+	for _, signature := range []string{"0x", "0xdeadbeef", "0x" + strings.Repeat("ab", bls.SignatureLen-1)} {
+		t.Run(signature, func(t *testing.T) {
+			require := require.New(t)
+			ctrl := gomock.NewController(t)
+			mockclient := mockapi.NewMockClientInterface(ctrl)
+
+			mockclient.EXPECT().
+				BlobSign(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).
+				DoAndReturn(func(_ context.Context, _ string, _ string, _ api.BlobSignRequest, _ api.RequestEditorFn) (*http.Response, error) {
+					return toJSONResponse(t, &api.SignResponse{Signature: signature}), nil
+				}).
+				Times(1)
+
+			server := createSignerServer(mockclient, testTokenData, keyID)
+
+			res, err := server.Sign(context.Background(), &signer.SignRequest{Message: []byte("test-message")})
+			require.Error(err)
+			require.Nil(res)
+		})
+	}
+}
+
+// A malformed signature must surface as an error, not a slice-bounds panic.
+func TestSignMalformedSignature(t *testing.T) {
+	for _, signature := range []string{"", "0", "not-hex"} {
+		t.Run("signature="+signature, func(t *testing.T) {
+			require := require.New(t)
+			ctrl := gomock.NewController(t)
+			mockclient := mockapi.NewMockClientInterface(ctrl)
+
+			mockclient.EXPECT().
+				BlobSign(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).
+				DoAndReturn(func(_ context.Context, _ string, _ string, _ api.BlobSignRequest, _ api.RequestEditorFn) (*http.Response, error) {
+					return toJSONResponse(t, &api.SignResponse{Signature: signature}), nil
+				}).
+				Times(1)
+
+			server := createSignerServer(mockclient, testTokenData, keyID)
+
+			res, err := server.Sign(context.Background(), &signer.SignRequest{Message: []byte("test-message")})
+			require.Error(err)
+			require.Nil(res)
+		})
+	}
 }
