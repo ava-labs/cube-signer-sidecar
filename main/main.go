@@ -9,6 +9,7 @@ import (
 	"os"
 	"os/signal"
 	"strconv"
+	"syscall"
 	"time"
 
 	"github.com/ava-labs/avalanchego/proto/pb/signer"
@@ -118,7 +119,7 @@ func runServer(cfg config.Config) error {
 
 func handleSystemSignals(cancel context.CancelFunc) {
 	sigChan := make(chan os.Signal, 1)
-	signal.Notify(sigChan, os.Interrupt, os.Kill)
+	signal.Notify(sigChan, os.Interrupt, syscall.SIGTERM)
 
 	sig := <-sigChan
 	log.Printf("Received os signal: %s", sig.String())
