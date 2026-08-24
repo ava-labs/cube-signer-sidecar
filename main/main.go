@@ -72,16 +72,27 @@ func runServer(cfg config.Config) error {
 	signer.RegisterSignerServer(grpcServer, signerServer)
 
 	port := strconv.Itoa(int(cfg.Port))
+	address := net.JoinHostPort(cfg.BindAddress, port)
+
+	// The server authenticates no one and signs arbitrary bytes with the
+	// validator's BLS key, so anything that can reach it can forge signatures.
+	if !cfg.IsLoopbackBindAddress() {
+		log.Printf(
+			"WARNING: binding to %s exposes an unauthenticated signing oracle for key %s beyond this host; "+
+				"ensure the port is restricted to the AvalancheGo node by other means",
+			cfg.BindAddress, cfg.KeyID,
+		)
+	}
 
 	lc := net.ListenConfig{}
-	lis, err := lc.Listen(ctx, "tcp", ":"+port)
+	lis, err := lc.Listen(ctx, "tcp", address)
 	if err != nil {
 		return fmt.Errorf("failed to start gRPC server: %w", err)
 	}
 
 	api.HandleHealthCheck()
 
-	log.Printf("Starting gRPC server on port %s...", port)
+	log.Printf("Starting gRPC server on %s...", address)
 	if err := grpcServer.Serve(lis); err != nil {
 		return fmt.Errorf("failed to serve: %w", err)
 	}

@@ -68,6 +68,19 @@ Below is a list of configuration options that can be set via a JSON config file 
 
   The `cube-signer-sidecar` can only use one key at a time, as an `avalanchego` validator is only meant to have a single BLS signing key. Specifying the `KEY_ID` is how the CubeSigner API knows what key to use for signing. The `role` associated with the `role_id` filed in the token JSON will need access to this key (see [Configuration](#configuration)).
 
+- `"bind-address": string` (defaults to "127.0.0.1")
+
+  The IP address at which to bind the local signer server.
+
+  The signer server does not authenticate its callers and will sign arbitrary
+  bytes with the validator's BLS key, so anything that can reach this port can
+  obtain signatures attributable to the validator. It therefore defaults to
+  loopback, which is all the AvalancheGo node on the same host needs. Only widen
+  it (for example to `0.0.0.0` when running the sidecar in a separate container)
+  if the port is restricted to the node by other means, such as a private network
+  or firewall rules. The sidecar logs a warning at startup when bound to a
+  non-loopback address.
+
 - `"port": int` (defaults to 50051)
 
   The port at which to start the local signer server.

@@ -16,6 +16,7 @@ const (
 	TokenFilePathKey = "token-file-path"
 	KeyIDKey         = "key-id"
 	EndpointKey      = "signer-endpoint"
+	BindAddressKey   = "bind-address"
 	PortKey          = "port"
 )
 
@@ -27,6 +28,7 @@ func BuildFlagSet() *pflag.FlagSet {
 	fs.String(TokenFilePathKey, "", "Path to the token file")
 	fs.String(KeyIDKey, "", "Key ID")
 	fs.String(EndpointKey, "", "Signer endpoint")
+	fs.String(BindAddressKey, defaultBindAddress, "IP address to bind the signer server to. Defaults to loopback; widen only if the port is protected by other means")
 	fs.Uint16(PortKey, defaultPort, "Port to listen on")
 
 	fs.Usage = func() {

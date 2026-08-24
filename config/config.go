@@ -2,6 +2,7 @@ package config
 
 import (
 	"fmt"
+	"net"
 	"net/url"
 	"os"
 	"strings"
@@ -12,13 +13,26 @@ import (
 
 const (
 	defaultPort = 50051
+
+	// The signer server grants any caller that can reach it signatures over
+	// arbitrary bytes from the validator's BLS key, so it is bound to loopback
+	// unless the operator opts into a wider interface.
+	defaultBindAddress = "127.0.0.1"
 )
 
 type Config struct {
 	TokenFilePath  string `mapstructure:"token-file-path" json:"token-file-path"`
 	KeyID          string `mapstructure:"key-id" json:"key-id"`
 	SignerEndpoint string `mapstructure:"signer-endpoint" json:"signer-endpoint"`
+	BindAddress    string `mapstructure:"bind-address" json:"bind-address"`
 	Port           uint16 `mapstructure:"port" json:"port"`
+}
+
+// IsLoopbackBindAddress reports whether the configured bind address only accepts
+// connections from the local host.
+func (cfg *Config) IsLoopbackBindAddress() bool {
+	ip := net.ParseIP(cfg.BindAddress)
+	return ip != nil && ip.IsLoopback()
 }
 
 func (cfg *Config) Validate() error {
@@ -64,6 +78,14 @@ func (cfg *Config) Validate() error {
 	if endpoint.Host == "" {
 		return fmt.Errorf("signer-endpoint is missing a host: %q", cfg.SignerEndpoint)
 	}
+
+	if cfg.BindAddress == "" {
+		return fmt.Errorf("bind-address is required")
+	}
+	if net.ParseIP(cfg.BindAddress) == nil {
+		return fmt.Errorf("bind-address must be a valid IP address, got %q", cfg.BindAddress)
+	}
+
 	return nil
 }
 
@@ -114,6 +136,7 @@ func BuildViper(fs *pflag.FlagSet) (*viper.Viper, error) {
 func BuildConfig(v *viper.Viper) (Config, error) {
 	// Set default values
 	v.SetDefault(PortKey, defaultPort)
+	v.SetDefault(BindAddressKey, defaultBindAddress)
 
 	// Build the config from Viper
 	var cfg Config
