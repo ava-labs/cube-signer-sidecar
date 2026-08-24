@@ -223,3 +223,16 @@ func TestVerify_FailedSaveLeavesOriginalIntact(t *testing.T) {
 		require.NotContains(e.Name(), ".token-", "orphaned temp file: %s", e.Name())
 	}
 }
+
+// A tokenData with no RawData must marshal rather than panic on a nil map.
+func TestSaveTokenDataNilRawData(t *testing.T) {
+	require := require.New(t)
+
+	tmpFile := filepath.Join(t.TempDir(), "token.json")
+	server := &SignerServer{
+		tokenFilePath: tmpFile,
+		tokenData:     &tokenData{ID: ID{OrgID: "test-org"}},
+	}
+
+	require.NoError(server.saveTokenData())
+}

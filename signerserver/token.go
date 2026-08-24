@@ -32,6 +32,12 @@ func (t *tokenData) MarshalJSON() ([]byte, error) {
 		return nil, err
 	}
 
+	// RawData is populated by UnmarshalJSON, but guard against assigning into a
+	// nil map for a tokenData built any other way.
+	if t.RawData == nil {
+		t.RawData = make(rawMessageMap)
+	}
+
 	for k, v := range sessionResponse {
 		t.RawData[k] = v
 	}
