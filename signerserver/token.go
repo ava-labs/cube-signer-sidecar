@@ -8,7 +8,10 @@ import (
 
 type tokenData struct {
 	api.NewSessionResponse
-	ID
+	// ID duplicates the "org_id" tag of the embedded NewSessionResponse, which
+	// encoding/json resolves by dropping both. Both are written explicitly by
+	// MarshalJSON, so opt this one out of the promoted-field set.
+	ID `json:"-"`
 	// save the rest of the data so that we don't lose data when overwriting the file
 	RawData rawMessageMap `json:"-"`
 }
