@@ -16,6 +16,7 @@ import (
 	"os"
 	"path/filepath"
 	"strings"
+	"sync"
 	"time"
 
 	"github.com/ava-labs/avalanchego/proto/pb/signer"
@@ -44,9 +45,13 @@ type SignerServer struct {
 	OrgID         string
 	KeyID         string
 	client        *api.ClientWithResponses
-	tokenData     *tokenData
 	tokenFilePath string
-	publicKey     []byte
+
+	// mu guards tokenData and publicKey, which are read by concurrent gRPC
+	// handlers while the background refresh goroutine writes tokenData.
+	mu        sync.RWMutex
+	tokenData *tokenData
+	publicKey []byte
 }
 
 func New(keyID string, tokenFilePath string, client *api.ClientWithResponses) (*SignerServer, error) {
@@ -71,15 +76,36 @@ func New(keyID string, tokenFilePath string, client *api.ClientWithResponses) (*
 
 func (s *SignerServer) addAuthHeaderFn() api.RequestEditorFn {
 	return func(ctx context.Context, req *http.Request) error {
-		req.Header.Set("Authorization", s.tokenData.Token)
+		s.mu.RLock()
+		token := s.tokenData.Token
+		s.mu.RUnlock()
+
+		req.Header.Set("Authorization", token)
 		return nil
 	}
 }
 
-func (s *SignerServer) RefreshToken(ctx context.Context) error {
-	authData := s.tokenData.toAuthData()
+// authData returns the credentials used to refresh the session.
+func (s *SignerServer) authData() api.AuthData {
+	s.mu.RLock()
+	defer s.mu.RUnlock()
 
-	res, err := s.client.SignerSessionRefreshWithResponse(ctx, s.OrgID, *authData, s.addAuthHeaderFn())
+	return *s.tokenData.toAuthData()
+}
+
+// sessionExpiry returns the expiry times of the auth and refresh tokens.
+func (s *SignerServer) sessionExpiry() (authExp time.Time, refreshExp time.Time) {
+	s.mu.RLock()
+	defer s.mu.RUnlock()
+
+	return time.Unix(int64(s.tokenData.SessionInfo.AuthTokenExp), 0),
+		time.Unix(int64(s.tokenData.SessionInfo.RefreshTokenExp), 0)
+}
+
+func (s *SignerServer) RefreshToken(ctx context.Context) error {
+	authData := s.authData()
+
+	res, err := s.client.SignerSessionRefreshWithResponse(ctx, s.OrgID, authData, s.addAuthHeaderFn())
 	if err != nil {
 		return fmt.Errorf("failed to refresh session: %w", err)
 	}
@@ -88,17 +114,28 @@ func (s *SignerServer) RefreshToken(ctx context.Context) error {
 		return fmt.Errorf("unexpected status code: %d", res.StatusCode())
 	}
 
+	s.mu.Lock()
+	defer s.mu.Unlock()
+
 	s.tokenData.NewSessionResponse = *res.JSON200
-	return s.saveTokenData()
+	return s.saveTokenDataLocked()
 }
 
-// saveTokenData replaces the token file atomically.
+func (s *SignerServer) saveTokenData() error {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+
+	return s.saveTokenDataLocked()
+}
+
+// saveTokenDataLocked replaces the token file atomically. The caller must hold
+// s.mu for writing.
 //
 // The file holds the session's refresh credential and is the only copy of it. A
 // truncated or partial write leaves the sidecar unable to start, so serialize
 // first, write to a temporary file in the same directory, then rename it into
 // place.
-func (s *SignerServer) saveTokenData() error {
+func (s *SignerServer) saveTokenDataLocked() error {
 	log.Println("Saving token data")
 
 	data, err := json.Marshal(s.tokenData)
@@ -169,8 +206,7 @@ func (s *SignerServer) StartBackgroundTokenRefresh(ctx context.Context) {
 		var backoff time.Duration
 
 		for {
-			authExpiryTime := time.Unix(int64(s.tokenData.SessionInfo.AuthTokenExp), 0)
-			refreshExpiryTime := time.Unix(int64(s.tokenData.SessionInfo.RefreshTokenExp), 0)
+			authExpiryTime, refreshExpiryTime := s.sessionExpiry()
 
 			waitDuration := time.Until(authExpiryTime) - tokenRefreshLeeway
 			if waitDuration < 0 {
@@ -206,13 +242,27 @@ func (s *SignerServer) StartBackgroundTokenRefresh(ctx context.Context) {
 	}()
 }
 
+func (s *SignerServer) cachedPublicKey() []byte {
+	s.mu.RLock()
+	defer s.mu.RUnlock()
+
+	return s.publicKey
+}
+
+func (s *SignerServer) cachePublicKey(publicKey []byte) {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+
+	s.publicKey = publicKey
+}
+
 func (s *SignerServer) PublicKey(ctx context.Context, in *signer.PublicKeyRequest) (*signer.PublicKeyResponse, error) {
 	log.Println("Serving pubkey request")
 
-	if s.publicKey != nil {
+	if publicKey := s.cachedPublicKey(); publicKey != nil {
 		log.Println("Returning cached pubkey")
 		publicKeyRes := &signer.PublicKeyResponse{
-			PublicKey: s.publicKey,
+			PublicKey: publicKey,
 		}
 
 		return publicKeyRes, nil
@@ -239,7 +289,7 @@ func (s *SignerServer) PublicKey(ctx context.Context, in *signer.PublicKeyReques
 
 	log.Println("Public key: ", hex.EncodeToString(publicKey))
 
-	s.publicKey = publicKey
+	s.cachePublicKey(publicKey)
 
 	return &signer.PublicKeyResponse{
 		PublicKey: publicKey,

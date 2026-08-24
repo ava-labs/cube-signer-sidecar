@@ -7,6 +7,7 @@ import (
 	"net/http"
 	"os"
 	"path/filepath"
+	"sync"
 	"sync/atomic"
 	"testing"
 	"time"
@@ -235,4 +236,69 @@ func TestSaveTokenDataNilRawData(t *testing.T) {
 	}
 
 	require.NoError(server.saveTokenData())
+}
+
+// The refresh goroutine writes tokenData while gRPC handlers read the token for
+// the Authorization header. Run under -race to catch unsynchronized access.
+func TestTokenDataConcurrentAccess(t *testing.T) {
+	require := require.New(t)
+	ctrl := gomock.NewController(t)
+	mockclient := mockapi.NewMockClientInterface(ctrl)
+
+	mockclient.EXPECT().
+		SignerSessionRefresh(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).
+		DoAndReturn(func(_ context.Context, _ string, _ api.AuthData, _ ...api.RequestEditorFn) (*http.Response, error) {
+			return toJSONResponse(t, &api.NewSessionResponse{Token: "rotated-token"}), nil
+		}).
+		AnyTimes()
+
+	server := createSignerServer(mockclient, &tokenData{
+		NewSessionResponse: api.NewSessionResponse{Token: "original-token"},
+		ID:                 ID{OrgID: "test-org"},
+		RawData:            make(rawMessageMap),
+	}, keyID)
+	server.tokenFilePath = filepath.Join(t.TempDir(), "token.json")
+
+	const iterations = 100
+
+	var wg sync.WaitGroup
+	wg.Add(1)
+	go func() {
+		defer wg.Done()
+		for range iterations {
+			require.NoError(server.RefreshToken(context.Background()))
+		}
+	}()
+
+	for range 4 {
+		wg.Add(1)
+		go func() {
+			defer wg.Done()
+			addAuthHeader := server.addAuthHeaderFn()
+			for range iterations {
+				require.NoError(addAuthHeader(context.Background(), newRequest()))
+			}
+		}()
+	}
+
+	wg.Wait()
+}
+
+// The public key cache is populated from concurrent handlers.
+func TestPublicKeyConcurrentAccess(t *testing.T) {
+	server := createSignerServer(nil, testTokenData, keyID)
+
+	var wg sync.WaitGroup
+	for i := range 8 {
+		wg.Add(1)
+		go func() {
+			defer wg.Done()
+			if i%2 == 0 {
+				server.cachePublicKey([]byte{byte(i)})
+				return
+			}
+			_ = server.cachedPublicKey()
+		}()
+	}
+	wg.Wait()
 }
