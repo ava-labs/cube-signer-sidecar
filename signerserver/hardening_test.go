@@ -7,6 +7,7 @@ import (
 	"errors"
 	"io"
 	"net/http"
+	"net/http/httptest"
 	"os"
 	"path/filepath"
 	"strings"
@@ -482,4 +483,44 @@ func TestNewAcceptsWritableTokenDir(t *testing.T) {
 	require.NoError(err)
 	require.Len(entries, 1)
 	require.Equal("token.json", entries[0].Name())
+}
+
+// A server that completes the TLS handshake and then stalls was previously
+// unbounded: the generated client defaults to &http.Client{} with no Timeout,
+// so a signing request or token refresh could hang indefinitely. Go's transport
+// bounds only connect/TLS-handshake time, not the wait for a response.
+func TestAPIClientTimeoutBoundsStalledResponse(t *testing.T) {
+	require := require.New(t)
+
+	const clientTimeout = 2 * time.Second
+
+	released := make(chan struct{})
+	srv := httptest.NewTLSServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		<-released // handshake completes, then the response never arrives
+	}))
+	// Deferred LIFO: release the handler first, since Close waits for it.
+	defer srv.Close()
+	defer close(released)
+
+	// srv.Client() trusts the test certificate; the timeout is what's under test.
+	httpClient := srv.Client()
+	httpClient.Timeout = clientTimeout
+
+	client, err := api.NewClientWithResponses(srv.URL, api.WithHTTPClient(httpClient))
+	require.NoError(err)
+
+	server := &SignerServer{
+		OrgID:     "test-org",
+		KeyID:     keyID,
+		client:    client,
+		tokenData: testTokenData,
+	}
+
+	start := time.Now()
+	_, err = server.Sign(context.Background(), &signer.SignRequest{Message: []byte("test-message")})
+	elapsed := time.Since(start)
+
+	require.Error(err, "a stalled response must not hang")
+	require.Less(elapsed, 4*clientTimeout, "expected the client timeout to fire, took %s", elapsed)
+	t.Logf("stalled request failed after %s: %v", elapsed.Round(time.Millisecond), err)
 }

@@ -5,9 +5,11 @@ import (
 	"fmt"
 	"log"
 	"net"
+	"net/http"
 	"os"
 	"os/signal"
 	"strconv"
+	"time"
 
 	"github.com/ava-labs/avalanchego/proto/pb/signer"
 	"github.com/ava-labs/cube-signer-sidecar/api"
@@ -49,8 +51,14 @@ func main() {
 	log.Println("server exited gracefully")
 }
 
+// Bound the time spent on any single CubeSigner API call, so that a hung
+// upstream can't stall a signing request or the token refresh loop forever.
+const apiRequestTimeout = 30 * time.Second
+
 func runServer(cfg config.Config) error {
-	client, err := api.NewClientWithResponses(cfg.SignerEndpoint)
+	httpClient := &http.Client{Timeout: apiRequestTimeout}
+
+	client, err := api.NewClientWithResponses(cfg.SignerEndpoint, api.WithHTTPClient(httpClient))
 	if err != nil {
 		return fmt.Errorf("failed to create API client: %w", err)
 	}
