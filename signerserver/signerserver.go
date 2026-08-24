@@ -278,7 +278,9 @@ func (s *SignerServer) PublicKey(ctx context.Context, in *signer.PublicKeyReques
 		return nil, fmt.Errorf("failed to parse GetKeyInOrg response: %w", err)
 	}
 
-	if res.JSONDefault != nil {
+	// JSON200 is nil for any response that isn't a 200 with a JSON body,
+	// including non-JSON error pages returned by an intermediate proxy.
+	if res.JSONDefault != nil || res.JSON200 == nil {
 		return nil, fmt.Errorf("unexpected status code: %d", res.StatusCode())
 	}
 

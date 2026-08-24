@@ -1,9 +1,11 @@
 package signerserver
 
 import (
+	"bytes"
 	"context"
 	"encoding/json"
 	"errors"
+	"io"
 	"net/http"
 	"os"
 	"path/filepath"
@@ -418,4 +420,32 @@ func TestSignMalformedSignature(t *testing.T) {
 			require.Nil(res)
 		})
 	}
+}
+
+// A non-JSON response leaves both JSON200 and JSONDefault nil. grpc-go does not
+// recover handler panics, so a nil dereference here would kill the sidecar.
+func TestPublicKeyNonJSONResponse(t *testing.T) {
+	require := require.New(t)
+	ctrl := gomock.NewController(t)
+	mockclient := mockapi.NewMockClientInterface(ctrl)
+
+	mockclient.EXPECT().
+		GetKeyInOrg(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).
+		DoAndReturn(func(_ context.Context, _ string, _ string, _ api.RequestEditorFn) (*http.Response, error) {
+			header := make(http.Header)
+			header.Set("Content-Type", "text/html")
+			return &http.Response{
+				StatusCode: http.StatusBadGateway,
+				Header:     header,
+				Body:       io.NopCloser(bytes.NewReader([]byte("<html>bad gateway</html>"))),
+			}, nil
+		}).
+		Times(1)
+
+	server := createSignerServer(mockclient, testTokenData, keyID)
+
+	res, err := server.PublicKey(context.Background(), &signer.PublicKeyRequest{})
+	require.Error(err)
+	require.Nil(res)
+	require.Nil(server.cachedPublicKey())
 }
