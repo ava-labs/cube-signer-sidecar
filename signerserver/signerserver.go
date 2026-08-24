@@ -59,6 +59,7 @@ func New(keyID string, tokenFilePath string, client *api.ClientWithResponses) (*
 	if err != nil {
 		return nil, fmt.Errorf("failed to open token file: %w", err)
 	}
+	defer tokenFile.Close()
 
 	var tokenData tokenData
 	if err := json.NewDecoder(tokenFile).Decode(&tokenData); err != nil {
