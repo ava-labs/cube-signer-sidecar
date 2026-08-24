@@ -449,3 +449,37 @@ func TestPublicKeyNonJSONResponse(t *testing.T) {
 	require.Nil(res)
 	require.Nil(server.cachedPublicKey())
 }
+
+// Refreshed tokens are written via a temp file in the token file's directory, so
+// an unwritable directory must fail at startup rather than at the first refresh.
+func TestNewRejectsUnwritableTokenDir(t *testing.T) {
+	require := require.New(t)
+
+	dir := t.TempDir()
+	tokenFile := filepath.Join(dir, "token.json")
+	require.NoError(os.WriteFile(tokenFile, []byte(tokenJSON), tokenFileMode))
+
+	// The file stays writable; only the directory is locked down.
+	require.NoError(os.Chmod(dir, 0500))
+	t.Cleanup(func() { _ = os.Chmod(dir, 0700) })
+
+	_, err := New(keyID, tokenFile, nil)
+	require.ErrorContains(err, "must be writable")
+}
+
+func TestNewAcceptsWritableTokenDir(t *testing.T) {
+	require := require.New(t)
+
+	tokenFile := filepath.Join(t.TempDir(), "token.json")
+	require.NoError(os.WriteFile(tokenFile, []byte(tokenJSON), tokenFileMode))
+
+	server, err := New(keyID, tokenFile, nil)
+	require.NoError(err)
+	require.Equal(orgID, server.OrgID)
+
+	// The probe must not leave anything behind.
+	entries, err := os.ReadDir(filepath.Dir(tokenFile))
+	require.NoError(err)
+	require.Len(entries, 1)
+	require.Equal("token.json", entries[0].Name())
+}

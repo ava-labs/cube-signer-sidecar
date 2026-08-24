@@ -66,6 +66,13 @@ func New(keyID string, tokenFilePath string, client *api.ClientWithResponses) (*
 		return nil, fmt.Errorf("failed to decode token data: %w", err)
 	}
 
+	// Refreshed tokens are written via a temporary file in the same directory,
+	// so verify up front that the directory is writable rather than discovering
+	// it when the first refresh is due.
+	if err := checkTokenDirWritable(tokenFilePath); err != nil {
+		return nil, err
+	}
+
 	return &SignerServer{
 		OrgID:         tokenData.OrgID,
 		KeyID:         keyID,
@@ -73,6 +80,20 @@ func New(keyID string, tokenFilePath string, client *api.ClientWithResponses) (*
 		tokenData:     &tokenData,
 		tokenFilePath: tokenFilePath,
 	}, nil
+}
+
+// checkTokenDirWritable confirms the token file can be atomically replaced.
+// Permission bits alone are not conclusive, so probe with a real file.
+func checkTokenDirWritable(tokenFilePath string) error {
+	dir := filepath.Dir(tokenFilePath)
+
+	probe, err := os.CreateTemp(dir, ".token-probe-*")
+	if err != nil {
+		return fmt.Errorf("token file directory %s must be writable to save refreshed tokens: %w", dir, err)
+	}
+
+	_ = probe.Close()
+	return os.Remove(probe.Name())
 }
 
 func (s *SignerServer) addAuthHeaderFn() api.RequestEditorFn {
