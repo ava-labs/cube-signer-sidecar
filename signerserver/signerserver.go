@@ -14,6 +14,7 @@ import (
 	"math/rand/v2"
 	"net/http"
 	"os"
+	"path/filepath"
 	"strings"
 	"time"
 
@@ -23,6 +24,10 @@ import (
 )
 
 const (
+	// The token file holds the session's refresh credential, so keep it readable
+	// only by the user running the sidecar.
+	tokenFileMode os.FileMode = 0600
+
 	// How far ahead of the auth token's expiry to refresh it.
 	tokenRefreshLeeway = time.Second
 
@@ -87,16 +92,59 @@ func (s *SignerServer) RefreshToken(ctx context.Context) error {
 	return s.saveTokenData()
 }
 
+// saveTokenData replaces the token file atomically.
+//
+// The file holds the session's refresh credential and is the only copy of it. A
+// truncated or partial write leaves the sidecar unable to start, so serialize
+// first, write to a temporary file in the same directory, then rename it into
+// place.
 func (s *SignerServer) saveTokenData() error {
-	file, err := os.OpenFile(s.tokenFilePath, os.O_WRONLY, 0644)
-	if err != nil {
-		return fmt.Errorf("failed to open token file: %w", err)
-	}
-	defer file.Close()
-
 	log.Println("Saving token data")
 
-	return json.NewEncoder(file).Encode(s.tokenData)
+	data, err := json.Marshal(s.tokenData)
+	if err != nil {
+		return fmt.Errorf("failed to encode token data: %w", err)
+	}
+
+	tmp, err := os.CreateTemp(filepath.Dir(s.tokenFilePath), ".token-*.json")
+	if err != nil {
+		return fmt.Errorf("failed to create temporary token file: %w", err)
+	}
+	tmpName := tmp.Name()
+
+	// Clean up the temporary file unless it was renamed into place.
+	defer func() {
+		if tmpName != "" {
+			_ = os.Remove(tmpName)
+		}
+	}()
+
+	if err := tmp.Chmod(tokenFileMode); err != nil {
+		_ = tmp.Close()
+		return fmt.Errorf("failed to set token file permissions: %w", err)
+	}
+
+	if _, err := tmp.Write(data); err != nil {
+		_ = tmp.Close()
+		return fmt.Errorf("failed to write token data: %w", err)
+	}
+
+	// Ensure the contents reach disk before the rename publishes the file.
+	if err := tmp.Sync(); err != nil {
+		_ = tmp.Close()
+		return fmt.Errorf("failed to sync token data: %w", err)
+	}
+
+	if err := tmp.Close(); err != nil {
+		return fmt.Errorf("failed to close temporary token file: %w", err)
+	}
+
+	if err := os.Rename(tmpName, s.tokenFilePath); err != nil {
+		return fmt.Errorf("failed to replace token file: %w", err)
+	}
+	tmpName = ""
+
+	return nil
 }
 
 // nextRefreshBackoff returns the delay before the next refresh attempt, doubling
