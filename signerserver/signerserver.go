@@ -11,6 +11,7 @@ import (
 	"fmt"
 	"io"
 	"log"
+	"math/rand/v2"
 	"net/http"
 	"os"
 	"strings"
@@ -19,6 +20,16 @@ import (
 	"github.com/ava-labs/avalanchego/proto/pb/signer"
 	"github.com/ava-labs/avalanchego/utils/crypto/bls"
 	"github.com/ava-labs/cube-signer-sidecar/api"
+)
+
+const (
+	// How far ahead of the auth token's expiry to refresh it.
+	tokenRefreshLeeway = time.Second
+
+	// Bounds for the exponential backoff applied after a failed refresh, so that
+	// a failing upstream isn't hammered until the refresh token expires.
+	minRefreshBackoff = time.Second
+	maxRefreshBackoff = 5 * time.Minute
 )
 
 var popDst = base64.StdEncoding.EncodeToString(bls.CiphersuiteProofOfPossession.Bytes())
@@ -60,10 +71,10 @@ func (s *SignerServer) addAuthHeaderFn() api.RequestEditorFn {
 	}
 }
 
-func (s *SignerServer) RefreshToken() error {
+func (s *SignerServer) RefreshToken(ctx context.Context) error {
 	authData := s.tokenData.toAuthData()
 
-	res, err := s.client.SignerSessionRefreshWithResponse(context.Background(), s.OrgID, *authData, s.addAuthHeaderFn())
+	res, err := s.client.SignerSessionRefreshWithResponse(ctx, s.OrgID, *authData, s.addAuthHeaderFn())
 	if err != nil {
 		return fmt.Errorf("failed to refresh session: %w", err)
 	}
@@ -88,38 +99,61 @@ func (s *SignerServer) saveTokenData() error {
 	return json.NewEncoder(file).Encode(s.tokenData)
 }
 
+// nextRefreshBackoff returns the delay before the next refresh attempt, doubling
+// up to maxRefreshBackoff with jitter so that many sidecars recovering from the
+// same upstream outage don't retry in lockstep.
+func nextRefreshBackoff(current time.Duration) time.Duration {
+	next := current * 2
+	if next < minRefreshBackoff {
+		next = minRefreshBackoff
+	}
+	if next > maxRefreshBackoff {
+		next = maxRefreshBackoff
+	}
+
+	// Apply +/-20% jitter.
+	jitter := 1 + (rand.Float64()*0.4 - 0.2)
+	return time.Duration(float64(next) * jitter)
+}
+
 func (s *SignerServer) StartBackgroundTokenRefresh(ctx context.Context) {
 	go func() {
+		var backoff time.Duration
+
 		for {
+			authExpiryTime := time.Unix(int64(s.tokenData.SessionInfo.AuthTokenExp), 0)
+			refreshExpiryTime := time.Unix(int64(s.tokenData.SessionInfo.RefreshTokenExp), 0)
+
+			waitDuration := time.Until(authExpiryTime) - tokenRefreshLeeway
+			if waitDuration < 0 {
+				if time.Until(refreshExpiryTime) < 0 {
+					log.Fatalf("Refresh token expired at %v", refreshExpiryTime)
+				}
+				waitDuration = 0
+			}
+
+			// Never retry sooner than the backoff a previous failure earned.
+			if backoff > waitDuration {
+				waitDuration = backoff
+			}
+
+			log.Printf("Waiting %s until refreshing token", waitDuration)
+
+			timer := time.NewTimer(waitDuration)
 			select {
 			case <-ctx.Done():
+				timer.Stop()
 				return
-			default:
-				expiryTime := time.Unix(int64(s.tokenData.SessionInfo.AuthTokenExp), 0)
-				waitDuration := time.Until(expiryTime) - time.Second
-
-				log.Printf("Waiting %s until refreshing token", waitDuration)
-
-				if waitDuration < 0 {
-					refreshExpiryTime := time.Unix(int64(s.tokenData.SessionInfo.RefreshTokenExp), 0)
-					if time.Until(refreshExpiryTime) < 0 {
-						log.Fatalf("Refresh token expired at %v", refreshExpiryTime)
-					}
-					waitDuration = 0
-				}
-
-				timer := time.NewTimer(waitDuration)
-				select {
-				case <-ctx.Done():
-					timer.Stop()
-					return
-				case <-timer.C:
-					if err := s.RefreshToken(); err != nil {
-						log.Printf("Failed to refresh token: %v", err)
-						continue
-					}
-				}
+			case <-timer.C:
 			}
+
+			if err := s.RefreshToken(ctx); err != nil {
+				backoff = nextRefreshBackoff(backoff)
+				log.Printf("Failed to refresh token (retrying in %s): %v", backoff, err)
+				continue
+			}
+
+			backoff = 0
 		}
 	}()
 }
