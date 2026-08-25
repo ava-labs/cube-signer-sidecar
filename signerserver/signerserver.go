@@ -11,14 +11,31 @@ import (
 	"fmt"
 	"io"
 	"log"
+	"math/rand/v2"
 	"net/http"
 	"os"
+	"path/filepath"
 	"strings"
+	"sync"
 	"time"
 
 	"github.com/ava-labs/avalanchego/proto/pb/signer"
 	"github.com/ava-labs/avalanchego/utils/crypto/bls"
 	"github.com/ava-labs/cube-signer-sidecar/api"
+)
+
+const (
+	// The token file holds the session's refresh credential, so keep it readable
+	// only by the user running the sidecar.
+	tokenFileMode os.FileMode = 0600
+
+	// How far ahead of the auth token's expiry to refresh it.
+	tokenRefreshLeeway = time.Second
+
+	// Bounds for the exponential backoff applied after a failed refresh, so that
+	// a failing upstream isn't hammered until the refresh token expires.
+	minRefreshBackoff = time.Second
+	maxRefreshBackoff = 5 * time.Minute
 )
 
 var popDst = base64.StdEncoding.EncodeToString(bls.CiphersuiteProofOfPossession.Bytes())
@@ -28,9 +45,13 @@ type SignerServer struct {
 	OrgID         string
 	KeyID         string
 	client        *api.ClientWithResponses
-	tokenData     *tokenData
 	tokenFilePath string
-	publicKey     []byte
+
+	// mu guards tokenData and publicKey, which are read by concurrent gRPC
+	// handlers while the background refresh goroutine writes tokenData.
+	mu        sync.RWMutex
+	tokenData *tokenData
+	publicKey []byte
 }
 
 func New(keyID string, tokenFilePath string, client *api.ClientWithResponses) (*SignerServer, error) {
@@ -38,10 +59,18 @@ func New(keyID string, tokenFilePath string, client *api.ClientWithResponses) (*
 	if err != nil {
 		return nil, fmt.Errorf("failed to open token file: %w", err)
 	}
+	defer tokenFile.Close()
 
 	var tokenData tokenData
 	if err := json.NewDecoder(tokenFile).Decode(&tokenData); err != nil {
 		return nil, fmt.Errorf("failed to decode token data: %w", err)
+	}
+
+	// Refreshed tokens are written via a temporary file in the same directory,
+	// so verify up front that the directory is writable rather than discovering
+	// it when the first refresh is due.
+	if err := checkTokenDirWritable(tokenFilePath); err != nil {
+		return nil, err
 	}
 
 	return &SignerServer{
@@ -53,17 +82,52 @@ func New(keyID string, tokenFilePath string, client *api.ClientWithResponses) (*
 	}, nil
 }
 
+// checkTokenDirWritable confirms the token file can be atomically replaced.
+// Permission bits alone are not conclusive, so probe with a real file.
+func checkTokenDirWritable(tokenFilePath string) error {
+	dir := filepath.Dir(tokenFilePath)
+
+	probe, err := os.CreateTemp(dir, ".token-probe-*")
+	if err != nil {
+		return fmt.Errorf("token file directory %s must be writable to save refreshed tokens: %w", dir, err)
+	}
+
+	_ = probe.Close()
+	return os.Remove(probe.Name())
+}
+
 func (s *SignerServer) addAuthHeaderFn() api.RequestEditorFn {
 	return func(ctx context.Context, req *http.Request) error {
-		req.Header.Set("Authorization", s.tokenData.Token)
+		s.mu.RLock()
+		token := s.tokenData.Token
+		s.mu.RUnlock()
+
+		req.Header.Set("Authorization", token)
 		return nil
 	}
 }
 
-func (s *SignerServer) RefreshToken() error {
-	authData := s.tokenData.toAuthData()
+// authData returns the credentials used to refresh the session.
+func (s *SignerServer) authData() api.AuthData {
+	s.mu.RLock()
+	defer s.mu.RUnlock()
 
-	res, err := s.client.SignerSessionRefreshWithResponse(context.Background(), s.OrgID, *authData, s.addAuthHeaderFn())
+	return *s.tokenData.toAuthData()
+}
+
+// sessionExpiry returns the expiry times of the auth and refresh tokens.
+func (s *SignerServer) sessionExpiry() (authExp time.Time, refreshExp time.Time) {
+	s.mu.RLock()
+	defer s.mu.RUnlock()
+
+	return time.Unix(int64(s.tokenData.SessionInfo.AuthTokenExp), 0),
+		time.Unix(int64(s.tokenData.SessionInfo.RefreshTokenExp), 0)
+}
+
+func (s *SignerServer) RefreshToken(ctx context.Context) error {
+	authData := s.authData()
+
+	res, err := s.client.SignerSessionRefreshWithResponse(ctx, s.OrgID, authData, s.addAuthHeaderFn())
 	if err != nil {
 		return fmt.Errorf("failed to refresh session: %w", err)
 	}
@@ -72,65 +136,155 @@ func (s *SignerServer) RefreshToken() error {
 		return fmt.Errorf("unexpected status code: %d", res.StatusCode())
 	}
 
+	s.mu.Lock()
+	defer s.mu.Unlock()
+
 	s.tokenData.NewSessionResponse = *res.JSON200
-	return s.saveTokenData()
+	return s.saveTokenDataLocked()
 }
 
 func (s *SignerServer) saveTokenData() error {
-	file, err := os.OpenFile(s.tokenFilePath, os.O_WRONLY, 0644)
-	if err != nil {
-		return fmt.Errorf("failed to open token file: %w", err)
-	}
-	defer file.Close()
+	s.mu.Lock()
+	defer s.mu.Unlock()
 
+	return s.saveTokenDataLocked()
+}
+
+// saveTokenDataLocked replaces the token file atomically. The caller must hold
+// s.mu for writing.
+//
+// The file holds the session's refresh credential and is the only copy of it. A
+// truncated or partial write leaves the sidecar unable to start, so serialize
+// first, write to a temporary file in the same directory, then rename it into
+// place.
+func (s *SignerServer) saveTokenDataLocked() error {
 	log.Println("Saving token data")
 
-	return json.NewEncoder(file).Encode(s.tokenData)
+	data, err := json.Marshal(s.tokenData)
+	if err != nil {
+		return fmt.Errorf("failed to encode token data: %w", err)
+	}
+
+	tmp, err := os.CreateTemp(filepath.Dir(s.tokenFilePath), ".token-*.json")
+	if err != nil {
+		return fmt.Errorf("failed to create temporary token file: %w", err)
+	}
+	tmpName := tmp.Name()
+
+	// Clean up the temporary file unless it was renamed into place.
+	defer func() {
+		if tmpName != "" {
+			_ = os.Remove(tmpName)
+		}
+	}()
+
+	if err := tmp.Chmod(tokenFileMode); err != nil {
+		_ = tmp.Close()
+		return fmt.Errorf("failed to set token file permissions: %w", err)
+	}
+
+	if _, err := tmp.Write(data); err != nil {
+		_ = tmp.Close()
+		return fmt.Errorf("failed to write token data: %w", err)
+	}
+
+	// Ensure the contents reach disk before the rename publishes the file.
+	if err := tmp.Sync(); err != nil {
+		_ = tmp.Close()
+		return fmt.Errorf("failed to sync token data: %w", err)
+	}
+
+	if err := tmp.Close(); err != nil {
+		return fmt.Errorf("failed to close temporary token file: %w", err)
+	}
+
+	if err := os.Rename(tmpName, s.tokenFilePath); err != nil {
+		return fmt.Errorf("failed to replace token file: %w", err)
+	}
+	tmpName = ""
+
+	return nil
+}
+
+// nextRefreshBackoff returns the delay before the next refresh attempt, doubling
+// up to maxRefreshBackoff with jitter so that many sidecars recovering from the
+// same upstream outage don't retry in lockstep.
+func nextRefreshBackoff(current time.Duration) time.Duration {
+	next := current * 2
+	if next < minRefreshBackoff {
+		next = minRefreshBackoff
+	}
+	if next > maxRefreshBackoff {
+		next = maxRefreshBackoff
+	}
+
+	// Apply +/-20% jitter.
+	jitter := 1 + (rand.Float64()*0.4 - 0.2)
+	return time.Duration(float64(next) * jitter)
 }
 
 func (s *SignerServer) StartBackgroundTokenRefresh(ctx context.Context) {
 	go func() {
+		var backoff time.Duration
+
 		for {
+			authExpiryTime, refreshExpiryTime := s.sessionExpiry()
+
+			waitDuration := time.Until(authExpiryTime) - tokenRefreshLeeway
+			if waitDuration < 0 {
+				if time.Until(refreshExpiryTime) < 0 {
+					log.Fatalf("Refresh token expired at %v", refreshExpiryTime)
+				}
+				waitDuration = 0
+			}
+
+			// Never retry sooner than the backoff a previous failure earned.
+			if backoff > waitDuration {
+				waitDuration = backoff
+			}
+
+			log.Printf("Waiting %s until refreshing token", waitDuration)
+
+			timer := time.NewTimer(waitDuration)
 			select {
 			case <-ctx.Done():
+				timer.Stop()
 				return
-			default:
-				expiryTime := time.Unix(int64(s.tokenData.SessionInfo.AuthTokenExp), 0)
-				waitDuration := time.Until(expiryTime) - time.Second
-
-				log.Printf("Waiting %s until refreshing token", waitDuration)
-
-				if waitDuration < 0 {
-					refreshExpiryTime := time.Unix(int64(s.tokenData.SessionInfo.RefreshTokenExp), 0)
-					if time.Until(refreshExpiryTime) < 0 {
-						log.Fatalf("Refresh token expired at %v", refreshExpiryTime)
-					}
-					waitDuration = 0
-				}
-
-				timer := time.NewTimer(waitDuration)
-				select {
-				case <-ctx.Done():
-					timer.Stop()
-					return
-				case <-timer.C:
-					if err := s.RefreshToken(); err != nil {
-						log.Printf("Failed to refresh token: %v", err)
-						continue
-					}
-				}
+			case <-timer.C:
 			}
+
+			if err := s.RefreshToken(ctx); err != nil {
+				backoff = nextRefreshBackoff(backoff)
+				log.Printf("Failed to refresh token (retrying in %s): %v", backoff, err)
+				continue
+			}
+
+			backoff = 0
 		}
 	}()
+}
+
+func (s *SignerServer) cachedPublicKey() []byte {
+	s.mu.RLock()
+	defer s.mu.RUnlock()
+
+	return s.publicKey
+}
+
+func (s *SignerServer) cachePublicKey(publicKey []byte) {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+
+	s.publicKey = publicKey
 }
 
 func (s *SignerServer) PublicKey(ctx context.Context, in *signer.PublicKeyRequest) (*signer.PublicKeyResponse, error) {
 	log.Println("Serving pubkey request")
 
-	if s.publicKey != nil {
+	if publicKey := s.cachedPublicKey(); publicKey != nil {
 		log.Println("Returning cached pubkey")
 		publicKeyRes := &signer.PublicKeyResponse{
-			PublicKey: s.publicKey,
+			PublicKey: publicKey,
 		}
 
 		return publicKeyRes, nil
@@ -146,22 +300,50 @@ func (s *SignerServer) PublicKey(ctx context.Context, in *signer.PublicKeyReques
 		return nil, fmt.Errorf("failed to parse GetKeyInOrg response: %w", err)
 	}
 
-	if res.JSONDefault != nil {
+	// JSON200 is nil for any response that isn't a 200 with a JSON body,
+	// including non-JSON error pages returned by an intermediate proxy.
+	if res.JSONDefault != nil || res.JSON200 == nil {
 		return nil, fmt.Errorf("unexpected status code: %d", res.StatusCode())
 	}
 
-	publicKey, err := hex.DecodeString(res.JSON200.PublicKey[2:])
+	publicKey, err := decodePrefixedHex(res.JSON200.PublicKey, bls.PublicKeyLen)
 	if err != nil {
 		return nil, fmt.Errorf("failed to decode public key: %w", err)
 	}
 
 	log.Println("Public key: ", hex.EncodeToString(publicKey))
 
-	s.publicKey = publicKey
+	s.cachePublicKey(publicKey)
 
 	return &signer.PublicKeyResponse{
 		PublicKey: publicKey,
 	}, nil
+}
+
+// decodePrefixedHex decodes a "0x"-prefixed hex string returned by the
+// CubeSigner API into exactly expectedLen bytes.
+//
+// The prefix is verified rather than assumed, since slicing it off blindly
+// panics on a shorter-than-expected value. The length is checked because a
+// hex string can decode successfully and still be unusable: "0x" yields a
+// zero-length (but non-nil) slice, which would otherwise be handed to
+// AvalancheGo as a public key or signature.
+func decodePrefixedHex(s string, expectedLen int) ([]byte, error) {
+	hexDigits, found := strings.CutPrefix(s, "0x")
+	if !found {
+		return nil, fmt.Errorf("expected a 0x-prefixed hex string, got %q", s)
+	}
+
+	decoded, err := hex.DecodeString(hexDigits)
+	if err != nil {
+		return nil, err
+	}
+
+	if len(decoded) != expectedLen {
+		return nil, fmt.Errorf("expected %d bytes, got %d", expectedLen, len(decoded))
+	}
+
+	return decoded, nil
 }
 
 type KeyInfo struct {
@@ -229,7 +411,12 @@ func (s *SignerServer) sign(ctx context.Context, bytes []byte, blsDst *string) (
 		return nil, fmt.Errorf("unexpected status code: %d", res.StatusCode())
 	}
 
-	return hex.DecodeString(res.JSON200.Signature[2:])
+	signature, err := decodePrefixedHex(res.JSON200.Signature, bls.SignatureLen)
+	if err != nil {
+		return nil, fmt.Errorf("failed to decode signature: %w", err)
+	}
+
+	return signature, nil
 }
 
 func (s *SignerServer) Sign(ctx context.Context, in *signer.SignRequest) (*signer.SignResponse, error) {

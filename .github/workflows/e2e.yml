@@ -7,6 +7,9 @@ on:
     pull_request:
         branches:
             - "**"
+permissions:
+  contents: read
+
 jobs:
   e2e_tests:
     name: e2e_tests
@@ -29,7 +32,11 @@ jobs:
         env:
           CUBIST_SIGNER_TOKEN: ${{ secrets.CUBIST_SIGNER_TOKEN }}
         run: |
-          echo $CUBIST_SIGNER_TOKEN | base64 --decode > e2e_session.json
+          echo "$CUBIST_SIGNER_TOKEN" | base64 --decode > e2e_session.json
+          chmod 600 e2e_session.json
+
+      - name: Check the session is still valid
+        run: ./scripts/check_session_expiry.sh e2e_session.json
 
       - name: Run E2E Tests
         run: ./scripts/e2e_test.sh

@@ -54,15 +54,32 @@ Below is a list of configuration options that can be set via a JSON config file 
 
   This is the path to the token file, created in the last step above.
 
+  This file holds the session's refresh credential, so it must not be readable by
+  group or others; the sidecar refuses to start otherwise (`chmod 600 <path_to_token_file>.json`).
+
   The `refresh-token` (part of the JSON output of `cs token create`) has a short TTL by default, and the `cube-signer-sidecar` must be started before it expires. Once started, the `<path_to_token>.json` file will be continuously refreshed as needed. To change any of the default token parameters, see `cs token create --help`.
 
 - `"signer-endpoint": string` (required)
 
-  The CubeSigner API endpoint.
+  The CubeSigner API endpoint. Must be an `https` URL: the session token is sent
+  to it as a bearer credential.
 
 - `"key-id": string` (required)
 
   The `cube-signer-sidecar` can only use one key at a time, as an `avalanchego` validator is only meant to have a single BLS signing key. Specifying the `KEY_ID` is how the CubeSigner API knows what key to use for signing. The `role` associated with the `role_id` filed in the token JSON will need access to this key (see [Configuration](#configuration)).
+
+- `"bind-address": string` (defaults to "127.0.0.1")
+
+  The IP address at which to bind the local signer server.
+
+  The signer server does not authenticate its callers and will sign arbitrary
+  bytes with the validator's BLS key, so anything that can reach this port can
+  obtain signatures attributable to the validator. It therefore defaults to
+  loopback, which is all the AvalancheGo node on the same host needs. Only widen
+  it (for example to `0.0.0.0` when running the sidecar in a separate container)
+  if the port is restricted to the node by other means, such as a private network
+  or firewall rules. The sidecar logs a warning at startup when bound to a
+  non-loopback address.
 
 - `"port": int` (defaults to 50051)
 

@@ -2,6 +2,8 @@ package config
 
 import (
 	"fmt"
+	"net"
+	"net/url"
 	"os"
 	"strings"
 
@@ -11,13 +13,26 @@ import (
 
 const (
 	defaultPort = 50051
+
+	// The signer server grants any caller that can reach it signatures over
+	// arbitrary bytes from the validator's BLS key, so it is bound to loopback
+	// unless the operator opts into a wider interface.
+	defaultBindAddress = "127.0.0.1"
 )
 
 type Config struct {
 	TokenFilePath  string `mapstructure:"token-file-path" json:"token-file-path"`
 	KeyID          string `mapstructure:"key-id" json:"key-id"`
 	SignerEndpoint string `mapstructure:"signer-endpoint" json:"signer-endpoint"`
+	BindAddress    string `mapstructure:"bind-address" json:"bind-address"`
 	Port           uint16 `mapstructure:"port" json:"port"`
+}
+
+// IsLoopbackBindAddress reports whether the configured bind address only accepts
+// connections from the local host.
+func (cfg *Config) IsLoopbackBindAddress() bool {
+	ip := net.ParseIP(cfg.BindAddress)
+	return ip != nil && ip.IsLoopback()
 }
 
 func (cfg *Config) Validate() error {
@@ -27,9 +42,20 @@ func (cfg *Config) Validate() error {
 
 	// Just check for existence and permissions of the file here
 	// Any other potential errors will be caught at time of usage
-	_, err := os.Stat(cfg.TokenFilePath)
+	info, err := os.Stat(cfg.TokenFilePath)
 	if os.IsNotExist(err) || os.IsPermission(err) {
 		return fmt.Errorf("token-file-path cannot be accessed: %s", cfg.TokenFilePath)
+	}
+
+	// The token file is a bearer credential for the signing role: refuse to use
+	// one that other local users can read.
+	if err == nil {
+		if mode := info.Mode().Perm(); mode&0077 != 0 {
+			return fmt.Errorf(
+				"token-file-path %s has permissions %#o; it must not be readable by group or others (chmod 600)",
+				cfg.TokenFilePath, mode,
+			)
+		}
 	}
 
 	if cfg.KeyID == "" {
@@ -39,6 +65,27 @@ func (cfg *Config) Validate() error {
 	if cfg.SignerEndpoint == "" {
 		return fmt.Errorf("signer-endpoint is required")
 	}
+
+	// The session token is sent to this endpoint as a bearer credential, so it
+	// must not travel over plaintext HTTP.
+	endpoint, err := url.Parse(cfg.SignerEndpoint)
+	if err != nil {
+		return fmt.Errorf("signer-endpoint is not a valid URL: %w", err)
+	}
+	if endpoint.Scheme != "https" {
+		return fmt.Errorf("signer-endpoint must use https, got %q", cfg.SignerEndpoint)
+	}
+	if endpoint.Host == "" {
+		return fmt.Errorf("signer-endpoint is missing a host: %q", cfg.SignerEndpoint)
+	}
+
+	if cfg.BindAddress == "" {
+		return fmt.Errorf("bind-address is required")
+	}
+	if net.ParseIP(cfg.BindAddress) == nil {
+		return fmt.Errorf("bind-address must be a valid IP address, got %q", cfg.BindAddress)
+	}
+
 	return nil
 }
 
@@ -89,6 +136,7 @@ func BuildViper(fs *pflag.FlagSet) (*viper.Viper, error) {
 func BuildConfig(v *viper.Viper) (Config, error) {
 	// Set default values
 	v.SetDefault(PortKey, defaultPort)
+	v.SetDefault(BindAddressKey, defaultBindAddress)
 
 	// Build the config from Viper
 	var cfg Config
