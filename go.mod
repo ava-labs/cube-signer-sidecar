@@ -2,6 +2,8 @@ module github.com/ava-labs/cube-signer-sidecar
 
 go 1.24.9
 
+toolchain go1.26.10
+
 require (
 	github.com/alexliesenfeld/health v0.8.1
 	github.com/ava-labs/avalanchego v1.14.0
