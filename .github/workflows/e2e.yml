@@ -7,11 +7,12 @@ on:
     pull_request:
         branches:
             - "**"
-permissions:
-  contents: read
+permissions: {}
 
 jobs:
   e2e_tests:
+    permissions:
+      contents: read
     name: e2e_tests
     runs-on: ubuntu-22.04
 
@@ -22,6 +23,7 @@ jobs:
         uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
         with:
           submodules: recursive
+          persist-credentials: false
 
       - name: Setup Go
         uses: actions/setup-go@4a3601121dd01d1626a1e23e37211e3254c1c06c # v6
