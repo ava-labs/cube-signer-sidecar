@@ -5,9 +5,12 @@ import (
 	"fmt"
 	"log"
 	"net"
+	"net/http"
 	"os"
 	"os/signal"
 	"strconv"
+	"syscall"
+	"time"
 
 	"github.com/ava-labs/avalanchego/proto/pb/signer"
 	"github.com/ava-labs/cube-signer-sidecar/api"
@@ -49,8 +52,14 @@ func main() {
 	log.Println("server exited gracefully")
 }
 
+// Bound the time spent on any single CubeSigner API call, so that a hung
+// upstream can't stall a signing request or the token refresh loop forever.
+const apiRequestTimeout = 30 * time.Second
+
 func runServer(cfg config.Config) error {
-	client, err := api.NewClientWithResponses(cfg.SignerEndpoint)
+	httpClient := &http.Client{Timeout: apiRequestTimeout}
+
+	client, err := api.NewClientWithResponses(cfg.SignerEndpoint, api.WithHTTPClient(httpClient))
 	if err != nil {
 		return fmt.Errorf("failed to create API client: %w", err)
 	}
@@ -72,16 +81,35 @@ func runServer(cfg config.Config) error {
 	signer.RegisterSignerServer(grpcServer, signerServer)
 
 	port := strconv.Itoa(int(cfg.Port))
+	address := net.JoinHostPort(cfg.BindAddress, port)
+
+	// The server authenticates no one and signs arbitrary bytes with the
+	// validator's BLS key, so anything that can reach it can forge signatures.
+	if !cfg.IsLoopbackBindAddress() {
+		log.Printf(
+			"WARNING: binding to %s exposes an unauthenticated signing oracle for key %s beyond this host; "+
+				"ensure the port is restricted to the AvalancheGo node by other means",
+			cfg.BindAddress, cfg.KeyID,
+		)
+	}
 
 	lc := net.ListenConfig{}
-	lis, err := lc.Listen(ctx, "tcp", ":"+port)
+	lis, err := lc.Listen(ctx, "tcp", address)
 	if err != nil {
 		return fmt.Errorf("failed to start gRPC server: %w", err)
 	}
 
 	api.HandleHealthCheck()
 
-	log.Printf("Starting gRPC server on port %s...", port)
+	// Stop serving once a shutdown signal cancels the context, letting in-flight
+	// signing requests finish first.
+	go func() {
+		<-ctx.Done()
+		log.Println("Shutting down gRPC server...")
+		grpcServer.GracefulStop()
+	}()
+
+	log.Printf("Starting gRPC server on %s...", address)
 	if err := grpcServer.Serve(lis); err != nil {
 		return fmt.Errorf("failed to serve: %w", err)
 	}
@@ -91,7 +119,7 @@ func runServer(cfg config.Config) error {
 
 func handleSystemSignals(cancel context.CancelFunc) {
 	sigChan := make(chan os.Signal, 1)
-	signal.Notify(sigChan, os.Interrupt, os.Kill)
+	signal.Notify(sigChan, os.Interrupt, syscall.SIGTERM)
 
 	sig := <-sigChan
 	log.Printf("Received os signal: %s", sig.String())

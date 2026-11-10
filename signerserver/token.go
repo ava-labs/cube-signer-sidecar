@@ -8,7 +8,10 @@ import (
 
 type tokenData struct {
 	api.NewSessionResponse
-	ID
+	// ID duplicates the "org_id" tag of the embedded NewSessionResponse, which
+	// encoding/json resolves by dropping both. Both are written explicitly by
+	// MarshalJSON, so opt this one out of the promoted-field set.
+	ID `json:"-"`
 	// save the rest of the data so that we don't lose data when overwriting the file
 	RawData rawMessageMap `json:"-"`
 }
@@ -30,6 +33,12 @@ func (t *tokenData) MarshalJSON() ([]byte, error) {
 	id, err := toRawData(t.ID)
 	if err != nil {
 		return nil, err
+	}
+
+	// RawData is populated by UnmarshalJSON, but guard against assigning into a
+	// nil map for a tokenData built any other way.
+	if t.RawData == nil {
+		t.RawData = make(rawMessageMap)
 	}
 
 	for k, v := range sessionResponse {

@@ -19,6 +19,7 @@ const (
 	DefaultTokenPath            = "e2e_session.json"
 	DefaultKeyID                = "Key#BlsAvaIcm_0x856218c1a1a84cd4e25321fe7bde03260d2686dad5c9ddd05e77509cc0ef3114d7290810843748a2bd8bb3a2ff8c4d6e"
 	DefaultSignerEndpoint       = "https://gamma.signer.cubist.dev"
+	DefaultBindAddress          = "127.0.0.1"
 	DefaultPort                 = 50051
 )
 
@@ -51,6 +52,7 @@ func CreateDefaultConfig() *config.Config {
 		TokenFilePath:  DefaultTokenPath,
 		KeyID:          DefaultKeyID,
 		SignerEndpoint: DefaultSignerEndpoint,
+		BindAddress:    DefaultBindAddress,
 		Port:           DefaultPort,
 	}
 }

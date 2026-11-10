@@ -7,8 +7,12 @@ on:
     pull_request:
         branches:
             - "**"
+permissions: {}
+
 jobs:
   e2e_tests:
+    permissions:
+      contents: read
     name: e2e_tests
     runs-on: ubuntu-22.04
 
@@ -19,6 +23,7 @@ jobs:
         uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
         with:
           submodules: recursive
+          persist-credentials: false
 
       - name: Setup Go
         uses: actions/setup-go@4a3601121dd01d1626a1e23e37211e3254c1c06c # v6
@@ -29,7 +34,11 @@ jobs:
         env:
           CUBIST_SIGNER_TOKEN: ${{ secrets.CUBIST_SIGNER_TOKEN }}
         run: |
-          echo $CUBIST_SIGNER_TOKEN | base64 --decode > e2e_session.json
+          echo "$CUBIST_SIGNER_TOKEN" | base64 --decode > e2e_session.json
+          chmod 600 e2e_session.json
+
+      - name: Check the session is still valid
+        run: ./scripts/check_session_expiry.sh e2e_session.json
 
       - name: Run E2E Tests
         run: ./scripts/e2e_test.sh
